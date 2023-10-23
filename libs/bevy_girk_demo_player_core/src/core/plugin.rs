@@ -1,11 +1,11 @@
-//! Plugins for the core of a client.
+//! Plugins for the core of a player client.
 //!
 //! PRECONDITION: plugin dependencies
 //! - bevy_replicon::core::ReplicationCorePlugin
 //!
-//! PRECONDITION: the following must be initialized by the client manager
+//! PRECONDITION: the following must be initialized by the player client manager
 //! - Res<ClickPlayerInitializer>
-//! - Res<MessageReceiver<PlayerInput>>
+//! - Res<MessageReceiver<PlayerClientInput>>
 //!
 
 //local shortcuts
@@ -28,7 +28,7 @@ fn check_client_framework_consistency(client_fw_config: &ClientFWConfig, player_
 {
     // check the client id
     if client_fw_config.client_id() != player_initializer.player_context.id()
-        { panic!("client id mismatch with client framework!"); }
+    { panic!("client id mismatch with client framework!"); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -39,13 +39,13 @@ fn prestartup_check(world: &World)
 {
     // check for expected resources
     if !world.contains_resource::<ClickPlayerInitializer>()
-        { panic!("ClickPlayerInitializer is missing on startup!"); }
+    { panic!("ClickPlayerInitializer is missing on startup!"); }
     if !world.contains_resource::<MessageReceiver<PlayerInput>>()
-        { panic!("MessageReceiver<PlayerInput> is missing on startup!"); }
+    { panic!("MessageReceiver<PlayerInput> is missing on startup!"); }
 
     // validate consistency between client framework and core
     if !world.contains_resource::<ClientFWConfig>()
-        { panic!("ClientFWConfig is missing on startup!"); }
+    { panic!("ClientFWConfig is missing on startup!"); }
 
     check_client_framework_consistency(world.resource::<ClientFWConfig>(), world.resource::<ClickPlayerInitializer>());
 }
@@ -99,6 +99,16 @@ pub fn ClientCoreStartupPlugin(app: &mut App)
 #[bevy_plugin]
 pub fn ClientCoreTickPlugin(app: &mut App)
 {
+    // Admin
+    app.add_systems(Update,
+                (
+                    handle_player_client_inputs_init.in_set(ClientSet::InitStartup),
+                    handle_player_client_inputs_prep.in_set(ClientSet::Prep),
+                    handle_player_client_inputs_play.in_set(ClientSet::Play),
+                    handle_player_client_inputs_gameover.in_set(ClientSet::GameOver),
+                ).chain().in_set(ClientFWTickSet::Admin)
+            );
+
     // Init startup. (runs on startup)
     // - load assets
     app.configure_set(Update,
@@ -143,16 +153,6 @@ pub fn ClientCoreTickPlugin(app: &mut App)
                     .run_if(in_state(ClientCoreMode::GameOver))
             );
 
-    // Admin
-    app.add_systems(Update,
-                (
-                    handle_player_client_inputs_init.in_set(ClientSet::InitStartup),
-                    handle_player_client_inputs_prep.in_set(ClientSet::Prep),
-                    handle_player_client_inputs_play.in_set(ClientSet::Play),
-                    handle_player_client_inputs_gameover.in_set(ClientSet::GameOver),
-                ).chain().in_set(ClientFWTickSet::Admin)
-            );
-
     // Misc
     // Systems that should run when the client is fully initialized.
     app.add_systems(OnEnter(ClientInitializationState::Done),
@@ -164,9 +164,9 @@ pub fn ClientCoreTickPlugin(app: &mut App)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub struct ClientPlugins;
+pub struct ClientCorePlugins;
 
-impl PluginGroup for ClientPlugins
+impl PluginGroup for ClientCorePlugins
 {
     fn build(self) -> PluginGroupBuilder
     {
