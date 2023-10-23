@@ -1,0 +1,135 @@
+[workspace.package]
+description = "Demo for bevy_girk"
+authors = ["koe <ukoe@protonmail.com>"]
+version = "0.0.1"
+edition = "2021"
+keywords = ["gamedev", "multiplayer", "demo"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/UkoeHB/bevy_girk_demo"
+
+[workspace]
+resolver = "2"
+members  = [
+    "bins/*",
+    "libs/*",
+    "tests"
+]
+
+[workspace.dependencies.bevy]
+version = "0.11"
+default-features = false
+features = [
+    # Bevy functionality:
+    "bevy_asset",         # Assets management
+    "bevy_scene",         # Scenes management
+    #"bevy_gilrs",         # Gamepad input support
+    #"bevy_audio",         # Builtin audio
+    "bevy_winit",         # Window management
+    "animation",          # Animation support
+    "x11",                # Linux: Support X11 windowing system
+    "filesystem_watcher", # Asset hot-reloading
+    #"render",             # Graphics Rendering
+    #"multi-threaded",     # Allow multi-threaded system execution
+
+    ## "render" contents
+    "bevy_render",        # Rendering framework core
+    "bevy_core_pipeline", # Common rendering abstractions
+    "bevy_sprite",        # 2D (sprites) rendering
+    #"bevy_pbr",           # 3D (physically-based) rendering
+    #"bevy_gizmos"         # For rendering gizmos
+    #"bevy_gltf",          # GLTF 3D assets format support
+    "bevy_text",          # Text/font rendering
+    #"bevy_ui",            # UI toolkit
+
+    # File formats:
+    "png",
+    #"hdr",
+    #"vorbis",
+
+    # Additional Bevy functionality:
+    "wayland",              # Linux: Support Wayland windowing system
+    "subpixel_glyph_atlas", # Subpixel antialiasing for text/fonts
+    "serialize",            # Support for `serde` Serialize/Deserialize
+    #"bevy_dynamic_plugin",  # Support for loading of `DynamicPlugin`s  (must use --features bevy/dynamic_linking)
+    #"tonemapping_luts"      # Tonemapping lookup for KTX2 files
+    #"accesskit_unix"        # AccessKit on Unix backends
+    #"bevy_ci_testing"       # Support automated testing in CI
+
+    # File formats:
+    #"ktx2", # preferred format for GPU textures
+    #"dds",
+    #"jpeg",
+    #"bmp",
+    #"tga",
+    #"basis-universal",
+    #"zstd", # needed if using zstd in KTX2 files
+    #"flac",
+    #"mp3",
+    #"wav",
+
+    # Tracing for performance analysis:
+    #"trace",         # Enable tracing for performance measurement
+    #"wgpu_trace",    # WGPU/rendering tracing
+    #"trace_tracy",   # Tracing using `tracy`
+    #"trace_chrome",  # Tracing using the Chrome format
+    #"detailed_trace" # Event tracing
+    #"zlib"           # For KTX2 supercompression
+
+    # Development/Debug features:
+    #todo: enabling this causes a linker error with bevy_simplenet/ezsockets
+    #"dynamic_linking",       # Dynamic linking for faster compile-times (better to set this feature in the command-line)
+]
+
+[workspace.dependencies]
+bevy_kot       = { version = "0.0.5" }
+bevy_fn_plugin = { version = "0.1" }
+bevy_framepace = { version = "0.13" }
+#bevy_renet     = { version = "0.0.9" }
+bevy_renet = { git = "https://github.com/lucaspoffo/renet", rev = "cb80542" }
+#bevy_replicon  = { git = "https://github.com/lifescapegame/bevy_replicon", rev = "a728047" }
+bevy_replicon  = { git = "https://github.com/UkoeHB/bevy_replicon", rev = "bbed8dd" }
+bevy_simplenet = { git = "https://github.com/UkoeHB/bevy_simplenet.git", rev = "dccb7a8", default-features = false }
+iyes_progress  = { version = "0.9" , features = [ "assets" ] }
+
+bevy_girk_backend_public  = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_client_fw       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_game_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_game_hub_server = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_game_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_host_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_utils           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+bevy_girk_wiring          = { git = "https://github.com/UkoeHB/bevy_girk", rev = "82f8c9b" }
+
+enfync             = { version = "0.1" }
+ezsockets          = { git = "https://github.com/gbaranski/ezsockets.git", rev = "390ec91" }
+serde              = { version = "1.0" }
+serde_json         = { version = "1.0" }
+serde_with         = { version = "3.0" }
+tracing            = { version = "0.1" }
+tracing-subscriber = { version = "0.3" }
+url                = { version = "2.4" }
+
+[profile.test]
+opt-level = 0  #no optimizations for local tests
+
+[profile.dev]
+opt-level = 1  #minimal optimizations for local debug builds
+debug     = true
+
+[profile.dev.package."*"]
+opt-level = 3  #maximum optimizations for dependencies used in debug builds
+
+[profile.release]
+lto           = "thin"  #link time optimizations (fast)
+strip         = true    #minimize binary size with symbol stripping
+codegen-units = 1       #maximize performance
+
+[profile.release-small]
+inherits = "release"
+opt-level = "s"
+lto = "fat"
+
+[profile.release-small.package."*"]
+opt-level = "s"
+strip = true

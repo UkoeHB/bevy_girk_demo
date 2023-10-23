@@ -1,0 +1,12 @@
+[package]
+name = "bevy_girk_server_basic"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "bevy_girk_server_basic"
+test    = false
+doctest = false
+
+[dependencies]
+bevy = { workspace = true }
