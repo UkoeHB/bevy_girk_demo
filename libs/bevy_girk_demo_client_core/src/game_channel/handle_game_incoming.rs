@@ -1,11 +1,11 @@
 //local shortcuts
 use crate::*;
 use bevy_girk_demo_game_core::*;
-use bevy_girk_game_fw::*;
-use bevy_girk_utils::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_game_fw::*;
+use bevy_girk_utils::*;
 use bevy_kot::ecs::*;
 
 //standard shortcuts

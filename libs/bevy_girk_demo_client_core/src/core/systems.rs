@@ -2,12 +2,12 @@
 
 //local shortcuts
 use crate::*;
-use bevy_girk_client_fw::*;
 use bevy_girk_demo_game_core::*;
-use bevy_girk_utils::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_client_fw::*;
+use bevy_girk_utils::*;
 
 //standard shortcuts
 
@@ -15,7 +15,7 @@ use bevy::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Helper function-system for accessing the client core mode.
-pub(crate) fn get_current_client_core_mode(current_client_core_mode: Res<State<ClientCoreMode>>) -> ClientCoreMode
+pub fn get_current_client_core_mode(current_client_core_mode: Res<State<ClientCoreMode>>) -> ClientCoreMode
 {
     **current_client_core_mode
 }
@@ -30,7 +30,7 @@ pub(crate) fn request_game_mode(mut client_message_buffer: ResMut<ClientMessageB
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn send_game_request(In(msg): In<GameRequest>, mut client_message_buffer: ResMut<ClientMessageBuffer>)
+pub fn send_game_request(In(msg): In<GameRequest>, mut client_message_buffer: ResMut<ClientMessageBuffer>)
 {
     client_message_buffer.add_core_msg(&msg, SendOrdered);
 }

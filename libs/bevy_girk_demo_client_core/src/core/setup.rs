@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_client_fw::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -9,11 +10,10 @@ use bevy::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Initialize the client state.
-pub(crate) fn setup_player_state(world: &mut World)
+/// Initialize the game output handler.
+pub(crate) fn setup_game_output_handler(mut commands: Commands)
 {
-    let player_initializer = world.remove_resource::<ClickPlayerInitializer>().expect("initializer missing");
-    world.insert_resource(player_initializer.player_context);
+    commands.insert_resource::<GameMessageHandler>(GameMessageHandler::new(try_handle_game_core_output));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

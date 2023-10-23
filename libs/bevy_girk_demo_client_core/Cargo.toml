@@ -1,5 +1,5 @@
 [package]
-name = "bevy_girk_demo_player_core"
+name = "bevy_girk_demo_client_core"
 version.workspace = true
 edition.workspace = true
 
@@ -18,5 +18,4 @@ bevy_girk_client_fw = { workspace = true }
 bevy_girk_game_fw   = { workspace = true }
 bevy_girk_utils     = { workspace = true }
 
-bevy_girk_demo_client_core = { path = "../bevy_girk_demo_client_core" }
-bevy_girk_demo_game_core   = { path = "../bevy_girk_demo_game_core" }
+bevy_girk_demo_game_core  = { path = "../bevy_girk_demo_game_core" }

@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player initializer: data used in startup to initialize the player app.
+///
 /// This resource is consumed during initialization.
 #[derive(Resource, Debug, Serialize, Deserialize)]
 pub struct ClickPlayerInitializer
