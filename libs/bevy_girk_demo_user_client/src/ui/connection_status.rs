@@ -39,8 +39,8 @@ pub(crate) fn add_status_section(commands: &mut Commands, asset_server: &AssetSe
             ui,
             text_base.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
-                absolute_1: Vec2 { x: 5., y: 10. },
-                absolute_2: Vec2 { x: -8., y: 0. },
+                absolute_1: Vec2 { x: 5., y: 6. },
+                absolute_2: Vec2 { x: -9., y: 0. },
                 relative_1: Vec2 { x: 0., y: 0. },
                 relative_2: Vec2 { x: 100., y: 200. },
                 ..Default::default()

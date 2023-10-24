@@ -4,6 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy::window::*;
+use bevy::winit::UpdateMode;
 use bevy_fn_plugin::bevy_plugin;
 
 //standard shortcuts
@@ -30,7 +31,11 @@ fn BevyEnginePlugin(app: &mut App)
                 )
                 .build().disable::<bevy::render::pipelined_rendering::PipelinedRenderingPlugin>()
         )
-        .insert_resource(bevy::winit::WinitSettings::desktop_app());
+        .insert_resource(bevy::winit::WinitSettings{
+            focused_mode   : UpdateMode::Reactive{ max_wait: std::time::Duration::from_millis(100) },
+            unfocused_mode : UpdateMode::ReactiveLowPower{ max_wait: std::time::Duration::from_secs(1) },
+            ..Default::default()
+        });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
