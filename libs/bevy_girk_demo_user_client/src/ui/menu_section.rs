@@ -217,10 +217,10 @@ pub(crate) struct MainMenuButton;
 
 pub(crate) fn add_menu_bar_section(
     commands     : &mut Commands,
+    asset_server : &AssetServer,
     ui           : &mut UiTree,
     menu_bar     : Widget,
     menu_overlay : Widget,
-    asset_server : &AssetServer
 ){
     // menu bar overlay
     let menu_bar_overlay = Widget::create(

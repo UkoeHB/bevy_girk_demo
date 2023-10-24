@@ -1,13 +1,9 @@
 //module tree
-mod client_temp;
-mod config;
-mod ui_plugin;
-mod ui_section_menu_bar;
-mod ui_section_play;
+mod core;
+mod host_client;
+mod ui;
 
 //API exports
-pub use crate::client_temp::*;
-pub(crate) use crate::config::*;
-pub(crate) use crate::ui_plugin::*;
-pub(crate) use crate::ui_section_menu_bar::*;
-pub(crate) use crate::ui_section_play::*;
+pub use crate::core::*;
+pub(crate) use crate::host_client::*;
+pub(crate) use crate::ui::*;

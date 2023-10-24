@@ -2,10 +2,11 @@
 use crate::*;
 
 //third-party shortcuts
+use bevy::prelude::*;
+use bevy_fn_plugin::*;
 use bevy_kot::ecs::{*, syscall};
 use bevy_kot::ui::*;
 use bevy_kot::ui::builtin::*;
-use bevy::prelude::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -403,6 +404,23 @@ fn add_play_overlay(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Tag component on the main play button. Should only be updated with `CallbackWith<Toggle, [button value]>`.
+#[derive(Component, Copy, Clone, Eq, PartialEq, Debug)]
+pub(crate) enum MainPlayButton
+{
+    Play,
+    #[allow(dead_code)]
+    InLobby,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// `CallbackWith<Toggle, T>` for new toggle value T.
+#[derive(Default, Copy, Clone, Eq, PartialEq, Debug)]
+pub(crate) struct Toggle;
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// If `Selected` is added to a main menu button, deselect the play button if selected.
 pub(crate) fn deselect_main_play_button_for_menu_button(
     mut commands              : Commands,
@@ -429,21 +447,12 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Tag component on the main play button. Should only be updated with `CallbackWith<Toggle, [button value]>`.
-#[derive(Component, Copy, Clone, Eq, PartialEq, Debug)]
-pub(crate) enum MainPlayButton
-{
-    Play,
-    #[allow(dead_code)]
-    InLobby,
-}
-
 pub(crate) fn add_play_section(
     commands     : &mut Commands,
+    asset_server : &AssetServer,
     ui           : &mut UiTree,
     play_button  : Widget,
     menu_overlay : Widget,
-    asset_server : &AssetServer
 ){
     let play_button_area = Widget::create(
             ui,
@@ -463,8 +472,16 @@ pub(crate) fn add_play_section(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// `CallbackWith<Toggle, T>` for new toggle value T.
-#[derive(Default, Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Toggle;
+#[bevy_plugin]
+pub(crate) fn UiPlaySectionPlugin(app: &mut App)
+{
+    app.add_systems(PreUpdate,
+            (
+                deselect_main_play_button_for_menu_button,
+                deselect_main_menu_button_for_play_button,
+                apply_deferred,
+            ).chain()
+        );
+}
 
 //-------------------------------------------------------------------------------------------------------------------

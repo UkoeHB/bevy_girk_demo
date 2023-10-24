@@ -1,16 +1,25 @@
 [package]
-name = "bevy_girk_click_demo_user_client_bin"
+name = "user_client"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name    = "bevy_girk_click_demo_user_client_bin"
+name    = "user_client"
 test    = false
 doctest = false
 
 [dependencies]
-bevy = { workspace = true, features = [ "multi-threaded" ] }
+bevy           = { workspace = true, features = [ "multi-threaded" ] }
+enfync         = { workspace = true }
+bevy_simplenet = { workspace = true }
+url            = { workspace = true }
 
-bevy_girk_utils = { workspace = true }
+bevy_girk_backend_public = { workspace = true }
+bevy_girk_utils          = { workspace = true }
 
 bevy_girk_demo_user_client = { path = "../../libs/bevy_girk_demo_user_client" }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+console_error_panic_hook = { version = "0.1" }
+tracing-wasm             = { version = "0.2" }
+wasm-timer               = { version = "0.2" }

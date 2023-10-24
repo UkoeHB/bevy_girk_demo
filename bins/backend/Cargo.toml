@@ -1,10 +1,10 @@
 [package]
-name = "bevy_girk_server_basic"
+name = "backend"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name    = "bevy_girk_server_basic"
+name    = "backend"
 test    = false
 doctest = false
 

@@ -183,8 +183,8 @@ fn prepare_game_start_report(
 ) -> Result<GameStartReport, ()>
 {
     // extract data
-    let game_initializer  = app.world.resource::<ClickGameInitializer>();
-    let ticks_per_sec = app.world.resource::<GameFWConfig>().ticks_per_sec();
+    let game_initializer = app.world.resource::<ClickGameInitializer>();
+    let ticks_per_sec    = app.world.resource::<GameFWConfig>().ticks_per_sec();
 
     // make connect infos for each client
     let mut connect_infos = Vec::<GameConnectInfo>::new();

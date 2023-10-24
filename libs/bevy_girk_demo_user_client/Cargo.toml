@@ -12,9 +12,13 @@ bevy           = { workspace = true }
 bevy_kot       = { workspace = true }
 bevy_fn_plugin = { workspace = true }
 bevy_framepace = { workspace = true }
+bevy_simplenet = { workspace = true }
 tracing        = { workspace = true }
 
 bevy_lunex      = { version = "0.0.6" }
 bevy_lunex_core = { version = "0.0.6" }
 
-bevy_girk_utils = { workspace = true }
+bevy_girk_backend_public = { workspace = true }
+bevy_girk_game_fw        = { workspace = true }
+bevy_girk_game_instance  = { workspace = true }
+bevy_girk_utils          = { workspace = true }
