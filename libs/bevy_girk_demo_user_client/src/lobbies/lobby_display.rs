@@ -12,19 +12,19 @@ use bevy_kot::ecs::*;
 
 /// Caches the currently-displayed lobby that the user is a member of.
 #[derive(Debug)]
-pub(crate) struct CurrentLobbyDisplay
+pub(crate) struct LobbyDisplay
 {
     current: Option<LobbyData>,
 }
 
-impl CurrentLobbyDisplay
+impl LobbyDisplay
 {
     pub(crate) fn set(&mut self, new_lobby: LobbyData)
     {
         self.current = Some(new_lobby);
     }
 
-    pub(crate) fn unset(&mut self)
+    pub(crate) fn clear(&mut self)
     {
         self.current = None;
     }
@@ -49,7 +49,7 @@ impl CurrentLobbyDisplay
     }
 }
 
-impl Default for CurrentLobbyDisplay { fn default() -> Self { Self{ current: None } } }
+impl Default for LobbyDisplay { fn default() -> Self { Self{ current: None } } }
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ impl Default for CurrentLobbyDisplay { fn default() -> Self { Self{ current: Non
 pub(crate) fn LobbyDisplayPlugin(app: &mut App)
 {
     app
-        .insert_resource(ReactRes::new(CurrentLobbyDisplay::default()))
+        .insert_resource(ReactRes::new(LobbyDisplay::default()))
         ;
 }
 

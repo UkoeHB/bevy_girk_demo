@@ -16,7 +16,7 @@ use std::time::Duration;
 
 fn setup_ack_request(mut rcommands: ReactCommands)
 {
-    rcommands.add_resource_mutation_reactor::<CurrentAckRequest>(
+    rcommands.add_resource_mutation_reactor::<AckRequest>(
             |world| { syscall(world, (), focus_window_on_ack_request); }
         );
 }
@@ -25,7 +25,7 @@ fn setup_ack_request(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 
 fn focus_window_on_ack_request(
-    ack_request : Res<ReactRes<CurrentAckRequest>>,
+    ack_request : Res<ReactRes<AckRequest>>,
     mut window  : Query<&mut Window, With<PrimaryWindow>>,
 ){
     // only focus window when a new ack request is set
@@ -40,29 +40,29 @@ fn focus_window_on_ack_request(
 
 fn ack_request_cleanup(
     mut rcommands   : ReactCommands,
-    mut ack_request : ResMut<ReactRes<CurrentAckRequest>>,
+    mut ack_request : ResMut<ReactRes<AckRequest>>,
 ){
     // clear ack request
-    ack_request.get_mut(&mut rcommands).unset();
+    ack_request.get_mut(&mut rcommands).clear();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub(crate) struct CurrentAckRequest
+pub(crate) struct AckRequest
 {
     current: Option<u64>,
 }
 
-impl CurrentAckRequest
+impl AckRequest
 {
     pub(crate) fn set(&mut self, new_ack_request: u64)
     {
         self.current = Some(new_ack_request);
     }
 
-    pub(crate) fn unset(&mut self)
+    pub(crate) fn clear(&mut self)
     {
         self.current = None;
     }
@@ -78,7 +78,7 @@ impl CurrentAckRequest
     }
 }
 
-impl Default for CurrentAckRequest { fn default() -> Self { Self{ current: None } } }
+impl Default for AckRequest { fn default() -> Self { Self{ current: None } } }
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ pub(crate) fn AckRequestPlugin(app: &mut App)
     let ack_request_timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
 
     app
-        .insert_resource(ReactRes::new(CurrentAckRequest::default()))
+        .insert_resource(ReactRes::new(AckRequest::default()))
         .add_systems(Startup,
             (
                 setup_ack_request,
