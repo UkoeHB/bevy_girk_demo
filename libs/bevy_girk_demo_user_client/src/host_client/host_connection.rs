@@ -18,15 +18,16 @@ pub(crate) enum ConnectionStatus
     Dead,
 }
 
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) fn status_to_string(status: ConnectionStatus) -> &'static str
+impl ConnectionStatus
 {
-    match status
+    pub(crate) fn to_str(&self) -> &'static str
     {
-        ConnectionStatus::Connecting => "Connecting...",
-        ConnectionStatus::Connected  => "Connected",
-        ConnectionStatus::Dead       => "DEAD",
+        match self
+        {
+            ConnectionStatus::Connecting => "Connecting...",
+            ConnectionStatus::Connected  => "Connected",
+            ConnectionStatus::Dead       => "DEAD",
+        }
     }
 }
 

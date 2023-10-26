@@ -26,7 +26,7 @@ fn refresh_status_text(
     if !status.is_changed() { return; }
     let text_section = &mut status_text.single_mut().sections[0].value;
     text_section.clear();
-    let _ = write!(text_section, "{}", status_to_string(*status));
+    let _ = write!(text_section, "{}", status.to_str());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
