@@ -7,20 +7,17 @@ use bevy_fn_plugin::bevy_plugin;
 
 //standard shortcuts
 
-
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]
-pub(crate) fn HostClientPlugin(app: &mut App)
+pub(crate) fn LobbiesPlugin(app: &mut App)
 {
     app
-        .insert_resource(ConnectionStatus::Connecting)
-        .add_systems(First,
-            (
-                handle_connection_changes,
-                handle_host_incoming,
-            ).chain()
-        )
+        .add_systems(PreStartup, setup_lobby_button_entities)
+        .add_plugins(AckRequestPlugin)
+        .add_plugins(LobbyDisplayPlugin)
+        .add_plugins(LobbyPagePlugin)
+        .add_plugins(PendingLobbyResetPlugin)
         ;
 }
 

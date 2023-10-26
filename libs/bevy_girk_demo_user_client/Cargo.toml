@@ -12,7 +12,8 @@ bevy           = { workspace = true }
 bevy_kot       = { workspace = true }
 bevy_fn_plugin = { workspace = true }
 bevy_framepace = { workspace = true }
-bevy_simplenet = { workspace = true }
+bevy_simplenet = { workspace = true, features = ["client", "bevy"] }
+serde          = { workspace = true }
 tracing        = { workspace = true }
 
 bevy_lunex      = { version = "0.0.6" }

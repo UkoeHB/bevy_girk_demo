@@ -1,4 +1,5 @@
 //local shortcuts
+use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -32,8 +33,9 @@ pub(crate) fn status_to_string(status: ConnectionStatus) -> &'static str
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_connection_changes(
-    client     : Res<HostUserClient>,
-    mut status : ResMut<ConnectionStatus>
+    client            : Res<HostUserClient>,
+    mut status        : ResMut<ConnectionStatus>,
+    mut pending_reset : ResMut<PendingLobbyReset>,
 ){
     while let Some(connection_report) = client.next_report()
     {
@@ -42,7 +44,8 @@ pub(crate) fn handle_connection_changes(
             bevy_simplenet::ClientReport::Connected         =>
             {
                 *status = ConnectionStatus::Connected;
-                let _ = client.request(UserToHostRequest::ResetLobby);
+                let Ok(signal) = client.request(UserToHostRequest::ResetLobby) else { continue; };
+                pending_reset.set(signal.id());
             },
             bevy_simplenet::ClientReport::Disconnected      |
             bevy_simplenet::ClientReport::ClosedByServer(_) |

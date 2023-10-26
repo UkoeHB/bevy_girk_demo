@@ -1,10 +1,12 @@
 //local shortcuts
+use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
+use bevy_kot::ecs::*;
 
 //standard shortcuts
 
@@ -12,49 +14,87 @@ use bevy_girk_game_instance::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_state_update(
-    In(lobby_data): In<LobbyData>,
+    In(lobby_data)    : In<LobbyData>,
+    mut rcommands     : ReactCommands,
+    mut lobby_display : ResMut<ReactRes<CurrentLobbyDisplay>>,
 ){
     tracing::info!(lobby_data.id, "lobby state update received");
 
-    //if in this lobby, update its state
+    // check if the updated state matches the current lobby
+    if lobby_display.lobby_id() != Some(lobby_data.id)
+    {
+        tracing::warn!(lobby_data.id, "ignoring lobby state update for unknown lobby");
+        return;
+    }
+
+    // update lobby state
+    lobby_display.get_mut(&mut rcommands).set(lobby_data);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_leave(
-    In(lobby_id): In<u64>,
+    In(lobby_id)      : In<u64>,
+    mut rcommands     : ReactCommands,
+    mut lobby_display : ResMut<ReactRes<CurrentLobbyDisplay>>,
 ){
     tracing::info!(lobby_id, "lobby leave received");
 
-    //if in this lobby, leave
+    // check if the lobby matches the current lobby
+    if lobby_display.lobby_id() != Some(lobby_id)
+    {
+        tracing::warn!(lobby_id, "ignoring leave lobby for unknown lobby");
+        return;
+    }
+
+    // clear lobby state
+    lobby_display.get_mut(&mut rcommands).unset();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_pending_lobby_ack_request(
-    In(lobby_id): In<u64>,
+    In(lobby_id)    : In<u64>,
+    mut rcommands   : ReactCommands,
+    mut ack_request : ResMut<ReactRes<CurrentAckRequest>>,
 ){
     tracing::info!(lobby_id, "pending lobby ack request received");
 
-    //display ack request
+    // update ack request
+    ack_request.get_mut(&mut rcommands).set(lobby_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_pending_lobby_ack_fail(
-    In(lobby_id): In<u64>,
+    In(lobby_id)    : In<u64>,
+    mut rcommands   : ReactCommands,
+    mut ack_request : ResMut<ReactRes<CurrentAckRequest>>,
 ){
     tracing::info!(lobby_id, "pending lobby ack fail received");
 
-    //close ack request window if it exists
+    // check if the lobby matches the ack request lobby
+    if ack_request.get() != Some(lobby_id)
+    {
+        tracing::warn!(lobby_id, "ignoring pending lobby ack fail for unknown lobby");
+        return;
+    }
+
+    // clear ack request
+    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).unset(); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_start(
-    In((lobby_id, _game_connect)): In<(u64, GameConnectInfo)>,
+    In((lobby_id, _game_connect)) : In<(u64, GameConnectInfo)>,
+    mut rcommands                 : ReactCommands,
+    mut ack_request               : ResMut<ReactRes<CurrentAckRequest>>,
 ){
     tracing::info!(lobby_id, "game start info received");
+
+    // clear ack request
+    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).unset(); }
 
     //launch a game
     tracing::error!(lobby_id, "game starting is not yet implemented");
@@ -68,56 +108,173 @@ pub(crate) fn handle_game_aborted(
     tracing::info!(lobby_id, "game aborted by host server");
 
     //force-close existing game
+    tracing::error!(lobby_id, "game aborting is not yet implemented");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_over(
-    In((lobby_id, game_over_report)): In<(u64, GameOverReport)>,
+    In((
+        lobby_id,
+        game_over_report
+    ))            : In<(u64, GameOverReport)>,
+    mut rcommands : ReactCommands,
 ){
     tracing::info!(lobby_id, "game over report received");
 
-    //display game over report
+    // send game over report data event
+    rcommands.send(game_over_report);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_search_result(
-    In((request_id, request, lobbies)): In<(u64, LobbySearchRequest, Vec<LobbyData>)>,
+    In((
+        request_id,
+        _original_request,
+        lobbies
+    ))                 : In<(u64, LobbySearchRequest, Vec<LobbyData>)>,
+    mut rcommands      : ReactCommands,
+    mut pending_search : Query<(Entity, &React<PendingRequest>, &mut React<LobbyPage>), With<LobbySearch>>,
 ){
     tracing::info!(request_id, "lobby search result received");
 
-    //if pending lobby search, update lobby list
+    // clear pending request
+    let Ok((entity, pending_req, mut lobby_page)) = pending_search.get_single_mut() else { return; };
+    if pending_req.id() != request_id { return; }
+    let Some(mut entity_commands) = rcommands.commands().get_entity(entity) else { return; };
+
+    entity_commands.remove::<React<PendingRequest>>();
+
+    // update lobby page
+    lobby_page.get_mut(&mut rcommands).set(lobbies);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_join(
-    In((request_id, lobby_data)): In<(u64, LobbyData)>,
+    In((request_id, lobby_data)) : In<(u64, LobbyData)>,
+    mut rcommands                : ReactCommands,
+    mut lobby_display            : ResMut<ReactRes<CurrentLobbyDisplay>>,
+    pending_lobby_join           : Query<(Entity, &React<PendingRequest>), Or<(With<JoinLobby>, With<MakeLobby>)>>
 ){
     tracing::info!(request_id, lobby_data.id, "join lobby received");
 
-    //if pending lobby join, populate lobby display
+    // populate lobby display
+    lobby_display.get_mut(&mut rcommands).set(lobby_data);
+
+    // clear pending request
+    for (entity, pending_req) in pending_lobby_join.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = rcommands.commands().get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
+//todo: branch on the request id if more ack-style requests are added
 pub(crate) fn handle_request_ack(
-    In(request_id): In<u64>,
+    In(request_id)    : In<u64>,
+    mut rcommands     : ReactCommands,
+    client            : Res<HostUserClient>,
+    mut lobby_display : ResMut<ReactRes<CurrentLobbyDisplay>>,
+    mut ack_request   : ResMut<ReactRes<CurrentAckRequest>>,
+    mut pending_reset : ResMut<PendingLobbyReset>,
+    lobby_page        : Query<(Entity, &LobbyPageRequest), With<React<LobbyPage>>>,
 ){
     tracing::info!(request_id, "request ack received");
 
-    //reset lobby: if in a lobby, clear it
+    // check request alignment
+    if !pending_reset.matches_request(request_id)
+    {
+        tracing::warn!(request_id, "ignoring ack for unknown request");
+        return;
+    }
+
+    // clear pending reset
+    pending_reset.clear();
+
+    // clear lobby display
+    if lobby_display.is_set() { lobby_display.get_mut(&mut rcommands).unset() };
+
+    // clear ack request
+    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).unset(); }
+
+    // re-request the last-requested lobby page
+    if let Ok((entity, lobby_page_req)) = lobby_page.get_single()
+    {
+        if let Ok(new_req) = client.request(UserToHostRequest::GetLobby(lobby_page_req.get().clone()))
+        {
+            rcommands.insert(entity, PendingRequest::new(new_req));
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_request_rejected(
-    In(request_id): In<u64>,
+    In(request_id)   : In<u64>,
+    mut commands     : Commands,
+    pending_requests : Query<(Entity, &React<PendingRequest>)>
 ){
     tracing::info!(request_id, "request rejection received");
 
-    //reset lobby: if in a lobby, clear it
+    // find pending request and remove it
+    //todo: consider allowing a custom callback for rejections
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn handle_send_failed(
+    In(request_id)   : In<u64>,
+    mut commands     : Commands,
+    pending_requests : Query<(Entity, &React<PendingRequest>)>
+){
+    tracing::info!(request_id, "request send failed");
+
+    // find pending request and remove it
+    //todo: consider allowing a custom callback for failed sends
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn handle_response_lost(
+    In(request_id)   : In<u64>,
+    mut commands     : Commands,
+    pending_requests : Query<(Entity, &React<PendingRequest>)>
+){
+    tracing::info!(request_id, "request response lost");
+
+    // find pending request and remove it
+    //todo: consider allowing a custom callback for lost responses
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
