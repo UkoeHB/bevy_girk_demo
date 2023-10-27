@@ -10,23 +10,37 @@ use bevy_kot::ecs::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(crate) enum LobbyType
+{
+    /// On the local machine (single-player).
+    Local,
+    /// On a host server.
+    Hosted,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Caches the currently-displayed lobby that the user is a member of.
 #[derive(Debug)]
 pub(crate) struct LobbyDisplay
 {
-    current: Option<LobbyData>,
+    current    : Option<LobbyData>,
+    lobby_type : Option<LobbyType>,
 }
 
 impl LobbyDisplay
 {
-    pub(crate) fn set(&mut self, new_lobby: LobbyData)
+    pub(crate) fn set(&mut self, new_lobby: LobbyData, lobby_type: LobbyType)
     {
-        self.current = Some(new_lobby);
+        self.current    = Some(new_lobby);
+        self.lobby_type = Some(lobby_type);
     }
 
     pub(crate) fn clear(&mut self)
     {
-        self.current = None;
+        self.current    = None;
+        self.lobby_type = None;
     }
 
     pub(crate) fn lobby_id(&self) -> Option<u64>
@@ -43,13 +57,36 @@ impl LobbyDisplay
         self.current.as_ref()
     }
 
+    pub(crate) fn _lobby_type(&self) -> Option<&LobbyType>
+    {
+        self.lobby_type.as_ref()
+    }
+
     pub(crate) fn is_set(&self) -> bool
     {
         self.current.is_some()
     }
+
+    pub(crate) fn _is_local(&self) -> bool
+    {
+        match self.lobby_type
+        {
+            Some(LobbyType::Local) => true,
+            _                      => false,
+        }
+    }
+
+    pub(crate) fn is_hosted(&self) -> bool
+    {
+        match self.lobby_type
+        {
+            Some(LobbyType::Hosted) => true,
+            _                      => false,
+        }
+    }
 }
 
-impl Default for LobbyDisplay { fn default() -> Self { Self{ current: None } } }
+impl Default for LobbyDisplay { fn default() -> Self { Self{ current: None, lobby_type: None } } }
 
 //-------------------------------------------------------------------------------------------------------------------
 

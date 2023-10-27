@@ -12,6 +12,37 @@ use bevy_kot::ecs::*;
 
 
 //-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn handle_lobby_reset(
+    mut rcommands     : ReactCommands,
+    client            : Res<HostUserClient>,
+    mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
+    mut ack_request   : ResMut<ReactRes<AckRequest>>,
+    mut pending_reset : ResMut<PendingLobbyReset>,
+    lobby_page        : Query<(Entity, &LobbyPageRequest), With<LobbySearch>>,
+){
+    // clear pending reset
+    pending_reset.clear();
+
+    // clear lobby display if hosted
+    if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear() };
+
+    // clear ack request
+    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
+
+    // re-request the last-requested lobby page
+    if let Ok((entity, lobby_page_req)) = lobby_page.get_single()
+    {
+        if let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(lobby_page_req.get().clone()))
+        {
+            rcommands.insert(entity, PendingRequest::new(new_req));
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_state_update(
     In(lobby_data)    : In<LobbyData>,
@@ -28,7 +59,7 @@ pub(crate) fn handle_lobby_state_update(
     }
 
     // update lobby state
-    lobby_display.get_mut(&mut rcommands).set(lobby_data);
+    lobby_display.get_mut(&mut rcommands).set(lobby_data, LobbyType::Hosted);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -171,47 +202,25 @@ pub(crate) fn handle_lobby_join(
     }
 
     // populate lobby display
-    lobby_display.get_mut(&mut rcommands).set(lobby_data);
+    lobby_display.get_mut(&mut rcommands).set(lobby_data, LobbyType::Hosted);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 //todo: branch on the request id if more ack-style requests are added
 pub(crate) fn handle_request_ack(
-    In(request_id)    : In<u64>,
-    mut rcommands     : ReactCommands,
-    client            : Res<HostUserClient>,
-    mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
-    mut ack_request   : ResMut<ReactRes<AckRequest>>,
-    mut pending_reset : ResMut<PendingLobbyReset>,
-    lobby_page        : Query<(Entity, &LobbyPageRequest), With<LobbySearch>>,
+    In(request_id) : In<u64>,
+    world          : &mut World,
 ){
     tracing::info!(request_id, "request ack received");
 
-    // check request alignment
-    if !pending_reset.matches_request(request_id)
+    if world.resource::<PendingLobbyReset>().matches_request(request_id)
     {
-        tracing::warn!(request_id, "ignoring ack for unknown request");
+        syscall(world, (), handle_lobby_reset);
         return;
     }
 
-    // clear pending reset
-    pending_reset.clear();
-
-    // clear lobby display
-    if lobby_display.is_set() { lobby_display.get_mut(&mut rcommands).clear() };
-
-    // clear ack request
-    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
-
-    // re-request the last-requested lobby page
-    if let Ok((entity, lobby_page_req)) = lobby_page.get_single()
-    {
-        if let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(lobby_page_req.get().clone()))
-        {
-            rcommands.insert(entity, PendingRequest::new(new_req));
-        }
-    }
+    tracing::warn!(request_id, "ignoring ack for unknown request");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -219,6 +228,7 @@ pub(crate) fn handle_request_ack(
 pub(crate) fn handle_request_rejected(
     In(request_id)   : In<u64>,
     mut commands     : Commands,
+    pending_reset    : Res<PendingLobbyReset>,
     pending_requests : Query<(Entity, &React<PendingRequest>)>
 ){
     tracing::info!(request_id, "request rejection received");
@@ -232,6 +242,12 @@ pub(crate) fn handle_request_rejected(
 
         entity_commands.remove::<React<PendingRequest>>();
         break;
+    }
+
+    // handle rejected lobby reset (rejection means we are in-game)
+    if pending_reset.matches_request(request_id)
+    {
+        commands.add(|world: &mut World| syscall(world, (), handle_lobby_reset));
     }
 }
 

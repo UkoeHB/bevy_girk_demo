@@ -91,8 +91,10 @@ fn add_new_lobby_button(
             &button_overlay,
             button_entity,
             "New Lobby",
-            |world, _| () //syscall(world, (), activate_new_lobby_window)  //TODO
+            |_world, _| () //syscall(world, (), activate_new_lobby_window)  //TODO
         );
+
+    //todo: block button when in-game
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -146,6 +148,7 @@ pub(crate) fn add_lobby_list(
 #[bevy_plugin]
 pub(crate) fn UiLobbyListPlugin(app: &mut App)
 {
+    //todo: auto-refresh lobby page periodically
     app
         ;
 }
