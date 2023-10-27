@@ -80,13 +80,123 @@ fn add_lobby_display_title(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_lobby_display_summary_box(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    // add text to summary box
+    let summary_box_text = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //center
+                relative_1: Vec2{ x: 5., y: 15. },
+                relative_2: Vec2{ x: 95., y: 97.5 },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    let summary_box_text_style = TextStyle {
+            font      : asset_server.load(MISC_FONT),
+            font_size : 45.0,
+            color     : LOBBY_DISPLAY_FONT_COLOR,
+        };
+
+    rcommands.commands().spawn(
+            TextElementBundle::new(
+                summary_box_text,
+                TextParams::centerleft()
+                    .with_style(&summary_box_text_style)
+                    .with_depth(100.)
+                    .with_width(Some(90.)),
+                "Lobby: 000_000 | Owner: 000_000 | Members: 00/00"
+            )
+        );
+
+    // update the summary box when the lobby display changes
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_lobby_display_member_list(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    let list_overlay = make_overlay(ui, &area, "", true);
+
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    &list_overlay,
+                    ImageParams::center()
+                        .with_depth(50.)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn add_lobby_display_box(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    // box for entire display
+    //todo: it's better to place a box for the summary box area, but the box image gets too stretched
+    let box_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 10., y: 0. },
+                relative_2: Vec2{ x: 90., y: 100. },
+                ..Default::default()
+            }
+        ).unwrap();
 
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    &box_area,
+                    ImageParams::center()
+                        .with_depth(50.)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+
+    // summary box
+    let summary_box_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 10., y: 0. },
+                relative_2: Vec2{ x: 90., y: 20. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_lobby_display_summary_box(rcommands, asset_server, ui, &summary_box_area);
+
+    // members list
+    let member_list_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 10., y: 20. },
+                relative_2: Vec2{ x: 90., y: 100. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_lobby_display_member_list(rcommands, asset_server, ui, &member_list_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

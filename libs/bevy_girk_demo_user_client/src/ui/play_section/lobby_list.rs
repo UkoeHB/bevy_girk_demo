@@ -118,7 +118,7 @@ pub(crate) fn add_lobby_list(
         ).unwrap();
     add_lobby_list_title(rcommands, asset_server, ui, &lobby_list_title);
 
-    // display box
+    // list subsection
     let lobby_list_subsection = Widget::create(
             ui,
             area.end(""),

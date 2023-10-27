@@ -21,6 +21,7 @@ pub(crate) const MISC_FONT_COLOR            : Color = Color::WHITE;
 pub(crate) const STATUS_FONT_COLOR          : Color = Color::WHITE;
 pub(crate) const MENU_BAR_BUTTON_FONT_COLOR : Color = Color::WHITE;
 pub(crate) const DISABLED_BUTTON_FONT_COLOR : Color = Color::GRAY;
+pub(crate) const LOBBY_DISPLAY_FONT_COLOR   : Color = Color::DARK_GRAY;
 
 //-------------------------------------------------------------------------------------------------------------------
 
