@@ -177,7 +177,7 @@ fn add_lobby_buttons(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
-    // menu bar overlay
+    // overlay
     let buttons_overlay = Widget::create(
             ui,
             area.end(""),
@@ -188,7 +188,7 @@ fn add_lobby_buttons(
             }
         ).unwrap();
 
-    // menu buttons: widget grid
+    // buttons: widget grid
     let lobby_button_widgets = GridSegment::new()
         .with_cells(vec![
             GridCell::named(Vec2::splat(10.0), "leave_lobby"),
@@ -201,18 +201,6 @@ fn add_lobby_buttons(
     // prepare each of the buttons
     add_leave_lobby_button(rcommands, asset_server, ui, &lobby_button_widgets[0]);
     add_start_game_button(rcommands, asset_server, ui, &lobby_button_widgets[1]);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_new_lobby_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -259,18 +247,6 @@ pub(crate) fn add_lobby_display(
             }
         ).unwrap();
     add_lobby_buttons(rcommands, asset_server, ui, &lobby_leave_button);
-
-    // new lobby button
-    let new_lobby_button = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 80. },
-                relative_2: Vec2{ x: 100., y: 100. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_new_lobby_button(rcommands, asset_server, ui, &new_lobby_button);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
