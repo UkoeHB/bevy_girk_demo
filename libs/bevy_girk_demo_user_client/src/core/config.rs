@@ -9,14 +9,18 @@ use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
 
+pub(crate) const MISC_BUTTON          : &'static str = "button.png";
 pub(crate) const MENU_BAR_BUTTON      : &'static str = "button.png";
-pub(crate) const TEMP_FONT            : &'static str = "fonts/FiraSans-Bold.ttf";
+pub(crate) const OUTLINE              : &'static str = "outline.png";
+pub(crate) const BOX                  : &'static str = "box.png";
+pub(crate) const MISC_FONT            : &'static str = "fonts/FiraSans-Bold.ttf";
 pub(crate) const STATUS_FONT          : &'static str = "fonts/FiraSans-Bold.ttf";
 pub(crate) const MENU_BAR_BUTTON_FONT : &'static str = "fonts/FiraSans-Bold.ttf";
 
-pub(crate) const TEMP_FONT_COLOR            : Color = Color::WHITE;
+pub(crate) const MISC_FONT_COLOR            : Color = Color::WHITE;
 pub(crate) const STATUS_FONT_COLOR          : Color = Color::WHITE;
 pub(crate) const MENU_BAR_BUTTON_FONT_COLOR : Color = Color::WHITE;
+pub(crate) const DISABLED_BUTTON_FONT_COLOR : Color = Color::GRAY;
 
 //-------------------------------------------------------------------------------------------------------------------
 

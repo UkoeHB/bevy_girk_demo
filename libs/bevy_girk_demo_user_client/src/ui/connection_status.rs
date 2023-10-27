@@ -3,6 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_kot::ecs::*;
 use bevy_fn_plugin::*;
 use bevy_lunex::prelude::*;
 
@@ -32,7 +33,7 @@ fn refresh_status_text(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_status_section(commands: &mut Commands, asset_server: &AssetServer, ui: &mut UiTree, text_base: Widget)
+pub(crate) fn add_status_section(rcommands: &mut ReactCommands, asset_server: &AssetServer, ui: &mut UiTree, text_base: Widget)
 {
     // text layout helper
     let layout_helper = Widget::create(
@@ -62,7 +63,7 @@ pub(crate) fn add_status_section(commands: &mut Commands, asset_server: &AssetSe
             color     : STATUS_FONT_COLOR,
         };
 
-    commands.spawn(
+    rcommands.commands().spawn(
             (
                 TextElementBundle::new(
                     text,

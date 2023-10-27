@@ -15,8 +15,11 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ui_tree(mut commands: Commands, mut main_ui: Query<&mut UiTree, With<MainUI>>, asset_server: Res<AssetServer>)
-{
+fn setup_ui_tree(
+    mut rcommands : ReactCommands,
+    asset_server  : Res<AssetServer>,
+    mut main_ui   : Query<&mut UiTree, With<MainUI>>
+){
     let ui = &mut main_ui.get_single_mut().unwrap();
 
     // root widget
@@ -42,7 +45,7 @@ fn setup_ui_tree(mut commands: Commands, mut main_ui: Query<&mut UiTree, With<Ma
                 ..Default::default()
             }
         ).unwrap();
-    commands.spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
+    rcommands.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - menu bar
     let menu_bar = Widget::create(
@@ -54,7 +57,7 @@ fn setup_ui_tree(mut commands: Commands, mut main_ui: Query<&mut UiTree, With<Ma
                 ..Default::default()
             }
         ).unwrap();
-    commands.spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
+    rcommands.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - menu item overlay area
     let menu_overlay = Widget::create(
@@ -66,7 +69,7 @@ fn setup_ui_tree(mut commands: Commands, mut main_ui: Query<&mut UiTree, With<Ma
                 ..Default::default()
             }
         ).unwrap();
-    commands.spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    rcommands.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - connection status
     let status = Widget::create(
@@ -81,9 +84,9 @@ fn setup_ui_tree(mut commands: Commands, mut main_ui: Query<&mut UiTree, With<Ma
 
 
     // add child widgets
-    add_play_section(&mut commands, &asset_server, ui, play_button, menu_overlay.clone());
-    add_menu_bar_section(&mut commands, &asset_server, ui, menu_bar, menu_overlay);
-    add_status_section(&mut commands, &asset_server, ui, status);
+    add_play_section(&mut rcommands, &asset_server, ui, play_button, menu_overlay.clone());
+    add_menu_bar_section(&mut rcommands, &asset_server, ui, menu_bar, menu_overlay);
+    add_status_section(&mut rcommands, &asset_server, ui, status);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

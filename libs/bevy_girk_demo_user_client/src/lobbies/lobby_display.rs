@@ -38,7 +38,7 @@ impl LobbyDisplay
         }
     }
 
-    pub(crate) fn _get(&self) -> Option<&LobbyData>
+    pub(crate) fn get(&self) -> Option<&LobbyData>
     {
         self.current.as_ref()
     }

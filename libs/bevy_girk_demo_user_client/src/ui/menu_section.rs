@@ -48,7 +48,7 @@ fn deactivate_selection<U: LunexUI>(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_menu_bar_button(
-    commands     : &mut Commands,
+    rcommands    : &mut ReactCommands,
     ui           : &mut UiTree,
     button       : &Widget,
     overlay      : &Widget,
@@ -58,7 +58,7 @@ fn add_menu_bar_button(
 {
     // add default button image
     let default_button = make_overlay(ui, button, "default", true);
-    commands.spawn(
+    rcommands.commands().spawn(
         ImageElementBundle::new(
                 &default_button,
                 ImageParams::center()
@@ -72,7 +72,7 @@ fn add_menu_bar_button(
 
     // add selected button image
     let selected_button = make_overlay(ui, button, "selected", false);
-    commands.spawn(
+    rcommands.commands().spawn(
         ImageElementBundle::new(
                 &selected_button,
                 ImageParams::center()
@@ -86,7 +86,7 @@ fn add_menu_bar_button(
     );
 
     // select callback
-    let mut entity_commands = commands.spawn_empty();
+    let mut entity_commands = rcommands.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let overlay_clone = overlay.clone();
     let select_callback =
@@ -139,7 +139,7 @@ fn add_menu_bar_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_home_overlay(
-    commands     : &mut Commands,
+    rcommands    : &mut ReactCommands,
     ui           : &mut UiTree,
     overlay      : &Widget,
     asset_server : &AssetServer
@@ -156,12 +156,12 @@ fn add_home_overlay(
         ).unwrap();
 
     let home_overlay_text_style = TextStyle {
-            font      : asset_server.load(TEMP_FONT),
+            font      : asset_server.load(MISC_FONT),
             font_size : 45.0,
-            color     : TEMP_FONT_COLOR,
+            color     : MISC_FONT_COLOR,
         };
 
-    commands.spawn(
+    rcommands.commands().spawn(
             TextElementBundle::new(
                 home_overlay_text,
                 TextParams::center()
@@ -176,7 +176,7 @@ fn add_home_overlay(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_settings_overlay(
-    commands     : &mut Commands,
+    rcommands    : &mut ReactCommands,
     ui           : &mut UiTree,
     overlay      : &Widget,
     asset_server : &AssetServer
@@ -193,12 +193,12 @@ fn add_settings_overlay(
         ).unwrap();
 
     let settings_overlay_text_style = TextStyle {
-            font      : asset_server.load(TEMP_FONT),
+            font      : asset_server.load(MISC_FONT),
             font_size : 45.0,
-            color     : TEMP_FONT_COLOR,
+            color     : MISC_FONT_COLOR,
         };
 
-    commands.spawn(
+    rcommands.commands().spawn(
             TextElementBundle::new(
                 settings_overlay_text,
                 TextParams::center()
@@ -216,7 +216,7 @@ fn add_settings_overlay(
 pub(crate) struct MainMenuButton;
 
 pub(crate) fn add_menu_bar_section(
-    commands     : &mut Commands,
+    rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
     menu_bar     : Widget,
@@ -243,16 +243,16 @@ pub(crate) fn add_menu_bar_section(
     // prepare each of the menu buttons and areas
     // - home
     let home_overlay = make_overlay(ui, &menu_overlay, "home_overlay", false);
-    let home_button_entity = add_menu_bar_button(commands, ui, &menu_widgets[0], &home_overlay, asset_server, "HOME");
-    add_home_overlay(commands, ui, &home_overlay, asset_server);
+    let home_button_entity = add_menu_bar_button(rcommands, ui, &menu_widgets[0], &home_overlay, asset_server, "HOME");
+    add_home_overlay(rcommands, ui, &home_overlay, asset_server);
 
     // - settings
     let settings_overlay = make_overlay(ui, &menu_overlay, "settings_overlay", false);
-    let _ = add_menu_bar_button(commands, ui, &menu_widgets[1], &settings_overlay, asset_server, "SETTINGS");
-    add_settings_overlay(commands, ui, &settings_overlay, asset_server);
+    let _ = add_menu_bar_button(rcommands, ui, &menu_widgets[1], &settings_overlay, asset_server, "SETTINGS");
+    add_settings_overlay(rcommands, ui, &settings_overlay, asset_server);
 
     // activate home button (default)
-    commands.add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
+    rcommands.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
 }
 
 //-------------------------------------------------------------------------------------------------------------------

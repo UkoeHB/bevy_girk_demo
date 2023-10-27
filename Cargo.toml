@@ -82,7 +82,7 @@ features = [
 ]
 
 [workspace.dependencies]
-bevy_kot       = { version = "0.0.5" }
+bevy_kot       = { version = "0.0.6" }
 bevy_fn_plugin = { version = "0.1" }
 bevy_framepace = { version = "0.13" }
 #bevy_renet     = { version = "0.0.9" }

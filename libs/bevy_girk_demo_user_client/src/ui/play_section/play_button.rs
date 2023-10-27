@@ -214,7 +214,7 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn add_play_button(
-    commands     : &mut Commands,
+    rcommands    : &mut ReactCommands,
     ui           : &mut UiTree,
     button       : &Widget,
     area_overlay : &Widget,
@@ -227,7 +227,7 @@ pub(crate) fn add_play_button(
 
     // prepare buttons
     let play_pack = make_play_button(
-            commands,
+            rcommands.commands(),
             ui,
             button,
             &default_button_overlay,
@@ -235,7 +235,7 @@ pub(crate) fn add_play_button(
             asset_server
         );
     let inlobby_pack = make_in_lobby_button(
-            commands,
+            rcommands.commands(),
             ui,
             button,
             &default_button_overlay,
@@ -244,7 +244,7 @@ pub(crate) fn add_play_button(
         );
 
     // select/deselect callbacks
-    let mut entity_commands = commands.spawn_empty();
+    let mut entity_commands = rcommands.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let area_overlay_clone = area_overlay.clone();
     let select_callback =
@@ -293,7 +293,7 @@ pub(crate) fn add_play_button(
     entity_commands.insert(toggle_play_callback);
 
     // initialize button value
-    commands.add(
+    rcommands.commands().add(
             move |world: &mut World|
             { let _ = try_callback_with::<Toggle, MainPlayButton>(world, button_entity, MainPlayButton::Play); }
         );
