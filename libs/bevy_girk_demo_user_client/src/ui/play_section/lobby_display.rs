@@ -53,9 +53,9 @@ fn add_lobby_display_title(
     let display_title_text = Widget::create(
             ui,
             area.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 20., y: 35. },
-                relative_2: Vec2{ x: 80., y: 65. },
+            RelativeLayout{
+                relative_1: Vec2{ x: 20., y: 40. },
+                relative_2: Vec2{ x: 80., y: 70. },
                 ..Default::default()
             }
         ).unwrap();
@@ -110,7 +110,7 @@ fn add_lobby_display_summary_box(
                     .with_style(&summary_box_text_style)
                     .with_depth(100.)
                     .with_width(Some(90.)),
-                "Lobby: 000_000 | Owner: 000_000 | Members: 00/00"
+                "Lobby: 000_000 | Owner: 000_000"
             )
         );
 
@@ -120,7 +120,47 @@ fn add_lobby_display_summary_box(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_member_list(
+fn add_player_list_header(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    // add text
+    let text = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //center
+                relative_1: Vec2{ x: 5., y: 15. },
+                relative_2: Vec2{ x: 95., y: 97.5 },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    let text_style = TextStyle {
+            font      : asset_server.load(MISC_FONT),
+            font_size : 45.0,
+            color     : LOBBY_DISPLAY_FONT_COLOR,
+        };
+
+    rcommands.commands().spawn(
+            TextElementBundle::new(
+                text,
+                TextParams::centerleft()
+                    .with_style(&text_style)
+                    .with_depth(100.)
+                    .with_width(Some(90.)),
+                "Players: 00/00"
+            )
+        );
+
+    // update the text when the lobby display changes
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_lobby_display_player_list(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
@@ -128,17 +168,132 @@ fn add_lobby_display_member_list(
 ){
     let list_overlay = make_overlay(ui, &area, "", true);
 
+    // box for entire area
     rcommands.commands().spawn(
             ImageElementBundle::new(
                     &list_overlay,
                     ImageParams::center()
-                        .with_depth(50.)
+                        .with_depth(50.01)
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
                     asset_server.load(BOX),
                     Vec2::new(237.0, 140.0)
                 )
         );
+
+    // box for header
+    let box_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 0., y: 0. },
+                relative_2: Vec2{ x: 100., y: 20. },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    &box_area,
+                    ImageParams::center()
+                        .with_depth(50.1)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+    add_player_list_header(rcommands, asset_server, ui, &box_area);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_watcher_list_header(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    // add text
+    let text = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //center
+                relative_1: Vec2{ x: 5., y: 15. },
+                relative_2: Vec2{ x: 95., y: 97.5 },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    let text_style = TextStyle {
+            font      : asset_server.load(MISC_FONT),
+            font_size : 45.0,
+            color     : LOBBY_DISPLAY_FONT_COLOR,
+        };
+
+    rcommands.commands().spawn(
+            TextElementBundle::new(
+                text,
+                TextParams::centerleft()
+                    .with_style(&text_style)
+                    .with_depth(100.)
+                    .with_width(Some(90.)),
+                "Watchers: 00/00"
+            )
+        );
+
+    // update the text when the lobby display changes
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_lobby_display_watcher_list(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    let list_overlay = make_overlay(ui, &area, "", true);
+
+    // box for entire area
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    &list_overlay,
+                    ImageParams::center()
+                        .with_depth(50.01)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+
+    // box for header
+    let box_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 0., y: 0. },
+                relative_2: Vec2{ x: 100., y: 20. },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    &box_area,
+                    ImageParams::center()
+                        .with_depth(50.1)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+    add_watcher_list_header(rcommands, asset_server, ui, &box_area);
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -186,17 +341,29 @@ fn add_lobby_display_box(
         ).unwrap();
     add_lobby_display_summary_box(rcommands, asset_server, ui, &summary_box_area);
 
-    // members list
-    let member_list_area = Widget::create(
+    // players list
+    let player_list_area = Widget::create(
             ui,
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 10., y: 20. },
+                relative_2: Vec2{ x: 50., y: 100. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_lobby_display_player_list(rcommands, asset_server, ui, &player_list_area);
+
+    // watchers list
+    let watcher_list_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 50., y: 20. },
                 relative_2: Vec2{ x: 90., y: 100. },
                 ..Default::default()
             }
         ).unwrap();
-    add_lobby_display_member_list(rcommands, asset_server, ui, &member_list_area);
+    add_lobby_display_watcher_list(rcommands, asset_server, ui, &watcher_list_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -328,7 +495,7 @@ pub(crate) fn add_lobby_display(
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 0., y: 0. },
-                relative_2: Vec2{ x: 100., y: 20. },
+                relative_2: Vec2{ x: 100., y: 15. },
                 ..Default::default()
             }
         ).unwrap();
@@ -339,8 +506,8 @@ pub(crate) fn add_lobby_display(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 20. },
-                relative_2: Vec2{ x: 100., y: 65. },
+                relative_1: Vec2{ x: 0., y: 15. },
+                relative_2: Vec2{ x: 100., y: 75. },
                 ..Default::default()
             }
         ).unwrap();
@@ -351,8 +518,8 @@ pub(crate) fn add_lobby_display(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 65. },
-                relative_2: Vec2{ x: 100., y: 80. },
+                relative_1: Vec2{ x: 0., y: 75. },
+                relative_2: Vec2{ x: 100., y: 90. },
                 ..Default::default()
             }
         ).unwrap();

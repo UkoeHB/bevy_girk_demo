@@ -1,46 +1,11 @@
 //local shortcuts
-use bevy_girk_backend_public::*;
+use crate::*;
 
 //third-party shortcuts
+use bevy_girk_backend_public::*;
 
 //standard shortcuts
 
-
-//-------------------------------------------------------------------------------------------------------------------
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum ClickLobbyMemberType
-{
-    Player,
-    Watcher,
-}
-
-impl TryFrom<LobbyMemberColor> for ClickLobbyMemberType
-{
-    type Error = ();
-
-    fn try_from(color: LobbyMemberColor) -> Result<ClickLobbyMemberType, ()>
-    {
-        match color.0
-        {
-            0u64 => Ok(ClickLobbyMemberType::Player),
-            1u64 => Ok(ClickLobbyMemberType::Watcher),
-            _    => Err(())
-        }
-    }
-}
-
-impl Into<LobbyMemberColor> for ClickLobbyMemberType
-{
-    fn into(self) -> LobbyMemberColor
-    {
-        match self
-        {
-            ClickLobbyMemberType::Player  => LobbyMemberColor(0u64),
-            ClickLobbyMemberType::Watcher => LobbyMemberColor(1u64),
-        }
-    }
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -71,24 +36,6 @@ impl ClickLobbyChecker
         }
 
         Ok((num_players, num_watchers))
-    }
-
-    pub fn collect_members(
-        lobby_data: &LobbyData
-    ) -> Result<(Vec<(bevy_simplenet::EnvType, u128)>, Vec<(bevy_simplenet::EnvType, u128)>), ()>
-    {
-        let mut players = Vec::default();
-        let mut watchers = Vec::default();
-        for (user_id, member_data) in lobby_data.members.iter()
-        {
-            match ClickLobbyMemberType::try_from(member_data.color)?
-            {
-                ClickLobbyMemberType::Player  => players.push((member_data.env, *user_id)),
-                ClickLobbyMemberType::Watcher => watchers.push((member_data.env, *user_id)),
-            }
-        }
-
-        Ok((players, watchers))
     }
 }
 

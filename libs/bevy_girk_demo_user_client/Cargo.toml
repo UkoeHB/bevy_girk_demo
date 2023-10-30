@@ -23,3 +23,5 @@ bevy_girk_backend_public = { workspace = true }
 bevy_girk_game_fw        = { workspace = true }
 bevy_girk_game_instance  = { workspace = true }
 bevy_girk_utils          = { workspace = true }
+
+bevy_girk_demo_wiring = { path = "../bevy_girk_demo_wiring" }

@@ -24,9 +24,9 @@ fn add_lobby_list_title(
     let display_title_text = Widget::create(
             ui,
             area.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 20., y: 35. },
-                relative_2: Vec2{ x: 80., y: 65. },
+            RelativeLayout{
+                relative_1: Vec2{ x: 20., y: 40. },
+                relative_2: Vec2{ x: 80., y: 70. },
                 ..Default::default()
             }
         ).unwrap();
@@ -112,7 +112,7 @@ pub(crate) fn add_lobby_list(
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 0., y: 0. },
-                relative_2: Vec2{ x: 100., y: 20. },
+                relative_2: Vec2{ x: 100., y: 15. },
                 ..Default::default()
             }
         ).unwrap();
@@ -123,8 +123,8 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 20. },
-                relative_2: Vec2{ x: 100., y: 65. },
+                relative_1: Vec2{ x: 0., y: 15. },
+                relative_2: Vec2{ x: 100., y: 75. },
                 ..Default::default()
             }
         ).unwrap();
@@ -135,8 +135,8 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 65. },
-                relative_2: Vec2{ x: 100., y: 80. },
+                relative_1: Vec2{ x: 0., y: 75. },
+                relative_2: Vec2{ x: 100., y: 90. },
                 ..Default::default()
             }
         ).unwrap();

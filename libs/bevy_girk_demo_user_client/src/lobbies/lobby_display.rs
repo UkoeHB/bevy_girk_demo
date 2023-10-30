@@ -1,4 +1,5 @@
 //local shortcuts
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy_fn_plugin::bevy_plugin;
@@ -25,16 +26,19 @@ pub(crate) enum LobbyType
 #[derive(Debug)]
 pub(crate) struct LobbyDisplay
 {
-    current    : Option<LobbyData>,
+    current    : Option<ClickLobbyContents>,
     lobby_type : Option<LobbyType>,
 }
 
 impl LobbyDisplay
 {
-    pub(crate) fn set(&mut self, new_lobby: LobbyData, lobby_type: LobbyType)
+    /// Returns `Err` if lobby contents cannot be extracted from the lobby data.
+    pub(crate) fn try_set(&mut self, new_lobby: LobbyData, lobby_type: LobbyType) -> Result<(), ()>
     {
-        self.current    = Some(new_lobby);
+        self.current    = Some(ClickLobbyContents::try_from(new_lobby)?);
         self.lobby_type = Some(lobby_type);
+
+        Ok(())
     }
 
     pub(crate) fn clear(&mut self)
@@ -52,7 +56,7 @@ impl LobbyDisplay
         }
     }
 
-    pub(crate) fn get(&self) -> Option<&LobbyData>
+    pub(crate) fn get(&self) -> Option<&ClickLobbyContents>
     {
         self.current.as_ref()
     }

@@ -49,17 +49,22 @@ pub(crate) fn handle_lobby_state_update(
     mut rcommands     : ReactCommands,
     mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
 ){
-    tracing::info!(lobby_data.id, "lobby state update received");
+    let lobby_id = lobby_data.id;
+    tracing::info!(lobby_id, "lobby state update received");
 
     // check if the updated state matches the current lobby
-    if lobby_display.lobby_id() != Some(lobby_data.id)
+    if lobby_display.lobby_id() != Some(lobby_id)
     {
-        tracing::warn!(lobby_data.id, "ignoring lobby state update for unknown lobby");
+        tracing::warn!(lobby_id, "ignoring lobby state update for unknown lobby");
         return;
     }
 
     // update lobby state
-    lobby_display.get_mut(&mut rcommands).set(lobby_data, LobbyType::Hosted);
+    if let Err(_) = lobby_display.get_mut(&mut rcommands).try_set(lobby_data, LobbyType::Hosted)
+    {
+        tracing::error!(lobby_id, "ignoring lobby state update for invalid lobby");
+        return;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -189,7 +194,8 @@ pub(crate) fn handle_lobby_join(
     mut lobby_display            : ResMut<ReactRes<LobbyDisplay>>,
     pending_lobby_join           : Query<(Entity, &React<PendingRequest>), Or<(With<JoinLobby>, With<MakeLobby>)>>
 ){
-    tracing::info!(request_id, lobby_data.id, "join lobby received");
+    let lobby_id = lobby_data.id;
+    tracing::info!(request_id, lobby_id, "join lobby received");
 
     // clear pending request
     for (entity, pending_req) in pending_lobby_join.iter()
@@ -202,7 +208,11 @@ pub(crate) fn handle_lobby_join(
     }
 
     // populate lobby display
-    lobby_display.get_mut(&mut rcommands).set(lobby_data, LobbyType::Hosted);
+    if let Err(_) = lobby_display.get_mut(&mut rcommands).try_set(lobby_data, LobbyType::Hosted)
+    {
+        tracing::error!(lobby_id, "ignoring join lobby for invalid lobby");
+        return;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

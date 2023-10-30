@@ -68,30 +68,30 @@ fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id
 fn get_launch_pack(game_factory_config_ser: &Vec<u8>, start_request: &GameStartRequest) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby data
-    let Ok((mut players, mut watchers)) = ClickLobbyChecker::collect_members(&start_request.lobby_data)
-    else { tracing::error!("unable to collect lobby members"); return Err(()); };
+    let Ok(mut lobby_contents) = ClickLobbyContents::try_from(start_request.lobby_data.clone())
+    else { tracing::error!("unable to extract lobby contents from lobby data"); return Err(()); };
 
-    let num_players  = players.len();
-    let num_watchers = watchers.len();
+    let num_players  = lobby_contents.players.len();
+    let num_watchers = lobby_contents.watchers.len();
 
     // shuffle the game participants
     //todo: assert there is only one player/watcher on WASM
     #[cfg(not(target_family = "wasm"))]
     {
-        players.shuffle(&mut thread_rng());
-        watchers.shuffle(&mut thread_rng());
+        lobby_contents.players.shuffle(&mut thread_rng());
+        lobby_contents.watchers.shuffle(&mut thread_rng());
     }
 
     // make init data for the clients
     let mut client_init_data = Vec::<ClientInitDataForGame>::new();
     client_init_data.reserve(num_players + num_watchers);
 
-    for (idx, (env, player_user_id)) in players.iter().enumerate()
+    for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate()
     {
         client_init_data.push(make_player_init_data(*env, *player_user_id, idx as ClientIdType));
     }
 
-    for (idx, (env, watcher_user_id)) in watchers.iter().enumerate()
+    for (idx, (env, watcher_user_id)) in lobby_contents.watchers.iter().enumerate()
     {
         let client_id = idx + num_players;
         client_init_data.push(make_watcher_init_data(*env, *watcher_user_id, client_id as ClientIdType));
