@@ -3,6 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy_girk_backend_public::*;
+use bevy_girk_utils::*;
 
 //standard shortcuts
 
@@ -44,18 +45,22 @@ impl LobbyChecker for ClickLobbyChecker
     /// Check if a lobby is semantically valid.
     fn check_lobby(&self, lobby: &Lobby) -> bool
     {
-        // no custom lobby data allowed
-        if lobby.custom_data().len() > 0 { return false; }
-
         // excessively large passwords not allowed
         if lobby.get_password().len() > 15 { return false; }
+
+        // custom lobby data must deserialize
+        let Some(config) = deser_msg::<ClickLobbyConfig>(&lobby.custom_data()) else { return false; };
+
+        // check that configs are within acceptable bounds
+        if config.max_players  > self.max_lobby_players  { return false; }
+        if config.max_watchers > self.max_lobby_watchers { return false; }
 
         // get max count member types
         let Ok((num_players, num_watchers)) = Self::count_members(&lobby.data) else { return false; };
 
         // check configs
-        if num_players  > self.max_lobby_players  as usize { return false; }
-        if num_watchers > self.max_lobby_watchers as usize { return false; }
+        if num_players  > config.max_players  as usize { return false; }
+        if num_watchers > config.max_watchers as usize { return false; }
 
         true
     }

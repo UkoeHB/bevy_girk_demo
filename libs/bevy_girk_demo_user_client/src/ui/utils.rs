@@ -11,6 +11,8 @@ use bevy_lunex::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Toggle a button's availability by showing/hiding a widget that blocks the button, and toggling the button label's
+/// font color.
 pub(crate) fn toggle_button_availability(
     In((
         enable,
@@ -37,6 +39,16 @@ pub(crate) fn toggle_button_availability(
         true => text_style.color = MISC_FONT_COLOR,
         false => text_style.color = DISABLED_BUTTON_FONT_COLOR,
     }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Update the text in a UI element with a new value.
+pub(crate) fn update_ui_text(In((text_entity, new_text)): In<(Entity, String)>, mut text_query: Query<&mut Text>)
+{
+    let Ok(mut text) = text_query.get_mut(text_entity)
+    else { tracing::error!(?new_text, "text entity is missing for update ui text"); return; };
+    text.sections[0].value = new_text;
 }
 
 //-------------------------------------------------------------------------------------------------------------------

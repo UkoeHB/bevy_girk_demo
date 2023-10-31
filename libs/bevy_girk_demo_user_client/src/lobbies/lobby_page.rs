@@ -14,9 +14,8 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn initialize_lobby_page(
-    mut rcommands  : ReactCommands,
-    lobbies_config : Res<LobbiesConfig>,
-    query          : Query<Entity, With<LobbySearch>>,
+    mut rcommands : ReactCommands,
+    query         : Query<Entity, With<LobbySearch>>,
 ){
     let entity = query.single();
 
@@ -27,7 +26,7 @@ fn initialize_lobby_page(
             (
                 LobbyPageRequest::new(LobbySearchRequest::Page{
                     youngest_lobby_id : 0u64,
-                    num_lobbies       : lobbies_config.lobby_page_size,
+                    num_lobbies       : LOBBY_LIST_SIZE,
                 }),
             )
         );

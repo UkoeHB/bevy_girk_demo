@@ -1,10 +1,23 @@
 //local shortcuts
-use bevy_girk_backend_public::*;
 
 //third-party shortcuts
+use bevy_girk_backend_public::*;
+use bevy_girk_utils::*;
+use serde::{Deserialize, Serialize};
 
 //standard shortcuts
 
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClickLobbyConfig
+{
+    /// Max players allowed in the lobby.
+    pub max_players: u16,
+    /// Max watchers allowed in the lobby.
+    pub max_watchers: u16,
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -51,6 +64,10 @@ pub struct ClickLobbyContents
     pub id: u64,
     /// The id of this lobby's owner.
     pub owner_id: u128,
+
+    /// Lobby config.
+    pub config: ClickLobbyConfig,
+
     /// Players in this lobby.
     pub players: Vec<(bevy_simplenet::EnvType, u128)>,
     /// Watchers in this lobby.
@@ -63,6 +80,10 @@ impl TryFrom<LobbyData> for ClickLobbyContents
 
     fn try_from(data: LobbyData) -> Result<Self, Self::Error>
     {
+        // config
+        let config = deser_msg::<ClickLobbyConfig>(&data.serialized_custom_data).ok_or(())?;
+
+        // members
         let mut players  = Vec::default();
         let mut watchers = Vec::default();
         for (user_id, member_data) in data.members.iter()
@@ -74,7 +95,13 @@ impl TryFrom<LobbyData> for ClickLobbyContents
             }
         }
 
-        Ok(Self{ id: data.id, owner_id: data.owner_id, players, watchers })   
+        Ok(Self{
+            id       : data.id,
+            owner_id : data.owner_id,
+            config,
+            players,
+            watchers
+        })   
     }
 }
 

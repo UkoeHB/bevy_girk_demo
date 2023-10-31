@@ -11,7 +11,20 @@ use bevy_kot::ui::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
+use std::fmt::Write;
+use std::sync::Arc;
+use std::vec::Vec;
 
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Tracks the current player list page. Starts at 0.
+#[derive(Resource, Debug)]
+struct PlayerListPage(usize);
+
+/// Tracks the current watcher list page. Starts at 0.
+#[derive(Resource, Debug)]
+struct WatcherListPage(usize);
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -39,6 +52,111 @@ fn start_current_lobby(
 
     if let Err(err) = client.send(UserToHostMsg::LaunchLobbyGame{ id: lobby_data.id })
     { tracing::warn!(?err, lobby_data.id, "failed sending launch lobby message to host server"); }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn update_player_list_contents(
+    In((
+        content_entities,
+        new_page,
+    ))                   : In<(Arc<Vec<Entity>>, usize)>,
+    mut rcommands        : ReactCommands,
+    mut text_query       : Query<&mut Text>,
+    lobby                : Res<ReactRes<LobbyDisplay>>,
+    mut player_list_page : ResMut<ReactRes<PlayerListPage>>,
+){
+    // get list index for first element
+    let first_idx = new_page * NUM_LOBBY_CONTENT_ENTRIES;
+
+    // update contents
+    for (idx, content_entity) in content_entities.iter().enumerate()
+    {
+        let player_idx    = first_idx + idx;
+        let player_number = first_idx + idx + 1;
+
+        // clear entry
+        let Ok(mut text) = text_query.get_mut(*content_entity)
+        else { tracing::error!("text entity is missing for player list contents"); return; };
+        let text_section = &mut text.sections[0].value;
+        text_section.clear();
+
+        // check if the entry corresponds to a player slot
+        let Some(lobby_contents) = lobby.get() else { continue; };
+        if player_number > lobby_contents.config.max_players as usize { continue; }
+
+        // update entry text
+        match lobby_contents.players.get(player_idx)
+        {
+            None =>
+            {
+                let _ = write!(text_section, "Player {}:", player_number);
+            }
+            Some(lobby_player) =>
+            {
+                let player_id: u128 = lobby_player.1;
+                let _ = write!(text_section, "Player {}: {}", player_number, player_id % 1_000_000u128);
+            }
+        }
+    }
+
+    // update the list page
+    // - we mutate this even if the value won't change in case reactors need to chain off lobby display changes
+    // - we clamp the new page value so we don't show an empty page other than the 0th page
+    let new_page = match lobby.get()
+    {
+        None                 => 0,
+        Some(lobby_contents) =>
+        {
+            if first_idx < lobby_contents.config.max_players as usize
+            {
+                new_page
+            }
+            else
+            {
+                (lobby_contents.config.max_players as usize / NUM_LOBBY_CONTENT_ENTRIES)
+                    .saturating_sub(
+                            1usize.saturating_sub(
+                                    lobby_contents.config.max_players as usize % NUM_LOBBY_CONTENT_ENTRIES
+                                )
+                        )
+            }
+        }
+    };
+    player_list_page.get_mut(&mut rcommands).0 = new_page;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Update player list contents when the lobby display is mutated.
+fn update_player_list_contents_on_lobby_display(
+    In(content_entities) : In<Arc<Vec<Entity>>>,
+    mut last_lobby_id    : Local<Option<u64>>,
+    mut commands         : Commands,
+    lobby                : Res<ReactRes<LobbyDisplay>>,
+    player_list_page     : Res<ReactRes<PlayerListPage>>,
+){
+    // get next list page
+    // - we reset to 0 when the lobby changes
+    // - only change the page if the lobby id has changed
+    let current_lobby_id = lobby.lobby_id();
+
+    let next_list_page = match *last_lobby_id == current_lobby_id
+    {
+        true  => player_list_page.0,
+        false => 0,
+    };
+
+    // update the recorded lobby id
+    *last_lobby_id = current_lobby_id;
+
+    // update the player list contents
+    // note: it would be more efficient to use world access directly here, but you can't have Locals in exclusive systems
+    commands.add(
+           move |world: &mut World| syscall(world, (content_entities, next_list_page), update_player_list_contents)
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -103,18 +221,42 @@ fn add_lobby_display_summary_box(
             color     : LOBBY_DISPLAY_FONT_COLOR,
         };
 
-    rcommands.commands().spawn(
+    let default_text = "Lobby: ?????? -- Owner: ??????";
+    let text_entity = rcommands.commands().spawn(
             TextElementBundle::new(
                 summary_box_text,
-                TextParams::centerleft()
+                TextParams::center()
                     .with_style(&summary_box_text_style)
                     .with_depth(100.)
                     .with_width(Some(90.)),
-                "Lobby: 000_000 | Owner: 000_000"
+                default_text
             )
-        );
+        ).id();
 
-    // update the summary box when the lobby display changes
+    // update the text when the lobby display changes
+    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+            move | world: &mut World |
+            {
+                // define updated text
+                let mut text_buffer = String::from(default_text);
+                match world.resource::<ReactRes<LobbyDisplay>>().get()
+                {
+                    Some(lobby_contents) =>
+                    {
+                        let _ = write!(
+                                text_buffer,
+                                "Lobby: {} -- Owner: {}",
+                                lobby_contents.id % 1_000_000u64,
+                                lobby_contents.owner_id % 1_000_000u128
+                            );
+                    }
+                    None => ()
+                };
+
+                // update UI text
+                syscall(world, (text_entity, text_buffer), update_ui_text);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -126,7 +268,21 @@ fn add_player_list_header(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
-    // add text
+    // outline for header
+    let header_overlay = make_overlay(ui, &area, "", true);
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                header_overlay,
+                    ImageParams::center()
+                        .with_depth(50.1)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(OUTLINE),
+                    Vec2::new(237.0, 140.0)
+                )
+        );
+
+    // text
     let text = Widget::create(
             ui,
             area.end(""),
@@ -143,18 +299,143 @@ fn add_player_list_header(
             color     : LOBBY_DISPLAY_FONT_COLOR,
         };
 
-    rcommands.commands().spawn(
+    let default_text = "Players: 00/00";
+    let text_entity = rcommands.commands().spawn(
             TextElementBundle::new(
                 text,
-                TextParams::centerleft()
+                TextParams::center()
                     .with_style(&text_style)
                     .with_depth(100.)
                     .with_width(Some(90.)),
-                "Players: 00/00"
+                default_text
             )
-        );
+        ).id();
 
     // update the text when the lobby display changes
+    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+            move | world: &mut World |
+            {
+                // define updated text
+                let mut text_buffer = String::from(default_text);
+                match world.resource::<ReactRes<LobbyDisplay>>().get()
+                {
+                    Some(lobby_contents) =>
+                    {
+                        let _ = write!(
+                                text_buffer,
+                                "Players: {}/{}",
+                                lobby_contents.players.len(),
+                                lobby_contents.config.max_players
+                            );
+                    }
+                    None => ()
+                };
+
+                // update UI text
+                syscall(world, (text_entity, text_buffer), update_ui_text);
+            }
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_player_list_page_left_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_player_list_page_right_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_player_list_contents(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    // prepare content widgets
+    let mut content_entities = Vec::with_capacity(NUM_LOBBY_CONTENT_ENTRIES);
+
+    let entry_height = (1. / NUM_LOBBY_CONTENT_ENTRIES as f32) * 90.;
+
+    for i in 0..NUM_LOBBY_CONTENT_ENTRIES
+    {
+        let text = Widget::create(
+                ui,
+                area.end(""),
+                RelativeLayout{  //center
+                    relative_1: Vec2{ x: 20., y: 5. + (i as f32)*entry_height },
+                    relative_2: Vec2{ x: 80., y: 5. + ((i + 1) as f32)*entry_height },
+                    ..Default::default()
+                }
+            ).unwrap();
+
+        let text_style = TextStyle {
+                font      : asset_server.load(MISC_FONT),
+                font_size : 45.0,
+                color     : LOBBY_DISPLAY_FONT_COLOR,
+            };
+
+        let text_entity = rcommands.commands().spawn(
+                TextElementBundle::new(
+                    text,
+                    TextParams::centerleft()
+                        .with_style(&text_style)
+                        .with_width(Some(100.)),
+                    "Player 00: ??????"
+                )
+            ).id();
+
+        content_entities.push(text_entity);
+    }
+
+    let content_entities = Arc::new(content_entities);
+
+    // update the contents when the lobby display changes
+    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+            move | world: &mut World | syscall(world, content_entities.clone(), update_player_list_contents_on_lobby_display)
+        );
+
+    // paginate left button
+    let page_left_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 0., y: 80. },
+                relative_2: Vec2{ x: 20., y: 100. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_player_list_page_left_button(rcommands, asset_server, ui, &page_left_area);
+
+    // paginate right button
+    let page_right_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 80., y: 80. },
+                relative_2: Vec2{ x: 100., y: 100. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_player_list_page_right_button(rcommands, asset_server, ui, &page_right_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -168,21 +449,21 @@ fn add_lobby_display_player_list(
 ){
     let list_overlay = make_overlay(ui, &area, "", true);
 
-    // box for entire area
+    // outline for entire area
     rcommands.commands().spawn(
             ImageElementBundle::new(
                     &list_overlay,
                     ImageParams::center()
-                        .with_depth(50.01)
+                        .with_depth(50.1)
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
-                    asset_server.load(BOX),
+                    asset_server.load(OUTLINE),
                     Vec2::new(237.0, 140.0)
                 )
         );
 
-    // box for header
-    let box_area = Widget::create(
+    // header
+    let header_area = Widget::create(
             ui,
             area.end(""),
             RelativeLayout{
@@ -191,19 +472,19 @@ fn add_lobby_display_player_list(
                 ..Default::default()
             }
         ).unwrap();
+    add_player_list_header(rcommands, asset_server, ui, &header_area);
 
-    rcommands.commands().spawn(
-            ImageElementBundle::new(
-                    &box_area,
-                    ImageParams::center()
-                        .with_depth(50.1)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.)),
-                    asset_server.load(BOX),
-                    Vec2::new(237.0, 140.0)
-                )
-        );
-    add_player_list_header(rcommands, asset_server, ui, &box_area);
+    // contents
+    let contents_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 0., y: 20. },
+                relative_2: Vec2{ x: 100., y: 80. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_player_list_contents(rcommands, asset_server, ui, &contents_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -232,18 +513,42 @@ fn add_watcher_list_header(
             color     : LOBBY_DISPLAY_FONT_COLOR,
         };
 
-    rcommands.commands().spawn(
+    let default_text = "Watchers: 00/00";
+    let text_entity = rcommands.commands().spawn(
             TextElementBundle::new(
                 text,
-                TextParams::centerleft()
+                TextParams::center()
                     .with_style(&text_style)
                     .with_depth(100.)
                     .with_width(Some(90.)),
-                "Watchers: 00/00"
+                default_text
             )
-        );
+        ).id();
 
     // update the text when the lobby display changes
+    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+            move | world: &mut World |
+            {
+                // define updated text
+                let mut text_buffer = String::from(default_text);
+                match world.resource::<ReactRes<LobbyDisplay>>().get()
+                {
+                    Some(lobby_contents) =>
+                    {
+                        let _ = write!(
+                                text_buffer,
+                                "Watchers: {}/{}",
+                                lobby_contents.watchers.len(),
+                                lobby_contents.config.max_watchers
+                            );
+                    }
+                    None => ()
+                };
+
+                // update UI text
+                syscall(world, (text_entity, text_buffer), update_ui_text);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -257,21 +562,21 @@ fn add_lobby_display_watcher_list(
 ){
     let list_overlay = make_overlay(ui, &area, "", true);
 
-    // box for entire area
+    // outline for entire area
     rcommands.commands().spawn(
             ImageElementBundle::new(
                     &list_overlay,
                     ImageParams::center()
-                        .with_depth(50.01)
+                        .with_depth(50.1)
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
-                    asset_server.load(BOX),
+                    asset_server.load(OUTLINE),
                     Vec2::new(237.0, 140.0)
                 )
         );
 
-    // box for header
-    let box_area = Widget::create(
+    // outline for header
+    let header_area = Widget::create(
             ui,
             area.end(""),
             RelativeLayout{
@@ -283,16 +588,16 @@ fn add_lobby_display_watcher_list(
 
     rcommands.commands().spawn(
             ImageElementBundle::new(
-                    &box_area,
+                    &header_area,
                     ImageParams::center()
                         .with_depth(50.1)
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
-                    asset_server.load(BOX),
+                    asset_server.load(OUTLINE),
                     Vec2::new(237.0, 140.0)
                 )
         );
-    add_watcher_list_header(rcommands, asset_server, ui, &box_area);
+    add_watcher_list_header(rcommands, asset_server, ui, &header_area);
 
 }
 
@@ -400,7 +705,6 @@ fn add_leave_lobby_button(
                 syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
-    rcommands.trigger_resource_mutation::<LobbyDisplay>();  //initialize
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -442,7 +746,6 @@ fn add_start_game_button(
                 syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
-    rcommands.trigger_resource_mutation::<LobbyDisplay>();  //initialize
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -524,6 +827,9 @@ pub(crate) fn add_lobby_display(
             }
         ).unwrap();
     add_lobby_buttons(rcommands, asset_server, ui, &lobby_leave_button);
+
+    // initialize UI listening to lobby display
+    rcommands.trigger_resource_mutation::<LobbyDisplay>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -531,7 +837,8 @@ pub(crate) fn add_lobby_display(
 #[bevy_plugin]
 pub(crate) fn UiLobbyDisplayPlugin(app: &mut App)
 {
-    app
+    app.insert_resource(ReactRes::new(PlayerListPage(0)))
+        .insert_resource(ReactRes::new(WatcherListPage(0)))
         ;
 }
 

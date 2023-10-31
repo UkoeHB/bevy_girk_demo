@@ -25,18 +25,15 @@ pub(crate) const LOBBY_DISPLAY_FONT_COLOR   : Color = Color::DARK_GRAY;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Resource, Serialize, Deserialize, Copy, Clone, Debug)]
-pub struct TimeoutConfig
-{
-    pub ack_request_timeout_ms: u64,
-}
+pub(crate) const NUM_LOBBY_CONTENT_ENTRIES : usize = 8;
+pub(crate) const LOBBY_LIST_SIZE           : u16   = 10;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Resource, Serialize, Deserialize, Copy, Clone, Debug)]
-pub struct LobbiesConfig
+pub struct TimeoutConfig
 {
-    pub lobby_page_size: u16,
+    pub ack_request_timeout_ms: u64,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

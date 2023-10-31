@@ -49,15 +49,11 @@ fn main()
     let timeout_configs = TimeoutConfig{
             ack_request_timeout_ms: 15_000,
         };
-    let lobbies_configs = LobbiesConfig{
-           lobby_page_size : 10,
-        };
 
     // build and launch the bevy app
     App::new()
         .insert_resource(client)
         .insert_resource(timeout_configs)
-        .insert_resource(lobbies_configs)
         .add_plugins(ClickUserClientPlugin)
         .run();
 }
