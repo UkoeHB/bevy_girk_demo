@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -18,13 +19,56 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+trait ListPageTrait: Send + Sync + 'static
+{
+    fn set(&mut self, page: usize);
+    fn get(&self) -> usize;
+    fn member_type() -> ClickLobbyMemberType;
+}
+
 /// Tracks the current player list page. Starts at 0.
 #[derive(Resource, Debug)]
 struct PlayerListPage(usize);
 
+impl ListPageTrait for PlayerListPage
+{
+    fn set(&mut self, page: usize) { self.0 = page; }
+    fn get(&self) -> usize { self.0 }
+    fn member_type() -> ClickLobbyMemberType { ClickLobbyMemberType::Player }
+}
+
 /// Tracks the current watcher list page. Starts at 0.
 #[derive(Resource, Debug)]
 struct WatcherListPage(usize);
+
+impl ListPageTrait for WatcherListPage
+{
+    fn set(&mut self, page: usize) { self.0 = page; }
+    fn get(&self) -> usize { self.0 }
+    fn member_type() -> ClickLobbyMemberType { ClickLobbyMemberType::Watcher }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn max_page(lobby_contents: &ClickLobbyContents, member_type: ClickLobbyMemberType) -> usize
+{
+    let mut num_pages        = lobby_contents.max(member_type) as usize / NUM_LOBBY_CONTENT_ENTRIES;
+    let num_dangling_entries = lobby_contents.max(member_type) as usize % NUM_LOBBY_CONTENT_ENTRIES;
+
+    if num_dangling_entries == 0 { num_pages = num_pages.saturating_sub(1); }
+
+    num_pages
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &ListPage) -> bool
+{
+    let Some(lobby_contents) = lobby.get() else { return true; };
+    list_page.get() >= max_page(lobby_contents, ListPage::member_type())
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -57,7 +101,7 @@ fn start_current_lobby(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn update_player_list_contents(
+fn update_list_contents<ListPage: ListPageTrait>(
     In((
         content_entities,
         new_page,
@@ -65,38 +109,45 @@ fn update_player_list_contents(
     mut rcommands        : ReactCommands,
     mut text_query       : Query<&mut Text>,
     lobby                : Res<ReactRes<LobbyDisplay>>,
-    mut player_list_page : ResMut<ReactRes<PlayerListPage>>,
+    mut member_list_page : ResMut<ReactRes<ListPage>>,
 ){
     // get list index for first element
     let first_idx = new_page * NUM_LOBBY_CONTENT_ENTRIES;
 
+    // list-type tag
+    let member_type = ListPage::member_type();
+    let tag = match member_type
+    {
+        ClickLobbyMemberType::Player  => "Player",
+        ClickLobbyMemberType::Watcher => "Watcher",
+    };
+
     // update contents
     for (idx, content_entity) in content_entities.iter().enumerate()
     {
-        let player_idx    = first_idx + idx;
-        let player_number = first_idx + idx + 1;
+        let member_idx    = first_idx + idx;
+        let member_number = first_idx + idx + 1;
 
         // clear entry
         let Ok(mut text) = text_query.get_mut(*content_entity)
-        else { tracing::error!("text entity is missing for player list contents"); return; };
+        else { tracing::error!("text entity is missing for list contents"); return; };
         let text_section = &mut text.sections[0].value;
         text_section.clear();
 
-        // check if the entry corresponds to a player slot
+        // check if the entry corresponds to a member slot
         let Some(lobby_contents) = lobby.get() else { continue; };
-        if player_number > lobby_contents.config.max_players as usize { continue; }
+        if member_number > lobby_contents.max(member_type) as usize { continue; }
 
         // update entry text
-        match lobby_contents.players.get(player_idx)
+        match lobby_contents.get_id(member_type, member_idx)
         {
             None =>
             {
-                let _ = write!(text_section, "Player {}:", player_number);
+                let _ = write!(text_section, "{} {}:", tag, member_number);
             }
-            Some(lobby_player) =>
+            Some(member_id) =>
             {
-                let player_id: u128 = lobby_player.1;
-                let _ = write!(text_section, "Player {}: {}", player_number, player_id % 1_000_000u128);
+                let _ = write!(text_section, "{} {}: {}", tag, member_number, member_id % 1_000_000u128);
             }
         }
     }
@@ -109,34 +160,27 @@ fn update_player_list_contents(
         None                 => 0,
         Some(lobby_contents) =>
         {
-            if first_idx < lobby_contents.config.max_players as usize
+            match first_idx < lobby_contents.max(member_type) as usize
             {
-                new_page
-            }
-            else
-            {
-                (lobby_contents.config.max_players as usize / NUM_LOBBY_CONTENT_ENTRIES)
-                    .saturating_sub(
-                            1usize.saturating_sub(
-                                    lobby_contents.config.max_players as usize % NUM_LOBBY_CONTENT_ENTRIES
-                                )
-                        )
+                true  => new_page,
+                false => max_page(&lobby_contents, member_type),
             }
         }
     };
-    player_list_page.get_mut(&mut rcommands).0 = new_page;
+    member_list_page.get_mut(&mut rcommands).set(new_page);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Update player list contents when the lobby display is mutated.
-fn update_player_list_contents_on_lobby_display(
+/// Update list contents when the lobby display is mutated.
+/// - We use a generic over the list page type so the local here is unique per list type.
+fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
     In(content_entities) : In<Arc<Vec<Entity>>>,
     mut last_lobby_id    : Local<Option<u64>>,
     mut commands         : Commands,
     lobby                : Res<ReactRes<LobbyDisplay>>,
-    player_list_page     : Res<ReactRes<PlayerListPage>>,
+    member_list_page     : Res<ReactRes<ListPage>>,
 ){
     // get next list page
     // - we reset to 0 when the lobby changes
@@ -145,17 +189,17 @@ fn update_player_list_contents_on_lobby_display(
 
     let next_list_page = match *last_lobby_id == current_lobby_id
     {
-        true  => player_list_page.0,
+        true  => member_list_page.get(),
         false => 0,
     };
 
     // update the recorded lobby id
     *last_lobby_id = current_lobby_id;
 
-    // update the player list contents
+    // update the list contents
     // note: it would be more efficient to use world access directly here, but you can't have Locals in exclusive systems
     commands.add(
-           move |world: &mut World| syscall(world, (content_entities, next_list_page), update_player_list_contents)
+            move |world: &mut World| syscall(world, (content_entities, next_list_page), update_list_contents::<ListPage>)
         );
 }
 
@@ -262,7 +306,7 @@ fn add_lobby_display_summary_box(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_player_list_header(
+fn add_display_list_header<ListPage: ListPageTrait>(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
@@ -278,7 +322,7 @@ fn add_player_list_header(
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
                     asset_server.load(OUTLINE),
-                    Vec2::new(237.0, 140.0)
+                    Vec2::new(236.0, 139.0)
                 )
         );
 
@@ -299,7 +343,17 @@ fn add_player_list_header(
             color     : LOBBY_DISPLAY_FONT_COLOR,
         };
 
-    let default_text = "Players: 00/00";
+    let member_type = ListPage::member_type();
+    let tag = match member_type
+    {
+        ClickLobbyMemberType::Player  => "Players",
+        ClickLobbyMemberType::Watcher => "Watchers",
+    };
+    let default_text = match member_type
+    {
+        ClickLobbyMemberType::Player  => "Players: 00/00\0",  //want default text to have same width for each type
+        ClickLobbyMemberType::Watcher => "Watchers: 00/00",
+    };
     let text_entity = rcommands.commands().spawn(
             TextElementBundle::new(
                 text,
@@ -323,9 +377,10 @@ fn add_player_list_header(
                     {
                         let _ = write!(
                                 text_buffer,
-                                "Players: {}/{}",
-                                lobby_contents.players.len(),
-                                lobby_contents.config.max_players
+                                "{}: {}/{}",
+                                tag,
+                                lobby_contents.num(member_type),
+                                lobby_contents.max(member_type),
                             );
                     }
                     None => ()
@@ -340,31 +395,106 @@ fn add_player_list_header(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_player_list_page_left_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
+fn add_display_list_page_left_button<ListPage: ListPageTrait>(
+    rcommands        : &mut ReactCommands,
+    asset_server     : &AssetServer,
+    ui               : &mut UiTree,
+    area             : &Widget,
+    content_entities : Arc<Vec<Entity>>,
 ){
+    // button ui
+    // - decrement page number and update display contents
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            "<",
+            move |world, _|
+            {
+                syscall(
+                        world,
+                        (
+                            content_entities.clone(),
+                            world.resource::<ReactRes<ListPage>>().get().saturating_sub(1),
+                        ),
+                        update_list_contents::<ListPage>
+                    );
+            }
+        );
+
+    // block button and grey-out text when the page number is zero
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<ListPage>(
+            move | world: &mut World |
+            {
+                let enable = world.resource::<ReactRes<ListPage>>().get() != 0;
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_player_list_page_right_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
+fn add_display_list_page_right_button<ListPage: ListPageTrait>(
+    rcommands        : &mut ReactCommands,
+    asset_server     : &AssetServer,
+    ui               : &mut UiTree,
+    area             : &Widget,
+    content_entities : Arc<Vec<Entity>>,
 ){
+    // button ui
+    // - increment page number and update display contents
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            ">",
+            move |world, _|
+            {
+                syscall(
+                        world,
+                        (
+                            content_entities.clone(),
+                            world.resource::<ReactRes<ListPage>>().get().saturating_add(1),
+                        ),
+                        update_list_contents::<ListPage>
+                    );
+            }
+        );
+
+    // block button and grey-out text when the page number is maxed
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<ListPage>(
+            move | world: &mut World |
+            {
+                let enable = !page_is_maxed::<ListPage>(
+                        &world.resource::<ReactRes<LobbyDisplay>>(),
+                        &world.resource::<ReactRes<ListPage>>()
+                    );
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_player_list_contents(
+fn add_display_list_contents<ListPage: ListPageTrait>(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
@@ -398,8 +528,9 @@ fn add_player_list_contents(
                     text,
                     TextParams::centerleft()
                         .with_style(&text_style)
-                        .with_width(Some(100.)),
-                    "Player 00: ??????"
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    "Watcher 00: ??????" //default value to set the scaling (want same scaling for all member types)
                 )
             ).id();
 
@@ -409,39 +540,53 @@ fn add_player_list_contents(
     let content_entities = Arc::new(content_entities);
 
     // update the contents when the lobby display changes
+    let content_entities_clone = content_entities.clone();
     rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
-            move | world: &mut World | syscall(world, content_entities.clone(), update_player_list_contents_on_lobby_display)
+            move | world: &mut World |
+            syscall(world, content_entities.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
 
     // paginate left button
     let page_left_area = Widget::create(
             ui,
             area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 80. },
-                relative_2: Vec2{ x: 20., y: 100. },
+            RelativeLayout{  //bottom left corner
+                relative_1: Vec2{ x: 1., y: 85. },
+                relative_2: Vec2{ x: 15., y: 98. },
                 ..Default::default()
             }
         ).unwrap();
-    add_player_list_page_left_button(rcommands, asset_server, ui, &page_left_area);
+    add_display_list_page_left_button::<ListPage>(
+            rcommands,
+            asset_server,
+            ui,
+            &page_left_area,
+            content_entities_clone.clone(),
+        );
 
     // paginate right button
     let page_right_area = Widget::create(
             ui,
             area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 80., y: 80. },
-                relative_2: Vec2{ x: 100., y: 100. },
+            RelativeLayout{  //bottom right corner
+                relative_1: Vec2{ x: 85., y: 85. },
+                relative_2: Vec2{ x: 99., y: 98. },
                 ..Default::default()
             }
         ).unwrap();
-    add_player_list_page_right_button(rcommands, asset_server, ui, &page_right_area);
+    add_display_list_page_right_button::<ListPage>(
+            rcommands,
+            asset_server,
+            ui,
+            &page_right_area,
+            content_entities_clone,
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_player_list(
+fn add_lobby_display_list<ListPage: ListPageTrait>(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
@@ -457,8 +602,8 @@ fn add_lobby_display_player_list(
                         .with_depth(50.1)
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
-                    asset_server.load(OUTLINE),
-                    Vec2::new(237.0, 140.0)
+                    asset_server.load(BOX),
+                    Vec2::new(236.0, 139.0)
                 )
         );
 
@@ -472,7 +617,7 @@ fn add_lobby_display_player_list(
                 ..Default::default()
             }
         ).unwrap();
-    add_player_list_header(rcommands, asset_server, ui, &header_area);
+    add_display_list_header::<ListPage>(rcommands, asset_server, ui, &header_area);
 
     // contents
     let contents_area = Widget::create(
@@ -480,125 +625,11 @@ fn add_lobby_display_player_list(
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 0., y: 20. },
-                relative_2: Vec2{ x: 100., y: 80. },
+                relative_2: Vec2{ x: 100., y: 100. },
                 ..Default::default()
             }
         ).unwrap();
-    add_player_list_contents(rcommands, asset_server, ui, &contents_area);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_watcher_list_header(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    // add text
-    let text = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 5., y: 15. },
-                relative_2: Vec2{ x: 95., y: 97.5 },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    let text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : LOBBY_DISPLAY_FONT_COLOR,
-        };
-
-    let default_text = "Watchers: 00/00";
-    let text_entity = rcommands.commands().spawn(
-            TextElementBundle::new(
-                text,
-                TextParams::center()
-                    .with_style(&text_style)
-                    .with_depth(100.)
-                    .with_width(Some(90.)),
-                default_text
-            )
-        ).id();
-
-    // update the text when the lobby display changes
-    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
-            move | world: &mut World |
-            {
-                // define updated text
-                let mut text_buffer = String::from(default_text);
-                match world.resource::<ReactRes<LobbyDisplay>>().get()
-                {
-                    Some(lobby_contents) =>
-                    {
-                        let _ = write!(
-                                text_buffer,
-                                "Watchers: {}/{}",
-                                lobby_contents.watchers.len(),
-                                lobby_contents.config.max_watchers
-                            );
-                    }
-                    None => ()
-                };
-
-                // update UI text
-                syscall(world, (text_entity, text_buffer), update_ui_text);
-            }
-        );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_lobby_display_watcher_list(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    let list_overlay = make_overlay(ui, &area, "", true);
-
-    // outline for entire area
-    rcommands.commands().spawn(
-            ImageElementBundle::new(
-                    &list_overlay,
-                    ImageParams::center()
-                        .with_depth(50.1)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.)),
-                    asset_server.load(OUTLINE),
-                    Vec2::new(237.0, 140.0)
-                )
-        );
-
-    // outline for header
-    let header_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 0. },
-                relative_2: Vec2{ x: 100., y: 20. },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    rcommands.commands().spawn(
-            ImageElementBundle::new(
-                    &header_area,
-                    ImageParams::center()
-                        .with_depth(50.1)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.)),
-                    asset_server.load(OUTLINE),
-                    Vec2::new(237.0, 140.0)
-                )
-        );
-    add_watcher_list_header(rcommands, asset_server, ui, &header_area);
-
+    add_display_list_contents::<ListPage>(rcommands, asset_server, ui, &contents_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -630,17 +661,17 @@ fn add_lobby_display_box(
                         .with_width(Some(100.))
                         .with_height(Some(100.)),
                     asset_server.load(BOX),
-                    Vec2::new(237.0, 140.0)
+                    Vec2::new(236.0, 139.0)
                 )
         );
 
     // summary box
     let summary_box_area = Widget::create(
             ui,
-            area.end(""),
+            box_area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 10., y: 0. },
-                relative_2: Vec2{ x: 90., y: 20. },
+                relative_1: Vec2{ x: 0., y: 0. },
+                relative_2: Vec2{ x: 100., y: 20. },
                 ..Default::default()
             }
         ).unwrap();
@@ -649,26 +680,26 @@ fn add_lobby_display_box(
     // players list
     let player_list_area = Widget::create(
             ui,
-            area.end(""),
+            box_area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 10., y: 20. },
+                relative_1: Vec2{ x: 0.5, y: 20. },
                 relative_2: Vec2{ x: 50., y: 100. },
                 ..Default::default()
             }
         ).unwrap();
-    add_lobby_display_player_list(rcommands, asset_server, ui, &player_list_area);
+    add_lobby_display_list::<PlayerListPage>(rcommands, asset_server, ui, &player_list_area);
 
     // watchers list
     let watcher_list_area = Widget::create(
             ui,
-            area.end(""),
+            box_area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 50., y: 20. },
-                relative_2: Vec2{ x: 90., y: 100. },
+                relative_2: Vec2{ x: 99.5, y: 100. },
                 ..Default::default()
             }
         ).unwrap();
-    add_lobby_display_watcher_list(rcommands, asset_server, ui, &watcher_list_area);
+    add_lobby_display_list::<WatcherListPage>(rcommands, asset_server, ui, &watcher_list_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

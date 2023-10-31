@@ -74,6 +74,36 @@ pub struct ClickLobbyContents
     pub watchers: Vec<(bevy_simplenet::EnvType, u128)>,
 }
 
+impl ClickLobbyContents
+{
+    pub fn get_id(&self, member_type: ClickLobbyMemberType, idx: usize) -> Option<&u128>
+    {
+        match member_type
+        {
+            ClickLobbyMemberType::Player  => self.players.get(idx).map(|(_, id)| id),
+            ClickLobbyMemberType::Watcher => self.watchers.get(idx).map(|(_, id)| id),
+        }
+    }
+
+    pub fn num(&self, member_type: ClickLobbyMemberType) -> usize
+    {
+        match member_type
+        {
+            ClickLobbyMemberType::Player  => self.players.len(),
+            ClickLobbyMemberType::Watcher => self.watchers.len(),
+        }
+    }
+
+    pub fn max(&self, member_type: ClickLobbyMemberType) -> u16
+    {
+        match member_type
+        {
+            ClickLobbyMemberType::Player  => self.config.max_players,
+            ClickLobbyMemberType::Watcher => self.config.max_watchers,
+        }
+    }
+}
+
 impl TryFrom<LobbyData> for ClickLobbyContents
 {
     type Error = ();
