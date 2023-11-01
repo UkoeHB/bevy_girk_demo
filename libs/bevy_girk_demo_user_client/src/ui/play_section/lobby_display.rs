@@ -874,6 +874,8 @@ pub(crate) fn add_lobby_display(
 
     // initialize UI listening to lobby display
     rcommands.trigger_resource_mutation::<LobbyDisplay>();
+    rcommands.trigger_resource_mutation::<PlayerListPage>();
+    rcommands.trigger_resource_mutation::<WatcherListPage>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

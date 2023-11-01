@@ -20,7 +20,8 @@ fn handle_lobby_reset(
     mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
     mut ack_request   : ResMut<ReactRes<AckRequest>>,
     mut pending_reset : ResMut<PendingLobbyReset>,
-    lobby_page        : Query<(Entity, &LobbyPageRequest), With<LobbySearch>>,
+    lobby_search      : Query<Entity, With<LobbySearch>>,
+    lobby_page_req    : Res<ReactRes<LobbyPageRequest>>,
 ){
     // clear pending reset
     pending_reset.clear();
@@ -32,7 +33,7 @@ fn handle_lobby_reset(
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
     // re-request the last-requested lobby page
-    let (entity, lobby_page_req) = lobby_page.single();
+    let entity = lobby_search.single();
     rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
 }
 

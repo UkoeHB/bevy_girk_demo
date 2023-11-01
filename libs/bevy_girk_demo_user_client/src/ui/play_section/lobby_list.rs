@@ -22,15 +22,144 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn refresh_lobby_list(
-    mut rcommands : ReactCommands,
-    client        : Res<HostUserClient>,
-    lobby_search  : Query<(Entity, &LobbyPageRequest), With<LobbySearch>>,
+    mut rcommands  : ReactCommands,
+    client         : Res<HostUserClient>,
+    lobby_search   : Query<Entity, With<LobbySearch>>,
+    lobby_page_req : Res<ReactRes<LobbyPageRequest>>,
 ){
     tracing::trace!("refreshing lobby list");
 
     // re-request the last-requested lobby page
-    let (entity, lobby_page_req) = lobby_search.single();
+    let entity = lobby_search.single();
     rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn request_lobby_list_now(
+    mut rcommands      : ReactCommands,
+    client             : Res<HostUserClient>,
+    lobby_search       : Query<Entity, With<LobbySearch>>,
+    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+){
+    tracing::trace!("requesting lobby list: now");
+
+    // make request
+    // - we request the highest-possible lobby id in order to get the youngest available lobby
+    //todo: use PageOlder
+    let req = LobbySearchRequest::Page{ youngest_lobby_id: u64::MAX, num_lobbies: LOBBY_LIST_SIZE };
+
+    // send request
+    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+
+    // save request
+    lobby_page_req.get_mut(&mut rcommands).set(req);
+    let target_entity = lobby_search.single();
+    rcommands.insert(target_entity, PendingRequest::new(new_req));
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn request_lobby_list_next_newer(
+    mut rcommands      : ReactCommands,
+    client             : Res<HostUserClient>,
+    lobby_search       : Query<Entity, With<LobbySearch>>,
+    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+    lobby_page         : Res<ReactRes<LobbyPage>>,
+){
+    tracing::trace!("requesting lobby list: next newer");
+
+    // make request
+    //todo: use PageNewer
+    let youngest_lobby_id = lobby_page
+        .get()
+        .get(0)
+        .map_or(u64::MAX, |contents| contents.id)  //bug: clamps to new when the page is empty, use last request id
+        .saturating_add(LOBBY_LIST_SIZE as u64);
+
+    let req = LobbySearchRequest::Page{
+            youngest_lobby_id,
+            num_lobbies: LOBBY_LIST_SIZE
+        };
+
+    // send request
+    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+
+    // save request
+    lobby_page_req.get_mut(&mut rcommands).set(req);
+    let target_entity = lobby_search.single();
+    rcommands.insert(target_entity, PendingRequest::new(new_req));
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn request_lobby_list_next_older(
+    mut rcommands      : ReactCommands,
+    client             : Res<HostUserClient>,
+    lobby_search       : Query<Entity, With<LobbySearch>>,
+    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+    lobby_page         : Res<ReactRes<LobbyPage>>,
+){
+    tracing::trace!("requesting lobby list: next older");
+
+    // make request
+    //todo: use PageOlder
+    let youngest_lobby_id = lobby_page
+        .get()
+        .get(lobby_page.len().saturating_sub(1))  //oldest currently-displayed lobby
+        .map_or(
+            // this branch may execute if lobbies in the last requested page are all removed by server updates, or
+            // if the returned page is empty
+            match lobby_page_req.get()
+            {
+                LobbySearchRequest::LobbyId(id) => id.saturating_sub(1u64),
+                LobbySearchRequest::Page{ youngest_lobby_id, num_lobbies } =>
+                {
+                    youngest_lobby_id.saturating_sub(*num_lobbies as u64)
+                }
+            },
+            |contents| contents.id.saturating_sub(1u64),  //next page starts at lobby older than our current oldest
+        );
+
+    let req = LobbySearchRequest::Page{
+            youngest_lobby_id,
+            num_lobbies: LOBBY_LIST_SIZE
+        };
+
+    // send request
+    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+
+    // save request
+    lobby_page_req.get_mut(&mut rcommands).set(req);
+    let target_entity = lobby_search.single();
+    rcommands.insert(target_entity, PendingRequest::new(new_req));
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn request_lobby_list_oldest(
+    mut rcommands      : ReactCommands,
+    client             : Res<HostUserClient>,
+    lobby_search       : Query<Entity, With<LobbySearch>>,
+    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+){
+    tracing::trace!("requesting lobby list: oldest");
+
+    // make request
+    //todo: use PageNewer
+    let req = LobbySearchRequest::Page{ youngest_lobby_id: LOBBY_LIST_SIZE as u64, num_lobbies: LOBBY_LIST_SIZE };
+
+    // send request
+    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+
+    // save request
+    lobby_page_req.get_mut(&mut rcommands).set(req);
+    let target_entity = lobby_search.single();
+    rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -305,7 +434,7 @@ fn add_lobby_list_stats(
 
     // update stats when lobby page updates
     rcommands.add_resource_mutation_reactor::<LobbyPage>(
-            move | world: &mut World |
+            move |world: &mut World|
             {
                 // define updated text
                 let mut text_buffer = String::new();
@@ -326,13 +455,38 @@ fn add_lobby_list_stats(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_left_button(
+fn add_clamp_now_button(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    // button ui
+    // - request the most recent possible lobby
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            "Now",
+            move |world, _| syscall(world, (), request_lobby_list_now)
+        );
+
+    // block button and grey-out text when displaying 'now'
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+            move |world: &mut World|
+            {
+                let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_now();
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -344,7 +498,32 @@ fn add_paginate_left_button(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    // button ui
+    // - request the next most recent lobby
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            "<",
+            move |world, _| syscall(world, (), request_lobby_list_next_newer)
+        );
+
+    // block button and grey-out text when no newer lobbies to request
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+            move |world: &mut World|
+            {
+                let enable = true;  //todo: need lobby page stats
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -356,19 +535,69 @@ fn add_paginate_right_button(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    // button ui
+    // - request the next older lobby
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            ">",
+            move |world, _| syscall(world, (), request_lobby_list_next_older)
+        );
+
+    // block button and grey-out text when no older lobbies to request
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+            move |world: &mut World|
+            {
+                let enable = true;  //todo: need lobby page stats
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_right_button(
+fn add_clamp_oldest_button(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    // button ui
+    // - request the oldest lobbies
+    let button_overlay = make_overlay(ui, area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
 
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            "Oldest",
+            move |world, _| syscall(world, (), request_lobby_list_oldest)
+        );
+
+    // block button and grey-out text when last requested the oldest lobbies
+    let block_overlay = make_overlay(ui, &button_overlay, "", false);
+    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+            move |world: &mut World|
+            {
+                let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_oldest();
+                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -397,20 +626,20 @@ fn add_navigation_subsection(
             ui,
             area.end(""),
             RelativeLayout{  //far left
-                relative_1: Vec2{ x: 3., y: 5. },
-                relative_2: Vec2{ x: 15., y: 95. },
+                relative_1: Vec2{ x: 1., y: 5. },
+                relative_2: Vec2{ x: 13., y: 95. },
                 ..Default::default()
             }
         ).unwrap();
-    add_clamp_left_button(rcommands, asset_server, ui, &clamp_left_button_area);
+    add_clamp_now_button(rcommands, asset_server, ui, &clamp_left_button_area);
 
     // button: paginate left
     let paginate_left_button_area = Widget::create(
             ui,
             area.end(""),
             RelativeLayout{  //mid left
-                relative_1: Vec2{ x: 17., y: 5. },
-                relative_2: Vec2{ x: 29., y: 95. },
+                relative_1: Vec2{ x: 14., y: 5. },
+                relative_2: Vec2{ x: 26., y: 95. },
                 ..Default::default()
             }
         ).unwrap();
@@ -421,8 +650,8 @@ fn add_navigation_subsection(
             ui,
             area.end(""),
             RelativeLayout{  //mid right
-                relative_1: Vec2{ x: 71., y: 5. },
-                relative_2: Vec2{ x: 83., y: 95. },
+                relative_1: Vec2{ x: 74., y: 5. },
+                relative_2: Vec2{ x: 86., y: 95. },
                 ..Default::default()
             }
         ).unwrap();
@@ -433,12 +662,12 @@ fn add_navigation_subsection(
             ui,
             area.end(""),
             RelativeLayout{  //far right
-                relative_1: Vec2{ x: 85., y: 5. },
-                relative_2: Vec2{ x: 97., y: 95. },
+                relative_1: Vec2{ x: 87., y: 5. },
+                relative_2: Vec2{ x: 99., y: 95. },
                 ..Default::default()
             }
         ).unwrap();
-    add_clamp_right_button(rcommands, asset_server, ui, &clamp_right_button_area);
+    add_clamp_oldest_button(rcommands, asset_server, ui, &clamp_right_button_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -538,8 +767,8 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 75. },
-                relative_2: Vec2{ x: 100., y: 80. },
+                relative_1: Vec2{ x: 10., y: 75. },
+                relative_2: Vec2{ x: 90., y: 80. },
                 ..Default::default()
             }
         ).unwrap();
@@ -556,6 +785,10 @@ pub(crate) fn add_lobby_list(
             }
         ).unwrap();
     add_new_lobby_button(rcommands, asset_server, ui, &new_lobby_button);
+
+    // initialize UI listening to lobby page
+    rcommands.trigger_resource_mutation::<LobbyPage>();
+    rcommands.trigger_resource_mutation::<LobbyPageRequest>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -575,7 +808,7 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // - in play section
                 // - connected to host
                 //todo: not in game
-                // - on timer OR just connected to host  (note: test timer first to avoid double-refresh when timer
+                // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
                 //   is saturated)
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty() )
                 .run_if(resource_equals(ConnectionStatus::Connected))
