@@ -91,11 +91,24 @@ fn start_current_lobby(
     client : Res<HostUserClient>,
     lobby  : Res<ReactRes<LobbyDisplay>>,
 ){
-    let Some(lobby_data) = lobby.get()
+    let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to start lobby but we aren't in a lobby"); return; };
 
-    if let Err(err) = client.send(UserToHostMsg::LaunchLobbyGame{ id: lobby_data.id })
-    { tracing::warn!(?err, lobby_data.id, "failed sending launch lobby message to host server"); }
+    match lobby.lobby_type()
+    {
+        None => { tracing::error!("tried to start lobby but there is no lobby type"); return; }
+        Some(LobbyType::Local) =>
+        {
+            //todo: start game
+            //todo: clear lobby contents
+            panic!("starting local lobby not yet supported");
+        }
+        Some(LobbyType::Hosted) =>
+        {
+            if let Err(err) = client.send(UserToHostMsg::LaunchLobbyGame{ id: lobby_id })
+            { tracing::warn!(?err, lobby_id, "failed sending launch lobby message to host server"); }
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

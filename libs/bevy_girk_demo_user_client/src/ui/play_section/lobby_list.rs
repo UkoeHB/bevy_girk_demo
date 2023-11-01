@@ -380,7 +380,7 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
     let lobby_list_refresh = Duration::from_millis(timer_configs.lobby_list_refresh_ms);
 
     app
-        .add_systems(PostUpdate,
+        .add_systems(PreUpdate,
             (
                 refresh_lobby_list, apply_deferred,
             ).chain()

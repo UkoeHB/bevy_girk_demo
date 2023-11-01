@@ -61,9 +61,9 @@ impl LobbyDisplay
         self.current.as_ref()
     }
 
-    pub(crate) fn _lobby_type(&self) -> Option<&LobbyType>
+    pub(crate) fn lobby_type(&self) -> Option<LobbyType>
     {
-        self.lobby_type.as_ref()
+        self.lobby_type
     }
 
     pub(crate) fn is_set(&self) -> bool
