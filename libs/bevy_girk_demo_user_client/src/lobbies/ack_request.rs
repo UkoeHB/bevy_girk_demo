@@ -17,7 +17,7 @@ fn focus_window_on_ack_request(
     ack_request : Res<ReactRes<AckRequest>>,
     mut window  : Query<&mut Window, With<PrimaryWindow>>,
 ){
-    // only focus window when a new ack request is set
+    // only focus the window when a new ack request is set
     if !ack_request.is_set() { return; }
 
     // focus the window

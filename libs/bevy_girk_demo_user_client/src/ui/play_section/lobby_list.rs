@@ -147,8 +147,8 @@ fn add_lobby_list_refresh_indicator(
             ui,
             overlay.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 0. },
-                relative_2: Vec2{ x: 98., y: 97. },
+                relative_1: Vec2{ x: 5., y: 15. },
+                relative_2: Vec2{ x: 98., y: 95. },
                 ..Default::default()
             }
         ).unwrap();
@@ -164,14 +164,49 @@ fn add_lobby_list_refresh_indicator(
                 text,
                 TextParams::centerright()
                     .with_style(&text_style)
-                    .with_height(Some(100.)),
-                "Refreshing..."
+                    .with_height(Some(40.)),
+                "Loading..."
             )
         );
 
     // setup reactors
     rcommands.commands().add(
             move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors)
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_lobby_list_refresh_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+    // overlay
+    let button_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 5., y: 10. },
+                relative_2: Vec2{ x: 98., y: 90. },
+                ..Default::default()
+            }
+        ).unwrap();
+
+    // button ui
+    let button_overlay = make_overlay(ui, &button_area, "", true);
+    let button_entity  = rcommands.commands().spawn_empty().id();
+
+    make_basic_button(
+            rcommands.commands(),
+            asset_server,
+            ui,
+            &button_overlay,
+            button_entity,
+            "Refresh",
+            |world, _| syscall(world, (), refresh_lobby_list)
         );
 }
 
@@ -245,23 +280,165 @@ fn add_lobby_list_subsection(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_lobby_list_stats(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    _ui          : &mut UiTree,
+    area         : &Widget,
+){
+    // stats text
+    let text_style = TextStyle {
+            font      : asset_server.load(MISC_FONT),
+            font_size : 45.0,
+            color     : LOBBY_LIST_STATS_FONT_COLOR,
+        };
+
+    let text_entity = rcommands.commands().spawn(
+            TextElementBundle::new(
+                area,
+                TextParams::center()
+                    .with_style(&text_style)
+                    .with_width(Some(100.)),
+                "(????-???? / ????)"
+            )
+        ).id();
+
+    // update stats when lobby page updates
+    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+            move | world: &mut World |
+            {
+                // define updated text
+                let mut text_buffer = String::new();
+                let _ = write!(
+                        text_buffer,
+                        "({}-{} / {})",
+                        "????",  //todo: first index in page
+                        "????",  //todo: last index in page
+                        "????",  //todo: total lobbies in server
+                    );
+
+                // update UI text
+                syscall(world, (text_entity, text_buffer), update_ui_text);
+            }
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_clamp_left_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_paginate_left_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_paginate_right_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_clamp_right_button(
+    rcommands    : &mut ReactCommands,
+    asset_server : &AssetServer,
+    ui           : &mut UiTree,
+    area         : &Widget,
+){
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn add_navigation_subsection(
     rcommands    : &mut ReactCommands,
     asset_server : &AssetServer,
     ui           : &mut UiTree,
     area         : &Widget,
 ){
-    //update all when LobbyPage changes
-
     // text displaying lobby list position
+    let lobby_list_stats_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //center
+                relative_1: Vec2{ x: 38., y: 20. },
+                relative_2: Vec2{ x: 62., y: 60. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_lobby_list_stats(rcommands, asset_server, ui, &lobby_list_stats_area);
 
     // button: go to first page
+    let clamp_left_button_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //far left
+                relative_1: Vec2{ x: 3., y: 5. },
+                relative_2: Vec2{ x: 15., y: 95. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_clamp_left_button(rcommands, asset_server, ui, &clamp_left_button_area);
 
     // button: paginate left
+    let paginate_left_button_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //mid left
+                relative_1: Vec2{ x: 17., y: 5. },
+                relative_2: Vec2{ x: 29., y: 95. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_paginate_left_button(rcommands, asset_server, ui, &paginate_left_button_area);
 
     // button: paginate right
+    let paginate_right_button_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //mid right
+                relative_1: Vec2{ x: 71., y: 5. },
+                relative_2: Vec2{ x: 83., y: 95. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_paginate_right_button(rcommands, asset_server, ui, &paginate_right_button_area);
 
     // button: go to last page
+    let clamp_right_button_area = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{  //far right
+                relative_1: Vec2{ x: 85., y: 5. },
+                relative_2: Vec2{ x: 97., y: 95. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_clamp_right_button(rcommands, asset_server, ui, &clamp_right_button_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -297,8 +474,6 @@ fn add_new_lobby_button(
             "New Lobby",
             |_world, _| () //syscall(world, (), activate_new_lobby_window)  //TODO
         );
-
-    //todo: block button when in-game
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -328,11 +503,23 @@ pub(crate) fn add_lobby_list(
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 70., y: 10. },
-                relative_2: Vec2{ x: 100., y: 15. },
+                relative_2: Vec2{ x: 75., y: 15. },
                 ..Default::default()
             }
         ).unwrap();
     add_lobby_list_refresh_indicator(rcommands, asset_server, ui, &lobby_list_refresh_indicator);
+
+    // refresh button
+    let lobby_list_refresh_button = Widget::create(
+            ui,
+            area.end(""),
+            RelativeLayout{
+                relative_1: Vec2{ x: 75., y: 10. },
+                relative_2: Vec2{ x: 90., y: 15. },
+                ..Default::default()
+            }
+        ).unwrap();
+    add_lobby_list_refresh_button(rcommands, asset_server, ui, &lobby_list_refresh_button);
 
     // list subsection
     let lobby_list_subsection = Widget::create(
@@ -352,7 +539,7 @@ pub(crate) fn add_lobby_list(
             area.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 0., y: 75. },
-                relative_2: Vec2{ x: 100., y: 85. },
+                relative_2: Vec2{ x: 100., y: 80. },
                 ..Default::default()
             }
         ).unwrap();
@@ -363,7 +550,7 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 85. },
+                relative_1: Vec2{ x: 0., y: 80. },
                 relative_2: Vec2{ x: 100., y: 95. },
                 ..Default::default()
             }
