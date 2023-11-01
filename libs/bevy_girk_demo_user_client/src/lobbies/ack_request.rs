@@ -85,7 +85,7 @@ impl Default for AckRequest { fn default() -> Self { Self{ current: None } } }
 #[bevy_plugin]
 pub(crate) fn AckRequestPlugin(app: &mut App)
 {
-    let timer_configs = app.world.resource::<TimeoutConfig>();
+    let timer_configs = app.world.resource::<TimerConfigs>();
     let ack_request_timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
 
     app

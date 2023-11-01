@@ -32,13 +32,8 @@ fn handle_lobby_reset(
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
     // re-request the last-requested lobby page
-    if let Ok((entity, lobby_page_req)) = lobby_page.get_single()
-    {
-        if let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(lobby_page_req.get().clone()))
-        {
-            rcommands.insert(entity, PendingRequest::new(new_req));
-        }
-    }
+    let (entity, lobby_page_req) = lobby_page.single();
+    rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -125,14 +120,18 @@ pub(crate) fn handle_pending_lobby_ack_fail(
 pub(crate) fn handle_game_start(
     In((lobby_id, _game_connect)) : In<(u64, GameConnectInfo)>,
     mut rcommands                 : ReactCommands,
+    mut lobby_display             : ResMut<ReactRes<LobbyDisplay>>,
     mut ack_request               : ResMut<ReactRes<AckRequest>>,
 ){
     tracing::info!(lobby_id, "game start info received");
 
+    // clear lobby state
+    if lobby_display.is_set() { lobby_display.get_mut(&mut rcommands).clear(); }
+
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
-    //launch a game
+    //todo: launch a game
     tracing::error!(lobby_id, "game starting is not yet implemented");
 }
 
@@ -143,7 +142,7 @@ pub(crate) fn handle_game_aborted(
 ){
     tracing::info!(lobby_id, "game aborted by host server");
 
-    //force-close existing game
+    //todo: force-close existing game
     tracing::error!(lobby_id, "game aborting is not yet implemented");
 }
 
@@ -171,12 +170,13 @@ pub(crate) fn handle_lobby_search_result(
         lobbies
     ))                 : In<(u64, LobbySearchRequest, Vec<LobbyData>)>,
     mut rcommands      : ReactCommands,
-    mut pending_search : Query<(Entity, &React<PendingRequest>, &mut React<LobbyPage>), With<LobbySearch>>,
+    mut pending_search : Query<(Entity, &React<PendingRequest>), With<LobbySearch>>,
+    mut lobby_page     : ResMut<ReactRes<LobbyPage>>,
 ){
     tracing::info!(request_id, "lobby search result received");
 
     // clear pending request
-    let Ok((entity, pending_req, mut lobby_page)) = pending_search.get_single_mut() else { return; };
+    let Ok((entity, pending_req)) = pending_search.get_single_mut() else { return; };
     if pending_req.id() != request_id { return; }
     let Some(mut entity_commands) = rcommands.commands().get_entity(entity) else { return; };
 

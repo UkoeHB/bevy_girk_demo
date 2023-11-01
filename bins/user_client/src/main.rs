@@ -46,14 +46,15 @@ fn main()
         );
 
     // define configs (TEMPORARY: use asset instead ?)
-    let timeout_configs = TimeoutConfig{
-            ack_request_timeout_ms: 15_000,
+    let timer_configs = TimerConfigs{
+            ack_request_timeout_ms : 15_000,
+            lobby_list_refresh_ms  : 10_000,
         };
 
     // build and launch the bevy app
     App::new()
         .insert_resource(client)
-        .insert_resource(timeout_configs)
+        .insert_resource(timer_configs)
         .add_plugins(ClickUserClientPlugin)
         .run();
 }

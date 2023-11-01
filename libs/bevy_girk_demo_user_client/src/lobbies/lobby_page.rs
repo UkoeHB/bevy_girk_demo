@@ -13,15 +13,12 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn initialize_lobby_page(
-    mut rcommands : ReactCommands,
-    query         : Query<Entity, With<LobbySearch>>,
+fn initialize_lobby_page_request(
+    mut commands : Commands,
+    query        : Query<Entity, With<LobbySearch>>,
 ){
-    let entity = query.single();
-
-    rcommands
-        .commands()
-        .entity(entity)
+    commands
+        .entity(query.single())
         .insert(
             (
                 LobbyPageRequest::new(LobbySearchRequest::Page{
@@ -30,7 +27,6 @@ fn initialize_lobby_page(
                 }),
             )
         );
-    rcommands.insert(entity, LobbyPage::default());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -41,6 +37,8 @@ fn initialize_lobby_page(
 pub(crate) struct LobbyPage
 {
     current: Vec<LobbyData>,
+    //todo: total number of lobbies on server
+    //todo: index of youngest lobby in server's lobby list
 }
 
 impl LobbyPage
@@ -58,6 +56,11 @@ impl LobbyPage
     pub(crate) fn _get(&self) -> &Vec<LobbyData>
     {
         &self.current
+    }
+
+    pub(crate) fn len(&self) -> usize
+    {
+        self.current.len()
     }
 }
 
@@ -98,7 +101,8 @@ impl LobbyPageRequest
 pub(crate) fn LobbyPagePlugin(app: &mut App)
 {
     app
-        .add_systems(Startup, initialize_lobby_page)
+        .insert_resource(ReactRes::new(LobbyPage::default()))
+        .add_systems(Startup, initialize_lobby_page_request)
         ;
 }
 

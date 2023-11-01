@@ -31,9 +31,12 @@ pub(crate) const LOBBY_LIST_SIZE           : u16   = 10;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Resource, Serialize, Deserialize, Copy, Clone, Debug)]
-pub struct TimeoutConfig
+pub struct TimerConfigs
 {
+    /// Timeout after which an ack request expires.
     pub ack_request_timeout_ms: u64,
+    /// Refresh interval for the lobby list.
+    pub lobby_list_refresh_ms: u64,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
