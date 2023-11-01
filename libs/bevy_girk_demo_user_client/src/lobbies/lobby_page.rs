@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -36,16 +37,24 @@ fn initialize_lobby_page_request(
 #[derive(Debug)]
 pub(crate) struct LobbyPage
 {
-    current: Vec<LobbyData>,
+    current: Vec<ClickLobbyContents>,
     //todo: total number of lobbies on server
     //todo: index of youngest lobby in server's lobby list
 }
 
 impl LobbyPage
 {
-    pub(crate) fn set(&mut self, new_page: Vec<LobbyData>)
+    pub(crate) fn try_set(&mut self, new_page: Vec<LobbyData>) -> Result<(), ()>
     {
-        self.current = new_page;
+        let mut temp = Vec::with_capacity(new_page.len());
+
+        for lobby_data in new_page
+        {
+            temp.push(ClickLobbyContents::try_from(lobby_data)?);
+        }
+
+        self.current = temp;
+        Ok(())
     }
 
     pub(crate) fn _clear(&mut self)
@@ -53,7 +62,7 @@ impl LobbyPage
         self.current = vec![];
     }
 
-    pub(crate) fn _get(&self) -> &Vec<LobbyData>
+    pub(crate) fn get(&self) -> &Vec<ClickLobbyContents>
     {
         &self.current
     }

@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -12,7 +13,10 @@ use bevy_kot::ui::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
+use std::fmt::Write;
+use std::sync::Arc;
 use std::time::Duration;
+use std::vec::Vec;
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -51,6 +55,43 @@ fn setup_refresh_indicator_reactors(
             lobby_search_entity,
             move |world: &mut World| syscall(world, (MainUI, [], [text_widget.clone()]), toggle_ui_visibility)
         );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn update_lobby_list_contents(
+    In(content_entities) : In<Arc<Vec<Entity>>>,
+    mut text_query       : Query<&mut Text>,
+    lobby_page           : Res<ReactRes<LobbyPage>>,
+){
+    // lobby list entries
+    let entries = lobby_page.get();
+
+    // update contents
+    for (idx, content_entity) in content_entities.iter().enumerate()
+    {
+        // clear entry
+        let Ok(mut text) = text_query.get_mut(*content_entity)
+        else { tracing::error!("text entity is missing for lobby list contents"); return; };
+        let text_section = &mut text.sections[0].value;
+        text_section.clear();
+
+        // get lobby list entry
+        let Some(entry) = entries.get(idx) else { continue; };
+
+        // update entry text
+        let _ = write!(
+                text_section,
+                "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
+                entry.id % 1_000_000u64,
+                entry.owner_id % 1_000_000u128,
+                entry.num(ClickLobbyMemberType::Player),
+                entry.max(ClickLobbyMemberType::Player),
+                entry.num(ClickLobbyMemberType::Watcher),
+                entry.max(ClickLobbyMemberType::Watcher),
+            );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -143,9 +184,62 @@ fn add_lobby_list_subsection(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
-    // prepare contents
+    // list box
+    rcommands.commands().spawn(
+            ImageElementBundle::new(
+                    area,
+                    ImageParams::center()
+                        .with_depth(50.)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    asset_server.load(BOX),
+                    Vec2::new(236.0, 139.0)
+                )
+        );
+
+    // prepare content widgets
+    let mut content_entities = Vec::with_capacity(LOBBY_LIST_SIZE as usize);
+
+    let entry_height = (1. / LOBBY_LIST_SIZE as f32) * 95.;
+
+    for i in 0..LOBBY_LIST_SIZE
+    {
+        let text = Widget::create(
+                ui,
+                area.end(""),
+                RelativeLayout{  //center
+                    relative_1: Vec2{ x: 10., y: 2.5 + (i as f32)*entry_height },
+                    relative_2: Vec2{ x: 90., y: 2.5 + ((i + 1) as f32)*entry_height },
+                    ..Default::default()
+                }
+            ).unwrap();
+
+        let text_style = TextStyle {
+                font      : asset_server.load(MISC_FONT),
+                font_size : 45.0,
+                color     : LOBBY_DISPLAY_FONT_COLOR,
+            };
+
+        let text_entity = rcommands.commands().spawn(
+                TextElementBundle::new(
+                    text,
+                    TextParams::centerleft()
+                        .with_style(&text_style)
+                        .with_width(Some(100.))
+                        .with_height(Some(100.)),
+                    "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
+                )
+            ).id();
+
+        content_entities.push(text_entity);
+    }
+
+    let content_entities = Arc::new(content_entities);
 
     // update contents when lobby page changes
+    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+            move |world: &mut World| syscall(world, content_entities.clone(), update_lobby_list_contents)
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -157,6 +251,8 @@ fn add_navigation_subsection(
     ui           : &mut UiTree,
     area         : &Widget,
 ){
+    //update all when LobbyPage changes
+
     // text displaying lobby list position
 
     // button: go to first page
@@ -243,8 +339,8 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 15. },
-                relative_2: Vec2{ x: 100., y: 70. },
+                relative_1: Vec2{ x: 10., y: 15. },
+                relative_2: Vec2{ x: 90., y: 75. },
                 ..Default::default()
             }
         ).unwrap();
@@ -255,7 +351,7 @@ pub(crate) fn add_lobby_list(
             ui,
             area.end(""),
             RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 70. },
+                relative_1: Vec2{ x: 0., y: 75. },
                 relative_2: Vec2{ x: 100., y: 85. },
                 ..Default::default()
             }
@@ -291,10 +387,12 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // refresh the list automatically if:
                 // - in play section
                 // - connected to host
+                //todo: not in game
                 // - on timer OR just connected to host  (note: test timer first to avoid double-refresh when timer
                 //   is saturated)
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty() )
                 .run_if(resource_equals(ConnectionStatus::Connected))
+                //todo: not in game
                 .run_if(on_timer(lobby_list_refresh)
                     .or_else(
                         |connection_status: Res<ConnectionStatus>| { connection_status.is_changed() }

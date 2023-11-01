@@ -183,7 +183,8 @@ pub(crate) fn handle_lobby_search_result(
     entity_commands.remove::<React<PendingRequest>>();
 
     // update lobby page
-    lobby_page.get_mut(&mut rcommands).set(lobbies);
+    if let Err(_) = lobby_page.get_mut(&mut rcommands).try_set(lobbies)
+    { tracing::error!("failed setting new lobby page, lobbies are invalid"); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
