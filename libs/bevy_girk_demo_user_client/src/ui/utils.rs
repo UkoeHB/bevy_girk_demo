@@ -3,11 +3,29 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_kot::ecs::*;
 use bevy_kot::ui::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
 
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) struct UiBuilderCtx<'a, 'w, 's>
+{
+    pub(crate) rcommands    : &'a mut ReactCommands<'w, 's>,
+    pub(crate) asset_server : &'a AssetServer,
+    pub(crate) ui           : &'a mut UiTree,
+}
+
+impl<'a, 'w, 's> UiBuilderCtx<'a, 'w, 's>
+{
+    pub(crate) fn commands<'b>(&'b mut self) -> &'b mut Commands<'w, 's>
+    {
+        self.rcommands.commands()
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 

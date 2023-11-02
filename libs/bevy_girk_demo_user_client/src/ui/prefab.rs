@@ -8,7 +8,53 @@ use bevy_kot::ui::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
+use std::borrow::Borrow;
 
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn basic_relative_widget(
+    ctx     : &mut UiBuilderCtx,
+    path    : impl Borrow<str>,
+    x_range : (f32, f32),
+    y_range : (f32, f32)
+) -> Widget
+{
+     Widget::create(
+            ctx.ui,
+            path,
+            RelativeLayout{
+                relative_1 : Vec2 { x: x_range.0, y: y_range.0 },
+                relative_2 : Vec2 { x: x_range.1, y: y_range.1 },
+                ..Default::default()
+            }
+        ).unwrap()
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn spawn_basic_text(ctx: UiBuilderCtx,
+    widget                 : Widget,
+    color                  : Color,
+    (depth, width, height) : (Option<f32>, Option<f32>, Option<f32>),
+    default_text           : &str,
+) -> Entity
+{
+    let text_style = TextStyle {
+            font      : ctx.asset_server.load(MISC_FONT),
+            font_size : 45.0,
+            color     : color,
+        };
+
+    let mut text_params = TextParams::center()
+        .with_style(&text_style)
+        .with_width(width)
+        .with_height(height);
+    if let Some(depth) = depth { text_params = text_params.with_depth(depth); }
+
+    let text_entity = ctx.rcommands.commands().spawn(TextElementBundle::new(widget, text_params, default_text)).id();
+
+    text_entity    
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 

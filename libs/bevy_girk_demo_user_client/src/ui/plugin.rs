@@ -20,73 +20,37 @@ fn setup_ui_tree(
     asset_server  : Res<AssetServer>,
     mut main_ui   : Query<&mut UiTree, With<MainUI>>
 ){
-    let ui = &mut main_ui.get_single_mut().unwrap();
+    // prep builder context
+    let ctx = &mut UiBuilderCtx{
+            rcommands    : &mut rcommands,
+            asset_server : &asset_server,
+            ui           : &mut main_ui.get_single_mut().unwrap(),
+        };
 
     // root widget
-    let root = Widget::create(
-            ui,
-            "root",
-            RelativeLayout{
-                relative_1 : Vec2 { x: 0.0, y: 0.0 },
-                relative_2 : Vec2 { x: 100.0, y: 100.0 },
-                ..Default::default()
-            }
-        ).unwrap();
-
+    let root = basic_relative_widget(ctx, "root", (0., 100.), (0., 100.));
 
     // root zones
-    // - play button
-    let play_button = Widget::create(
-            ui,
-            root.end("play_button"),
-            RelativeLayout{  //top left
-                relative_1: Vec2 { x: 0., y: 0. },
-                relative_2: Vec2 { x: 20., y: 10. },
-                ..Default::default()
-            }
-        ).unwrap();
-    rcommands.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
+    // - play button (top left)
+    let play_button = basic_relative_widget(ctx, root.end("play_button"), (0., 20.), (0., 10.));
+    ctx.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // - menu bar
-    let menu_bar = Widget::create(
-            ui,
-            root.end("menu_bar"),
-            RelativeLayout{  //center top
-                relative_1: Vec2 { x: 20., y: 0. },
-                relative_2: Vec2 { x: 90., y: 10. },
-                ..Default::default()
-            }
-        ).unwrap();
-    rcommands.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
+    // - menu bar (center top)
+    let menu_bar = basic_relative_widget(ctx, root.end("menu_bar"), (20., 90.), (0., 10.));
+    ctx.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // - menu item overlay area
-    let menu_overlay = Widget::create(
-            ui,
-            root.end("menu_overlay"),
-            RelativeLayout{  //everything below the menu bar
-                relative_1: Vec2 { x: 0., y: 10.0 },
-                relative_2: Vec2 { x: 100., y: 100. },
-                ..Default::default()
-            }
-        ).unwrap();
-    rcommands.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    // - menu item overlay area (everything below the menu bar)
+    let menu_overlay = basic_relative_widget(ctx, root.end("menu_overlay"), (0., 100.), (10., 100.));
+    ctx.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // - connection status
-    let status = Widget::create(
-            ui,
-            root.end("status"),
-            RelativeLayout{  //upper right corner
-                relative_1: Vec2 { x: 90., y: 0. },
-                relative_2: Vec2 { x: 100., y: 10. },
-                ..Default::default()
-            }
-        ).unwrap();
+    // - connection status (upper right corner)
+    let status = basic_relative_widget(ctx, root.end("status"), (90., 100.), (0., 10.));
 
 
     // add child widgets
-    add_play_section(&mut rcommands, &asset_server, ui, play_button, menu_overlay.clone());
-    add_menu_bar_section(&mut rcommands, &asset_server, ui, menu_bar, menu_overlay);
-    add_status_section(&mut rcommands, &asset_server, ui, status);
+    add_play_section(ctx.rcommands, ctx.asset_server, ctx.ui, play_button, menu_overlay.clone());
+    add_menu_bar_section(ctx, menu_bar, menu_overlay);
+    add_status_section(ctx.rcommands, ctx.asset_server, ctx.ui, status);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

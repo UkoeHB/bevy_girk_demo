@@ -215,16 +215,11 @@ fn add_settings_overlay(
 #[derive(Component, Default, Copy, Clone, Eq, PartialEq, Debug)]
 pub(crate) struct MainMenuButton;
 
-pub(crate) fn add_menu_bar_section(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    menu_bar     : Widget,
-    menu_overlay : Widget,
-){
+pub(crate) fn add_menu_bar_section(ctx: &mut UiBuilderCtx, menu_bar: Widget, menu_overlay: Widget)
+{
     // menu bar overlay
     let menu_bar_overlay = Widget::create(
-            ui,
+            ctx.ui,
             menu_bar.end(""),
             RelativeLayout{
                 relative_1: Vec2{ x: 10., y: 20. },
@@ -237,22 +232,22 @@ pub(crate) fn add_menu_bar_section(
     let menu_widgets = GridSegment::new()
         .with_cells(vec![GridCell::named(Vec2::splat(10.0), "home"), GridCell::named(Vec2::splat(10.0), "settings")])
         .add_gaps(1.0)
-        .build_in(ui, &menu_bar_overlay, GridOrientation::Horizontal)
+        .build_in(ctx.ui, &menu_bar_overlay, GridOrientation::Horizontal)
         .unwrap();
 
     // prepare each of the menu buttons and areas
     // - home
-    let home_overlay = make_overlay(ui, &menu_overlay, "home_overlay", false);
-    let home_button_entity = add_menu_bar_button(rcommands, ui, &menu_widgets[0], &home_overlay, asset_server, "HOME");
-    add_home_overlay(rcommands, ui, &home_overlay, asset_server);
+    let home_overlay = make_overlay(ctx.ui, &menu_overlay, "home_overlay", false);
+    let home_button_entity = add_menu_bar_button(ctx.rcommands, ctx.ui, &menu_widgets[0], &home_overlay, ctx.asset_server, "HOME");
+    add_home_overlay(ctx.rcommands, ctx.ui, &home_overlay, ctx.asset_server);
 
     // - settings
-    let settings_overlay = make_overlay(ui, &menu_overlay, "settings_overlay", false);
-    let _ = add_menu_bar_button(rcommands, ui, &menu_widgets[1], &settings_overlay, asset_server, "SETTINGS");
-    add_settings_overlay(rcommands, ui, &settings_overlay, asset_server);
+    let settings_overlay = make_overlay(ctx.ui, &menu_overlay, "settings_overlay", false);
+    let _ = add_menu_bar_button(ctx.rcommands, ctx.ui, &menu_widgets[1], &settings_overlay, ctx.asset_server, "SETTINGS");
+    add_settings_overlay(ctx.rcommands, ctx.ui, &settings_overlay, ctx.asset_server);
 
     // activate home button (default)
-    rcommands.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
+    ctx.rcommands.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
