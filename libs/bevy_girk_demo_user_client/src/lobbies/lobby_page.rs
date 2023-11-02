@@ -116,7 +116,7 @@ pub(crate) fn LobbyPagePlugin(app: &mut App)
         .insert_resource(ReactRes::new(LobbyPage::default()))
         .insert_resource(ReactRes::new(LobbyPageRequest::new(LobbySearchRequest::Page{
             youngest_lobby_id : u64::MAX,
-            num_lobbies       : LOBBY_LIST_SIZE,
+            num_lobbies       : LOBBY_LIST_SIZE as u16,
         })))
         ;
 }

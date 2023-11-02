@@ -27,7 +27,7 @@ pub(crate) const LOBBY_LIST_STATS_FONT_COLOR : Color = Color::BLACK;
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) const NUM_LOBBY_CONTENT_ENTRIES : usize = 8;
-pub(crate) const LOBBY_LIST_SIZE           : u16   = 10;
+pub(crate) const LOBBY_LIST_SIZE           : usize = 10;
 
 //-------------------------------------------------------------------------------------------------------------------
 

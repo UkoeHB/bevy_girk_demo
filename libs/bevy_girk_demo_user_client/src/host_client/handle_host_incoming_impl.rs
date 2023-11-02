@@ -33,6 +33,7 @@ fn handle_lobby_reset(
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
     // re-request the last-requested lobby page
+    // - do this even if there is a pending lobby page request in case it failed
     let entity = lobby_search.single();
     rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
 }

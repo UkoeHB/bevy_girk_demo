@@ -77,11 +77,25 @@ fn leave_current_lobby(
     client : Res<HostUserClient>,
     lobby  : Res<ReactRes<LobbyDisplay>>,
 ){
-    let Some(lobby_data) = lobby.get()
+    let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to leave lobby but we aren't in a lobby"); return; };
 
-    if let Err(err) = client.send(UserToHostMsg::LeaveLobby{ id: lobby_data.id })
-    { tracing::warn!(?err, lobby_data.id, "failed sending leave lobby message to host server"); }
+    match lobby.lobby_type()
+    {
+        None => { tracing::error!("tried to leave lobby but there is no lobby type"); return; }
+        Some(LobbyType::Local) =>
+        {
+            //todo: clear lobby contents
+            tracing::error!("leaving local lobby not yet supported");
+        }
+        Some(LobbyType::Hosted) =>
+        {
+            if let Err(err) = client.send(UserToHostMsg::LeaveLobby{ id: lobby_id })
+            { tracing::warn!(?err, lobby_id, "failed sending leave lobby message to host server"); }
+
+            //todo: request/response pattern? and make the leave lobby button do nothing when waiting
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -99,14 +113,16 @@ fn start_current_lobby(
         None => { tracing::error!("tried to start lobby but there is no lobby type"); return; }
         Some(LobbyType::Local) =>
         {
-            //todo: start game
             //todo: clear lobby contents
-            panic!("starting local lobby not yet supported");
+            //todo: start game
+            tracing::error!("starting local lobby not yet supported");
         }
         Some(LobbyType::Hosted) =>
         {
             if let Err(err) = client.send(UserToHostMsg::LaunchLobbyGame{ id: lobby_id })
             { tracing::warn!(?err, lobby_id, "failed sending launch lobby message to host server"); }
+
+            //todo: request/response pattern? and make the start lobby button do nothing when waiting
         }
     }
 }
@@ -427,7 +443,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
             &button_overlay,
             button_entity,
             "<",
-            move |world, _|
+            move |world|
             {
                 syscall(
                         world,
@@ -475,7 +491,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
             &button_overlay,
             button_entity,
             ">",
-            move |world, _|
+            move |world|
             {
                 syscall(
                         world,
@@ -735,7 +751,7 @@ fn add_leave_lobby_button(
             &button_overlay,
             button_entity,
             "Leave",
-            |world, _| syscall(world, (), leave_current_lobby)
+            |world| syscall(world, (), leave_current_lobby)
         );
 
     // block button and grey-out text when there is no lobby
@@ -771,7 +787,7 @@ fn add_start_game_button(
             &button_overlay,
             button_entity,
             "Start",
-            |world, _| syscall(world, (), start_current_lobby)
+            |world| syscall(world, (), start_current_lobby)
         );
 
     // block button and grey-out text when we don't own the lobby

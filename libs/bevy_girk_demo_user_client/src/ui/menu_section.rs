@@ -21,7 +21,7 @@ fn activate_new_selection<U: LunexUI>(
     selected_main_menu_button            : Query<(Entity, &Callback<Deselect>), (With<MainMenuButton>, With<Selected>)>,
 ){
     // activate the selected button's overlay
-    let mut ui = uis.get_single_mut().unwrap();  //todo: use overlay widget embedded entity
+    let mut ui = uis.get_single_mut().unwrap();  //todo: use overlay widget's embedded entity
     if let Ok(overlay_branch) = overlay.fetch_mut(&mut ui) { overlay_branch.set_visibility(true); }
 
     // deselect any selected main menu buttons other than the newly selected button

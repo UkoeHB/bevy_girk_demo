@@ -19,7 +19,7 @@ pub(crate) fn make_basic_button(
     button_overlay   : &Widget,
     button_entity    : Entity,
     button_text      : &'static str,
-    unpress_callback : impl Fn(&mut World, Vec2) -> () + Send + Sync + 'static,
+    unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ){
     // add default button image
     let default_button = make_overlay(ui, &button_overlay, "", true);
@@ -79,9 +79,36 @@ pub(crate) fn make_basic_button(
         .press_on_click()
         .unpress_on_unclick_home_and_abort_on_unclick_away()
         .abort_press_if_obstructed()
-        .unpress_callback(unpress_callback)
+        .unpress_callback(move |world, _| (unpress_callback)(world))
         .build::<MouseLButtonMain>(&mut entity_commands, button_overlay.clone())
         .unwrap();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn make_basic_popup(
+    commands        : &mut Commands,
+    asset_server    : &AssetServer,
+    ui              : &mut UiTree,
+    window_scaling  : Vec2,  // x: % of screen width, y: % of screen height
+    cancel_text     : &'static str,
+    accept_text     : &'static str,
+    cancel_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
+    accept_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
+) //-> (Widget, Widget)
+{
+    // popup overlay attached to root of ui tree
+    let default_button = make_overlay(ui, &Widget::new("root"), "", true);
+
+    // add screen-wide barrier
+
+    // window box
+
+    // region for caller's content
+
+    // cancel button
+
+    // accept button
 }
 
 //-------------------------------------------------------------------------------------------------------------------

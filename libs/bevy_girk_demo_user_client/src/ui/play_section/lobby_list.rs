@@ -24,14 +24,16 @@ use std::vec::Vec;
 fn refresh_lobby_list(
     mut rcommands  : ReactCommands,
     client         : Res<HostUserClient>,
-    lobby_search   : Query<Entity, With<LobbySearch>>,
+    lobby_search   : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     lobby_page_req : Res<ReactRes<LobbyPageRequest>>,
 ){
-    tracing::trace!("refreshing lobby list");
+    // do nothing if there is already a pending lobby search
+    let Ok(target_entity) = lobby_search.get_single()
+    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // re-request the last-requested lobby page
-    let entity = lobby_search.single();
-    rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
+    tracing::trace!("refreshing lobby list");
+    rerequest_latest_lobby_page(&mut rcommands, &client, target_entity, &lobby_page_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,22 +42,24 @@ fn refresh_lobby_list(
 fn request_lobby_list_now(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
-    lobby_search       : Query<Entity, With<LobbySearch>>,
+    lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
 ){
-    tracing::trace!("requesting lobby list: now");
+    // do nothing if there is already a pending lobby search
+    let Ok(target_entity) = lobby_search.get_single()
+    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
     // - we request the highest-possible lobby id in order to get the youngest available lobby
     //todo: use PageOlder
-    let req = LobbySearchRequest::Page{ youngest_lobby_id: u64::MAX, num_lobbies: LOBBY_LIST_SIZE };
+    let req = LobbySearchRequest::Page{ youngest_lobby_id: u64::MAX, num_lobbies: LOBBY_LIST_SIZE as u16 };
 
     // send request
+    tracing::trace!("requesting lobby list: now");
     let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
-    let target_entity = lobby_search.single();
     rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
@@ -65,11 +69,13 @@ fn request_lobby_list_now(
 fn request_lobby_list_next_newer(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
-    lobby_search       : Query<Entity, With<LobbySearch>>,
+    lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
     lobby_page         : Res<ReactRes<LobbyPage>>,
 ){
-    tracing::trace!("requesting lobby list: next newer");
+    // do nothing if there is already a pending lobby search
+    let Ok(target_entity) = lobby_search.get_single()
+    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
     //todo: use PageNewer
@@ -81,15 +87,15 @@ fn request_lobby_list_next_newer(
 
     let req = LobbySearchRequest::Page{
             youngest_lobby_id,
-            num_lobbies: LOBBY_LIST_SIZE
+            num_lobbies: LOBBY_LIST_SIZE as u16
         };
 
     // send request
+    tracing::trace!("requesting lobby list: next newer");
     let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
-    let target_entity = lobby_search.single();
     rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
@@ -99,11 +105,13 @@ fn request_lobby_list_next_newer(
 fn request_lobby_list_next_older(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
-    lobby_search       : Query<Entity, With<LobbySearch>>,
+    lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
     lobby_page         : Res<ReactRes<LobbyPage>>,
 ){
-    tracing::trace!("requesting lobby list: next older");
+    // do nothing if there is already a pending lobby search
+    let Ok(target_entity) = lobby_search.get_single()
+    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
     //todo: use PageOlder
@@ -126,15 +134,15 @@ fn request_lobby_list_next_older(
 
     let req = LobbySearchRequest::Page{
             youngest_lobby_id,
-            num_lobbies: LOBBY_LIST_SIZE
+            num_lobbies: LOBBY_LIST_SIZE as u16
         };
 
     // send request
+    tracing::trace!("requesting lobby list: next older");
     let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
-    let target_entity = lobby_search.single();
     rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
@@ -144,21 +152,23 @@ fn request_lobby_list_next_older(
 fn request_lobby_list_oldest(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
-    lobby_search       : Query<Entity, With<LobbySearch>>,
+    lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
 ){
-    tracing::trace!("requesting lobby list: oldest");
+    // do nothing if there is already a pending lobby search
+    let Ok(target_entity) = lobby_search.get_single()
+    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
     //todo: use PageNewer
-    let req = LobbySearchRequest::Page{ youngest_lobby_id: LOBBY_LIST_SIZE as u64, num_lobbies: LOBBY_LIST_SIZE };
+    let req = LobbySearchRequest::Page{ youngest_lobby_id: LOBBY_LIST_SIZE as u64, num_lobbies: LOBBY_LIST_SIZE as u16 };
 
     // send request
+    tracing::trace!("requesting lobby list: oldest");
     let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
-    let target_entity = lobby_search.single();
     rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
@@ -190,24 +200,34 @@ fn setup_refresh_indicator_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn update_lobby_list_contents(
-    In(content_entities) : In<Arc<Vec<Entity>>>,
-    mut text_query       : Query<&mut Text>,
-    lobby_page           : Res<ReactRes<LobbyPage>>,
+    In(contents)   : In<Arc<Vec<(Entity, Widget)>>>,
+    mut ui         : Query<&mut UiTree, With<MainUI>>,
+    mut text_query : Query<&mut Text>,
+    lobby_page     : Res<ReactRes<LobbyPage>>,
 ){
+    // ui tree
+    let mut ui = ui.single_mut();
+
     // lobby list entries
     let entries = lobby_page.get();
 
     // update contents
-    for (idx, content_entity) in content_entities.iter().enumerate()
+    for (idx, (content_entity, content_widget)) in contents.iter().enumerate()
     {
-        // clear entry
+        // get entry text
         let Ok(mut text) = text_query.get_mut(*content_entity)
         else { tracing::error!("text entity is missing for lobby list contents"); return; };
         let text_section = &mut text.sections[0].value;
-        text_section.clear();
 
         // get lobby list entry
-        let Some(entry) = entries.get(idx) else { continue; };
+        let entry = entries.get(idx);
+
+        // update entry visibility
+        let Ok(widget_branch) = content_widget.fetch_mut(&mut ui) else { continue; };
+        widget_branch.set_visibility(entry.is_some());
+
+        // update entry text
+        let Some(entry) = entry else { continue; };
 
         // update entry text
         let _ = write!(
@@ -221,6 +241,30 @@ fn update_lobby_list_contents(
                 entry.max(ClickLobbyMemberType::Watcher),
             );
     }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn open_join_lobby_window(
+    In(lobby_index) : In<usize>,
+    mut rcommands   : ReactCommands,
+    lobby_page      : Res<ReactRes<LobbyPage>>,
+){
+    // get lobby id of lobby to join
+    let Some(lobby_contents) = lobby_page.get().get(lobby_index)
+    else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby attempt"); return; };
+
+    //todo: open join lobby window w/ lobby contents
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn open_new_lobby_window(
+    mut rcommands: ReactCommands,
+){
+    //todo: open new lobby window
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -335,7 +379,7 @@ fn add_lobby_list_refresh_button(
             &button_overlay,
             button_entity,
             "Refresh",
-            |world, _| syscall(world, (), refresh_lobby_list)
+            |world| syscall(world, (), refresh_lobby_list)
         );
 }
 
@@ -361,19 +405,25 @@ fn add_lobby_list_subsection(
                 )
         );
 
-    // prepare content widgets
-    let mut content_entities = Vec::with_capacity(LOBBY_LIST_SIZE as usize);
+    // prepare contents
+    let mut contents = Vec::with_capacity(LOBBY_LIST_SIZE as usize);
 
     let entry_height = (1. / LOBBY_LIST_SIZE as f32) * 95.;
 
     for i in 0..LOBBY_LIST_SIZE
     {
+        let content_widget = make_overlay(ui, area, "", true);
+
+        // text
+        let y_start = 2.5 + (i       as f32)*entry_height;
+        let y_end   = 2.5 + ((i + 1) as f32)*entry_height;
+
         let text = Widget::create(
                 ui,
-                area.end(""),
+                content_widget.end(""),
                 RelativeLayout{  //center
-                    relative_1: Vec2{ x: 10., y: 2.5 + (i as f32)*entry_height },
-                    relative_2: Vec2{ x: 90., y: 2.5 + ((i + 1) as f32)*entry_height },
+                    relative_1: Vec2{ x: 10., y: y_start },
+                    relative_2: Vec2{ x: 78., y: y_end },
                     ..Default::default()
                 }
             ).unwrap();
@@ -384,25 +434,47 @@ fn add_lobby_list_subsection(
                 color     : LOBBY_DISPLAY_FONT_COLOR,
             };
 
-        let text_entity = rcommands.commands().spawn(
+        let content_entity = rcommands.commands().spawn(
                 TextElementBundle::new(
                     text,
                     TextParams::centerleft()
                         .with_style(&text_style)
                         .with_width(Some(100.))
-                        .with_height(Some(100.)),
+                        .with_height(Some(70.)),
                     "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
                 )
             ).id();
 
-        content_entities.push(text_entity);
+        // button
+        let join_button_area = Widget::create(
+                ui,
+                content_widget.end(""),
+                RelativeLayout{  //center
+                    relative_1: Vec2{ x: 80., y: y_start + 0.5 },
+                    relative_2: Vec2{ x: 98., y: y_end - 0.5 },
+                    ..Default::default()
+                }
+            ).unwrap();
+
+        make_basic_button(
+                rcommands.commands(),
+                asset_server,
+                ui,
+                &join_button_area,
+                content_entity,
+                "Join",
+                move |world| syscall(world, i, open_join_lobby_window)
+            );
+
+        // save this entry
+        contents.push((content_entity, content_widget));
     }
 
-    let content_entities = Arc::new(content_entities);
+    let contents = Arc::new(contents);
 
     // update contents when lobby page changes
     rcommands.add_resource_mutation_reactor::<LobbyPage>(
-            move |world: &mut World| syscall(world, content_entities.clone(), update_lobby_list_contents)
+            move |world: &mut World| syscall(world, contents.clone(), update_lobby_list_contents)
         );
 }
 
@@ -473,7 +545,7 @@ fn add_clamp_now_button(
             &button_overlay,
             button_entity,
             "Now",
-            move |world, _| syscall(world, (), request_lobby_list_now)
+            move |world| syscall(world, (), request_lobby_list_now)
         );
 
     // block button and grey-out text when displaying 'now'
@@ -510,7 +582,7 @@ fn add_paginate_left_button(
             &button_overlay,
             button_entity,
             "<",
-            move |world, _| syscall(world, (), request_lobby_list_next_newer)
+            move |world| syscall(world, (), request_lobby_list_next_newer)
         );
 
     // block button and grey-out text when no newer lobbies to request
@@ -547,7 +619,7 @@ fn add_paginate_right_button(
             &button_overlay,
             button_entity,
             ">",
-            move |world, _| syscall(world, (), request_lobby_list_next_older)
+            move |world| syscall(world, (), request_lobby_list_next_older)
         );
 
     // block button and grey-out text when no older lobbies to request
@@ -584,7 +656,7 @@ fn add_clamp_oldest_button(
             &button_overlay,
             button_entity,
             "Oldest",
-            move |world, _| syscall(world, (), request_lobby_list_oldest)
+            move |world| syscall(world, (), request_lobby_list_oldest)
         );
 
     // block button and grey-out text when last requested the oldest lobbies
@@ -701,7 +773,7 @@ fn add_new_lobby_button(
             &button_overlay,
             button_entity,
             "New Lobby",
-            |_world, _| () //syscall(world, (), activate_new_lobby_window)  //TODO
+            |world| syscall(world, (), open_new_lobby_window)
         );
 }
 
