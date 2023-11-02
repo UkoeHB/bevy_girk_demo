@@ -92,14 +92,14 @@ bevy_replicon  = { git = "https://github.com/UkoeHB/bevy_replicon", rev = "bbed8
 bevy_simplenet = { version = "0.2", default-features = false }
 iyes_progress  = { version = "0.9" , features = [ "assets" ] }
 
-bevy_girk_backend_public  = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_client_fw       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_game_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_game_hub_server = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_game_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_host_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_utils           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
-bevy_girk_wiring          = { git = "https://github.com/UkoeHB/bevy_girk", rev = "0a9ddd4" }
+bevy_girk_backend_public  = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_client_fw       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_game_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_game_hub_server = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_game_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_host_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_utils           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
+bevy_girk_wiring          = { git = "https://github.com/UkoeHB/bevy_girk", rev = "16a62cc" }
 
 enfync             = { version = "0.1" }
 ezsockets          = { git = "https://github.com/gbaranski/ezsockets.git", rev = "390ec91" }

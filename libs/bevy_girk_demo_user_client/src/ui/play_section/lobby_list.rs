@@ -51,8 +51,7 @@ fn request_lobby_list_now(
 
     // make request
     // - we request the highest-possible lobby id in order to get the youngest available lobby
-    //todo: use PageOlder
-    let req = LobbySearchRequest::Page{ youngest_lobby_id: u64::MAX, num_lobbies: LOBBY_LIST_SIZE as u16 };
+    let req = LobbySearchRequest::PageOlder{ youngest_id: u64::MAX, num: LOBBY_LIST_SIZE as u16 };
 
     // send request
     tracing::trace!("requesting lobby list: now");
@@ -78,16 +77,30 @@ fn request_lobby_list_next_newer(
     else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
-    //todo: use PageNewer
-    let youngest_lobby_id = lobby_page
+    let oldest_id = lobby_page
         .get()
-        .get(0)
-        .map_or(u64::MAX, |contents| contents.id)  //bug: clamps to new when the page is empty, use last request id
-        .saturating_add(LOBBY_LIST_SIZE as u64);
+        .get(0)  //youngest currently-displayed lobby
+        .map_or(
+            // this branch may execute if lobbies in the last requested page are all removed by server updates, or
+            // if the returned page is empty
+            match lobby_page_req.get()
+            {
+                LobbySearchRequest::LobbyId(id) => id.saturating_sub(1u64),
+                LobbySearchRequest::PageNewer{ oldest_id, num } =>
+                {
+                    oldest_id.saturating_add(*num as u64)
+                }
+                LobbySearchRequest::PageOlder{ youngest_id, num: _ } =>
+                {
+                    youngest_id.saturating_add(1u64)
+                }
+            },
+            |contents| contents.id.saturating_add(1u64),  //next page starts at lobby younger than our current youngest
+        );
 
-    let req = LobbySearchRequest::Page{
-            youngest_lobby_id,
-            num_lobbies: LOBBY_LIST_SIZE as u16
+    let req = LobbySearchRequest::PageNewer{
+            oldest_id,
+            num: LOBBY_LIST_SIZE as u16
         };
 
     // send request
@@ -114,8 +127,7 @@ fn request_lobby_list_next_older(
     else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
-    //todo: use PageOlder
-    let youngest_lobby_id = lobby_page
+    let youngest_id = lobby_page
         .get()
         .get(lobby_page.len().saturating_sub(1))  //oldest currently-displayed lobby
         .map_or(
@@ -124,17 +136,21 @@ fn request_lobby_list_next_older(
             match lobby_page_req.get()
             {
                 LobbySearchRequest::LobbyId(id) => id.saturating_sub(1u64),
-                LobbySearchRequest::Page{ youngest_lobby_id, num_lobbies } =>
+                LobbySearchRequest::PageNewer{ oldest_id, num: _ } =>
                 {
-                    youngest_lobby_id.saturating_sub(*num_lobbies as u64)
+                    oldest_id.saturating_sub(1u64)
+                }
+                LobbySearchRequest::PageOlder{ youngest_id, num } =>
+                {
+                    youngest_id.saturating_sub(*num as u64)
                 }
             },
             |contents| contents.id.saturating_sub(1u64),  //next page starts at lobby older than our current oldest
         );
 
-    let req = LobbySearchRequest::Page{
-            youngest_lobby_id,
-            num_lobbies: LOBBY_LIST_SIZE as u16
+    let req = LobbySearchRequest::PageOlder{
+            youngest_id,
+            num: LOBBY_LIST_SIZE as u16
         };
 
     // send request
@@ -160,8 +176,8 @@ fn request_lobby_list_oldest(
     else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
 
     // make request
-    //todo: use PageNewer
-    let req = LobbySearchRequest::Page{ youngest_lobby_id: LOBBY_LIST_SIZE as u64, num_lobbies: LOBBY_LIST_SIZE as u16 };
+    // - we request the lowest-possible lobby id in order to get the oldest available lobby
+    let req = LobbySearchRequest::PageNewer{ oldest_id: 0u64, num: LOBBY_LIST_SIZE as u16 };
 
     // send request
     tracing::trace!("requesting lobby list: oldest");

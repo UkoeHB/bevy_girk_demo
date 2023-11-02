@@ -87,8 +87,8 @@ impl LobbyPageRequest
     {
         match self.last
         {
-            LobbySearchRequest::LobbyId(_)                             => false,
-            LobbySearchRequest::Page{ youngest_lobby_id, num_lobbies: _ } => youngest_lobby_id == u64::MAX,
+            LobbySearchRequest::PageOlder{ youngest_id, num: _ } => youngest_id == u64::MAX,
+            _ => false,
         }
     }
 
@@ -96,13 +96,8 @@ impl LobbyPageRequest
     {
         match self.last
         {
-            LobbySearchRequest::LobbyId(_)                             => false,
-            LobbySearchRequest::Page{ youngest_lobby_id: _, num_lobbies: _ } =>
-            {
-                //todo: need special request type to handle this
-                tracing::error!("oldest page lobby search not yet implemented");
-                true
-            }
+            LobbySearchRequest::PageNewer{ oldest_id, num: _ } => oldest_id == 0u64,
+            _ => false,
         }
     }
 }
@@ -114,9 +109,9 @@ pub(crate) fn LobbyPagePlugin(app: &mut App)
 {
     app
         .insert_resource(ReactRes::new(LobbyPage::default()))
-        .insert_resource(ReactRes::new(LobbyPageRequest::new(LobbySearchRequest::Page{
-            youngest_lobby_id : u64::MAX,
-            num_lobbies       : LOBBY_LIST_SIZE as u16,
+        .insert_resource(ReactRes::new(LobbyPageRequest::new(LobbySearchRequest::PageOlder{
+            youngest_id : u64::MAX,
+            num         : LOBBY_LIST_SIZE as u16,
         })))
         ;
 }
