@@ -525,14 +525,10 @@ fn add_lobby_list_stats(
             move |world: &mut World|
             {
                 // define updated text
+                let (first, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
+
                 let mut text_buffer = String::new();
-                let _ = write!(
-                        text_buffer,
-                        "({}-{} / {})",
-                        "????",  //todo: first index in page
-                        "????",  //todo: last index in page
-                        "????",  //todo: total lobbies in server
-                    );
+                let _ = write!(text_buffer, "({}-{} / {})", first, last, total);
 
                 // update UI text
                 syscall(world, (text_entity, text_buffer), update_ui_text);
@@ -605,10 +601,11 @@ fn add_paginate_left_button(
     let block_overlay = make_overlay(ui, &button_overlay, "", false);
     rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World|
             {
-                let enable = true;  //todo: need lobby page stats
+                let (first, _, _) = world.resource::<ReactRes<LobbyPage>>().stats();
+                let enable = first != 1;
                 syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -642,10 +639,11 @@ fn add_paginate_right_button(
     let block_overlay = make_overlay(ui, &button_overlay, "", false);
     rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World|
             {
-                let enable = true;  //todo: need lobby page stats
+                let (_, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
+                let enable = last != total;
                 syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -900,7 +898,6 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 //   is saturated)
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty() )
                 .run_if(resource_equals(ConnectionStatus::Connected))
-                //todo: not in game
                 .run_if(on_timer(lobby_list_refresh)
                     .or_else(
                         |connection_status: Res<ConnectionStatus>| { connection_status.is_changed() }

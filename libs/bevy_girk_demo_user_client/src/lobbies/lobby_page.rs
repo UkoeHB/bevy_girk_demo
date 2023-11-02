@@ -17,23 +17,31 @@ use std::vec::Vec;
 #[derive(Debug)]
 pub(crate) struct LobbyPage
 {
+    /// Current lobby contents.
     current: Vec<ClickLobbyContents>,
-    //todo: total number of lobbies on server
-    //todo: index of youngest lobby in server's lobby list
+    /// Number of lobbies younger than the current page on the server.
+    num_younger: usize,
+    /// Total number of lobbies on the server.
+    total: usize,
 }
 
 impl LobbyPage
 {
-    pub(crate) fn try_set(&mut self, new_page: Vec<LobbyData>) -> Result<(), ()>
+    pub(crate) fn try_set(&mut self, new_page: LobbySearchResult) -> Result<(), ()>
     {
-        let mut temp = Vec::with_capacity(new_page.len());
+        // extract lobby contents
+        let mut temp = Vec::with_capacity(new_page.lobbies.len());
 
-        for lobby_data in new_page
+        for lobby_data in new_page.lobbies
         {
             temp.push(ClickLobbyContents::try_from(lobby_data)?);
         }
 
-        self.current = temp;
+        // update the page
+        self.current     = temp;
+        self.num_younger = new_page.num_younger;
+        self.total       = new_page.total;
+
         Ok(())
     }
 
@@ -51,9 +59,15 @@ impl LobbyPage
     {
         self.current.len()
     }
+
+    /// Returns (start count, end count, total lobbies)
+    pub(crate) fn stats(&self) -> (usize, usize, usize)
+    {
+        (self.num_younger + 1, self.num_younger + self.current.len(), self.total)
+    }
 }
 
-impl Default for LobbyPage { fn default() -> Self { Self{ current: Vec::default() } } }
+impl Default for LobbyPage { fn default() -> Self { Self{ current: Vec::default(), num_younger: 0, total: 0 } } }
 
 //-------------------------------------------------------------------------------------------------------------------
 

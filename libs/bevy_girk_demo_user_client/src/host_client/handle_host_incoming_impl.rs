@@ -168,9 +168,8 @@ pub(crate) fn handle_game_over(
 pub(crate) fn handle_lobby_search_result(
     In((
         request_id,
-        _original_request,
-        lobbies
-    ))                 : In<(u64, LobbySearchRequest, Vec<LobbyData>)>,
+        result
+    ))                 : In<(u64, LobbySearchResult)>,
     mut rcommands      : ReactCommands,
     mut pending_search : Query<(Entity, &React<PendingRequest>), With<LobbySearch>>,
     mut lobby_page     : ResMut<ReactRes<LobbyPage>>,
@@ -185,7 +184,7 @@ pub(crate) fn handle_lobby_search_result(
     entity_commands.remove::<React<PendingRequest>>();
 
     // update lobby page
-    if let Err(_) = lobby_page.get_mut(&mut rcommands).try_set(lobbies)
+    if let Err(_) = lobby_page.get_mut(&mut rcommands).try_set(result)
     { tracing::error!("failed setting new lobby page, lobbies are invalid"); }
 }
 

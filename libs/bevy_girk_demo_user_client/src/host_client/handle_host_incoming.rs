@@ -34,9 +34,9 @@ pub(crate) fn handle_host_incoming(world: &mut World)
             {
                 match resp
                 {
-                    HostToUserResponse::LobbySearchResult{ request, lobbies } =>
+                    HostToUserResponse::LobbySearchResult(result) =>
                     {
-                        syscall(world, (request_id, request, lobbies), handle_lobby_search_result);
+                        syscall(world, (request_id, result), handle_lobby_search_result);
                     }
                     HostToUserResponse::LobbyJoin{ lobby } => syscall(world, (request_id, lobby), handle_lobby_join),
                 }
