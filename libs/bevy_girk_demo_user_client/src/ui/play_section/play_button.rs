@@ -35,7 +35,7 @@ fn set_play_button_state(
 fn setup(mut rcommands: ReactCommands)
 {
     rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
-            | world: &mut World | { syscall(world, (), set_play_button_state); }
+            |world: &mut World| { syscall(world, (), set_play_button_state); }
         );
 }
 
@@ -43,128 +43,106 @@ fn setup(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_play_button(
-    commands                : &mut Commands,
-    ui                      : &mut UiTree,
+    ctx                     : &mut UiBuilderCtx,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
-    asset_server            : &AssetServer,
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ui, &default_button_overlay, "play_default", false);
-    commands.spawn(
-        ImageElementBundle::new(
-                &default_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.))
-                    .with_color(Color::BISQUE),  //tint the default button (todo: it's ugly)
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let default_button = make_overlay(ctx.ui, &default_button_overlay, "play_default", false);
+    let default_image = ImageElementBundle::new(
+            &default_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::BISQUE),  //tint the default button (todo: it's ugly)
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ui, &selected_button_overlay, "play_selected", false);
-    commands.spawn(
-        ImageElementBundle::new(
-                &selected_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.))
-                    .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let selected_button = make_overlay(ctx.ui, &selected_button_overlay, "play_selected", false);
+    let selected_image = ImageElementBundle::new(
+            &selected_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(selected_image);
 
     // add button text
-    let menu_bar_text_style = TextStyle {
-            font      : asset_server.load(MENU_BAR_BUTTON_FONT),
-            font_size : 40.0,
-            color     : MENU_BAR_BUTTON_FONT_COLOR,
-        };
+    let text = make_overlay(ctx.ui, button, "play_text", false);
+    spawn_basic_text(
+            ctx,
+            text.clone(),
+            MENU_BAR_BUTTON_FONT_COLOR,
+            TextParams::center()
+                .with_depth(100.)
+                .with_height(Some(40.)),
+            "PLAY"
+        );
 
-    let play_button_text = make_overlay(ui, button, "play_text", false);
-    commands.spawn(
-        TextElementBundle::new(
-                &play_button_text,
-                TextParams::center()
-                    .with_style(&menu_bar_text_style)
-                    .with_depth(100.)
-                    .with_height(Some(40.)),
-                "PLAY"
-            )
-    );
-
-    [play_button_text, default_button, selected_button]
+    [text, default_button, selected_button]
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_in_lobby_button(
-    commands                : &mut Commands,
-    ui                      : &mut UiTree,
+    ctx                     : &mut UiBuilderCtx,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
-    asset_server            : &AssetServer,
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ui, &default_button_overlay, "inlobby_default", false);
-    commands.spawn(
-        ImageElementBundle::new(
-                &default_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.))
-                    .with_color(Color::YELLOW),  //use tint to differentiate (todo: it's ugly)
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let default_button = make_overlay(ctx.ui, &default_button_overlay, "inlobby_default", false);
+    let default_image = ImageElementBundle::new(
+            &default_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::YELLOW),  //use tint to differentiate (todo: it's ugly)
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ui, &selected_button_overlay, "inlobby_selected", false);
-    commands.spawn(
-        ImageElementBundle::new(
-                &selected_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.))
-                    .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let selected_button = make_overlay(ctx.ui, &selected_button_overlay, "inlobby_selected", false);
+    let selected_image = ImageElementBundle::new(
+            &selected_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(selected_image);
 
     // add button text
-    let menu_bar_text_style = TextStyle {
-            font      : asset_server.load(MENU_BAR_BUTTON_FONT),
-            font_size : 40.0,
-            color     : MENU_BAR_BUTTON_FONT_COLOR,
-        };
+    let text = make_overlay(ctx.ui, button, "inlobby_text", false);
+    spawn_basic_text(
+            ctx,
+            text.clone(),
+            MENU_BAR_BUTTON_FONT_COLOR,
+            TextParams::center()
+                .with_depth(100.)
+                .with_height(Some(40.)),
+            "IN LOBBY"
+        );
 
-    let inlobby_button_text = make_overlay(ui, button, "inlobby_text", false);
-    commands.spawn(
-        TextElementBundle::new(
-                &inlobby_button_text,
-                TextParams::center()
-                    .with_style(&menu_bar_text_style)
-                    .with_depth(100.)
-                    .with_height(Some(40.)),
-                "IN LOBBY"
-            )
-    );
-
-    [inlobby_button_text, default_button, selected_button]
+    [text, default_button, selected_button]
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -213,38 +191,18 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_play_button(
-    rcommands    : &mut ReactCommands,
-    ui           : &mut UiTree,
-    button       : &Widget,
-    area_overlay : &Widget,
-    asset_server : &AssetServer,
-) -> Entity
+pub(crate) fn add_play_button(ctx: &mut UiBuilderCtx, button: &Widget, area_overlay: &Widget) -> Entity
 {
     // prepare overlays for controlling visibility
-    let default_button_overlay = make_overlay(ui, button, "default", true);
-    let selected_button_overlay = make_overlay(ui, button, "selected", false);
+    let default_button_overlay = make_overlay(ctx.ui, button, "default", true);
+    let selected_button_overlay = make_overlay(ctx.ui, button, "selected", false);
 
     // prepare buttons
-    let play_pack = make_play_button(
-            rcommands.commands(),
-            ui,
-            button,
-            &default_button_overlay,
-            &selected_button_overlay,
-            asset_server
-        );
-    let inlobby_pack = make_in_lobby_button(
-            rcommands.commands(),
-            ui,
-            button,
-            &default_button_overlay,
-            &selected_button_overlay,
-            asset_server
-        );
+    let play_pack = make_play_button(ctx, button, &default_button_overlay, &selected_button_overlay);
+    let inlobby_pack = make_in_lobby_button(ctx, button, &default_button_overlay, &selected_button_overlay);
 
     // select/deselect callbacks
-    let mut entity_commands = rcommands.commands().spawn_empty();
+    let mut entity_commands = ctx.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let area_overlay_clone = area_overlay.clone();
     let select_callback =
@@ -259,7 +217,7 @@ pub(crate) fn add_play_button(
             syscall(world, (MainUI, [], [area_overlay_clone.clone()]), toggle_ui_visibility);
         };
 
-    // build interactivity into the widget
+    // build the button
     InteractiveElementBuilder::new()
         .with_default_widget(default_button_overlay)
         .with_selected_widget(selected_button_overlay)
@@ -293,7 +251,7 @@ pub(crate) fn add_play_button(
     entity_commands.insert(toggle_play_callback);
 
     // initialize button value
-    rcommands.commands().add(
+    ctx.commands().add(
             move |world: &mut World|
             { let _ = try_callback_with::<Toggle, MainPlayButton>(world, button_entity, MainPlayButton::Play); }
         );

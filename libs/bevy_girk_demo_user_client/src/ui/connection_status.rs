@@ -8,37 +8,16 @@ use bevy_fn_plugin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
-use std::fmt::Write;
 
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Component)]
-struct ConnectionStatusFlag;
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn refresh_status_text(
-    mut status_text : Query<&mut Text, With<ConnectionStatusFlag>>,
-    status          : Res<ConnectionStatus>,
-){
-    if !status.is_changed() { return; }
-    let text_section = &mut status_text.single_mut().sections[0].value;
-    text_section.clear();
-    let _ = write!(text_section, "{}", status.to_str());
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) fn add_status_section(rcommands: &mut ReactCommands, asset_server: &AssetServer, ui: &mut UiTree, text_base: Widget)
+pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
 {
     // text layout helper
     let layout_helper = Widget::create(
-            ui,
-            text_base.end(""),
+            ctx.ui,
+            area.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
                 absolute_1: Vec2 { x: 5., y: 6. },
                 absolute_2: Vec2 { x: -9., y: 0. },
@@ -50,37 +29,39 @@ pub(crate) fn add_status_section(rcommands: &mut ReactCommands, asset_server: &A
 
     // text widget
     let text = Widget::create(
-            ui,
+            ctx.ui,
             layout_helper.end(""),
             SolidLayout::new()  //keep text in top right corner when window is resized
                 .with_horizontal_anchor(1.0)
                 .with_vertical_anchor(-1.0),
         ).unwrap();
 
-    let text_style = TextStyle {
-            font      : asset_server.load(STATUS_FONT),
-            font_size : 45.0,
-            color     : STATUS_FONT_COLOR,
-        };
+    let text_entity = spawn_basic_text(
+            ctx,
+            text,
+            STATUS_FONT_COLOR,
+            TextParams::topright(),
+            "Connecting..."
+        );
 
-    rcommands.commands().spawn(
-            (
-                TextElementBundle::new(
-                    text,
-                    TextParams::topright().with_style(&text_style),
-                    "Connecting..."  //use initial value to get correct initial text boundary
-                ),
-                ConnectionStatusFlag
-            )
+    // update text when connection status changes
+    ctx.rcommands.add_resource_mutation_reactor::<ConnectionStatus>(
+            move |world: &mut World|
+            {
+                // define updated text
+                let status_str = world.resource::<ReactRes<ConnectionStatus>>().to_str();
+                let text = format!("{}", status_str);
+
+                // update UI text
+                syscall(world, (text_entity, text), update_ui_text);
+            }
         );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]
-pub(crate) fn UiConnectionStatusPlugin(app: &mut App)
-{
-    app.add_systems(Update, refresh_status_text);
-}
+pub(crate) fn UiConnectionStatusPlugin(_app: &mut App)
+{}
 
 //-------------------------------------------------------------------------------------------------------------------

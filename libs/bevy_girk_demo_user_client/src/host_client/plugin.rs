@@ -4,6 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
+use bevy_kot::ecs::*;
 
 //standard shortcuts
 
@@ -14,7 +15,7 @@ use bevy_fn_plugin::bevy_plugin;
 pub(crate) fn HostClientPlugin(app: &mut App)
 {
     app
-        .insert_resource(ConnectionStatus::Connecting)
+        .insert_resource(ReactRes::new(ConnectionStatus::Connecting))
         .add_systems(First,
             (
                 handle_connection_changes,

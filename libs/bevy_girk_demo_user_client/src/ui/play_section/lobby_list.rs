@@ -245,7 +245,6 @@ fn update_lobby_list_contents(
         // update entry text
         let Some(entry) = entry else { continue; };
 
-        // update entry text
         let _ = write!(
                 text_section,
                 "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
@@ -286,80 +285,41 @@ fn open_new_lobby_window(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_title(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_lobby_list_title(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // title text
-    let text = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 20., y: 40. },
-                relative_2: Vec2{ x: 80., y: 70. },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    let text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : MISC_FONT_COLOR,
-        };
-
-    rcommands.commands().spawn(
-            TextElementBundle::new(
-                text,
-                TextParams::center()
-                    .with_style(&text_style)
-                    .with_height(Some(100.)),
-                "Lobby List"
-            )
+    let text = relative_widget(ctx, area.end(""), (20., 80.), (40., 70.));
+    spawn_basic_text(
+            ctx,
+            text,
+            MISC_FONT_COLOR,
+            TextParams::center()
+                .with_height(Some(100.)),
+            "Lobby List"
         );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_refresh_indicator(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    let overlay = make_overlay(ui, &area, "", false);
+fn add_lobby_list_refresh_indicator(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // make overlay so indicator visibility starts `false`
+    let overlay = make_overlay(ctx.ui, &area, "", false);
 
     // indicator text
-    let text = Widget::create(
-            ui,
-            overlay.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 5., y: 15. },
-                relative_2: Vec2{ x: 98., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    let text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : MISC_FONT_COLOR,
-        };
-
-    rcommands.commands().spawn(
-            TextElementBundle::new(
-                text,
-                TextParams::centerright()
-                    .with_style(&text_style)
-                    .with_height(Some(40.)),
-                "Loading..."
-            )
+    let text = relative_widget(ctx, overlay.end(""), (5., 98.), (15., 95.));
+    spawn_basic_text(
+            ctx,
+            text,
+            MISC_FONT_COLOR,
+            TextParams::centerright()
+                .with_height(Some(40.)),
+            "Loading..."
         );
 
     // setup reactors
-    rcommands.commands().add(
+    ctx.commands().add(
             move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors)
         );
 }
@@ -367,59 +327,31 @@ fn add_lobby_list_refresh_indicator(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_refresh_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    // overlay
-    let button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 5., y: 10. },
-                relative_2: Vec2{ x: 98., y: 90. },
-                ..Default::default()
-            }
-        ).unwrap();
-
+fn add_lobby_list_refresh_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // button ui
-    let button_overlay = make_overlay(ui, &button_area, "", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_overlay = relative_widget(ctx, area.end(""), (5., 98.), (10., 90.));
+    let button_entity  = ctx.commands().spawn_empty().id();
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            "Refresh",
-            |world| syscall(world, (), refresh_lobby_list)
-        );
+    make_basic_button(ctx, &button_overlay, button_entity, "Refresh", |world| syscall(world, (), refresh_lobby_list));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_subsection(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_lobby_list_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // list box
-    rcommands.commands().spawn(
-            ImageElementBundle::new(
-                    area,
-                    ImageParams::center()
-                        .with_depth(50.)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.)),
-                    asset_server.load(BOX),
-                    Vec2::new(236.0, 139.0)
-                )
+    let list_box = ImageElementBundle::new(
+            area,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.)),
+            ctx.asset_server.load(BOX),
+            Vec2::new(236.0, 139.0)
         );
+    ctx.commands().spawn(list_box);
 
     // prepare contents
     let mut contents = Vec::with_capacity(LOBBY_LIST_SIZE as usize);
@@ -428,57 +360,28 @@ fn add_lobby_list_subsection(
 
     for i in 0..LOBBY_LIST_SIZE
     {
-        let content_widget = make_overlay(ui, area, "", true);
+        let content_widget = make_overlay(ctx.ui, area, "", true);
 
         // text
         let y_start = 2.5 + (i       as f32)*entry_height;
         let y_end   = 2.5 + ((i + 1) as f32)*entry_height;
+ 
+        let text = relative_widget(ctx, content_widget.end(""), (10., 78.), (y_start, y_end));
 
-        let text = Widget::create(
-                ui,
-                content_widget.end(""),
-                RelativeLayout{  //center
-                    relative_1: Vec2{ x: 10., y: y_start },
-                    relative_2: Vec2{ x: 78., y: y_end },
-                    ..Default::default()
-                }
-            ).unwrap();
-
-        let text_style = TextStyle {
-                font      : asset_server.load(MISC_FONT),
-                font_size : 45.0,
-                color     : LOBBY_DISPLAY_FONT_COLOR,
-            };
-
-        let content_entity = rcommands.commands().spawn(
-                TextElementBundle::new(
-                    text,
-                    TextParams::centerleft()
-                        .with_style(&text_style)
-                        .with_width(Some(100.))
-                        .with_height(Some(70.)),
-                    "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
-                )
-            ).id();
+        let content_entity = spawn_basic_text(
+                ctx,
+                text,
+                LOBBY_DISPLAY_FONT_COLOR,
+                TextParams::centerleft()
+                    .with_width(Some(100.))
+                    .with_height(Some(70.)),
+                "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
+            );
 
         // button
-        let join_button_area = Widget::create(
-                ui,
-                content_widget.end(""),
-                RelativeLayout{  //center
-                    relative_1: Vec2{ x: 80., y: y_start + 0.5 },
-                    relative_2: Vec2{ x: 98., y: y_end - 0.5 },
-                    ..Default::default()
-                }
-            ).unwrap();
+        let join_button_area = relative_widget(ctx, content_widget.end(""), (80., 98.), (y_start + 0.5, y_end - 0.5));
 
-        make_basic_button(
-                rcommands.commands(),
-                asset_server,
-                ui,
-                &join_button_area,
-                content_entity,
-                "Join",
+        make_basic_button(ctx, &join_button_area, content_entity, "Join",
                 move |world| syscall(world, i, open_join_lobby_window)
             );
 
@@ -489,7 +392,7 @@ fn add_lobby_list_subsection(
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World| syscall(world, contents.clone(), update_lobby_list_contents)
         );
 }
@@ -497,31 +400,20 @@ fn add_lobby_list_subsection(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_stats(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    _ui          : &mut UiTree,
-    area         : &Widget,
-){
+fn add_lobby_list_stats(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // stats text
-    let text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : LOBBY_LIST_STATS_FONT_COLOR,
-        };
-
-    let text_entity = rcommands.commands().spawn(
-            TextElementBundle::new(
-                area,
-                TextParams::center()
-                    .with_style(&text_style)
-                    .with_width(Some(100.)),
-                "(????-???? / ????)"
-            )
-        ).id();
+    let text_entity = spawn_basic_text(
+            ctx,
+            area.clone(),
+            LOBBY_LIST_STATS_FONT_COLOR,
+            TextParams::center()
+                .with_width(Some(100.)),
+            "(????-???? / ????)"
+        );
 
     // update stats when lobby page updates
-    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World|
             {
                 // define updated text
@@ -539,36 +431,22 @@ fn add_lobby_list_stats(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_now_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_clamp_now_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // button ui
     // - request the most recent possible lobby
-    let button_overlay = make_overlay(ui, area, "", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_entity = ctx.commands().spawn_empty().id();
+    make_basic_button(ctx, &area, button_entity, "Now", |world| syscall(world, (), request_lobby_list_now));
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            "Now",
-            move |world| syscall(world, (), request_lobby_list_now)
-        );
+    // disable button when displaying 'now'
+    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // block button and grey-out text when displaying 'now'
-    let block_overlay = make_overlay(ui, &button_overlay, "", false);
-    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
-
-    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
             move |world: &mut World|
             {
                 let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_now();
-                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
 }
@@ -576,37 +454,23 @@ fn add_clamp_now_button(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_paginate_left_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_paginate_left_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // button ui
     // - request the next most recent lobby
-    let button_overlay = make_overlay(ui, area, "", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_entity = ctx.commands().spawn_empty().id();
+    make_basic_button(ctx, &area, button_entity, "<", |world| syscall(world, (), request_lobby_list_next_newer));
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            "<",
-            move |world| syscall(world, (), request_lobby_list_next_newer)
-        );
+    // disable button when no newer lobbies to request
+    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // block button and grey-out text when no newer lobbies to request
-    let block_overlay = make_overlay(ui, &button_overlay, "", false);
-    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
-
-    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World|
             {
                 let (first, _, _) = world.resource::<ReactRes<LobbyPage>>().stats();
                 let enable = first != 1;
-                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
 }
@@ -614,37 +478,23 @@ fn add_paginate_left_button(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_paginate_right_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_paginate_right_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // button ui
     // - request the next older lobby
-    let button_overlay = make_overlay(ui, area, "", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_entity = ctx.commands().spawn_empty().id();
+    make_basic_button(ctx, &area, button_entity, ">", |world| syscall(world, (), request_lobby_list_next_older));
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            ">",
-            move |world| syscall(world, (), request_lobby_list_next_older)
-        );
+    // disable button when no older lobbies to request
+    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // block button and grey-out text when no older lobbies to request
-    let block_overlay = make_overlay(ui, &button_overlay, "", false);
-    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
-
-    rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
             move |world: &mut World|
             {
                 let (_, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
                 let enable = last != total;
-                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
 }
@@ -652,36 +502,22 @@ fn add_paginate_right_button(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_oldest_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_clamp_oldest_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // button ui
     // - request the oldest lobbies
-    let button_overlay = make_overlay(ui, area, "", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_entity = ctx.commands().spawn_empty().id();
+    make_basic_button(ctx, &area, button_entity, "Oldest", |world| syscall(world, (), request_lobby_list_oldest));
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            "Oldest",
-            move |world| syscall(world, (), request_lobby_list_oldest)
-        );
+    // disable button when last requested the oldest lobbies
+    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    // block button and grey-out text when last requested the oldest lobbies
-    let block_overlay = make_overlay(ui, &button_overlay, "", false);
-    rcommands.commands().spawn((block_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
-
-    rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
             move |world: &mut World|
             {
                 let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_oldest();
-                syscall(world, (enable, block_overlay.clone(), button_entity), toggle_button_availability);
+                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
 }
@@ -689,192 +525,76 @@ fn add_clamp_oldest_button(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_navigation_subsection(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
-    // text displaying lobby list position
-    let lobby_list_stats_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 38., y: 20. },
-                relative_2: Vec2{ x: 62., y: 60. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_lobby_list_stats(rcommands, asset_server, ui, &lobby_list_stats_area);
+fn add_navigation_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // text displaying lobby li (center)st position
+    let lobby_list_stats_area = relative_widget(ctx, area.end(""), (38., 62.), (20., 60.));
+    add_lobby_list_stats(ctx, &lobby_list_stats_area);
 
-    // button: go to first page
-    let clamp_left_button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //far left
-                relative_1: Vec2{ x: 1., y: 5. },
-                relative_2: Vec2{ x: 13., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_clamp_now_button(rcommands, asset_server, ui, &clamp_left_button_area);
+    // button: go to first page (far left)
+    let clamp_left_button_area = relative_widget(ctx, area.end(""), (1., 13.), (5., 95.));
+    add_clamp_now_button(ctx, &clamp_left_button_area);
 
-    // button: paginate left
-    let paginate_left_button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //mid left
-                relative_1: Vec2{ x: 14., y: 5. },
-                relative_2: Vec2{ x: 26., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_paginate_left_button(rcommands, asset_server, ui, &paginate_left_button_area);
+    // button: paginate left (mid left)
+    let paginate_left_button_area = relative_widget(ctx, area.end(""), (14., 26.), (5., 95.));
+    add_paginate_left_button(ctx, &paginate_left_button_area);
 
-    // button: paginate right
-    let paginate_right_button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //mid right
-                relative_1: Vec2{ x: 74., y: 5. },
-                relative_2: Vec2{ x: 86., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_paginate_right_button(rcommands, asset_server, ui, &paginate_right_button_area);
+    // button: paginate right (mid right)
+    let paginate_right_button_area = relative_widget(ctx, area.end(""), (74., 86.), (5., 95.));
+    add_paginate_right_button(ctx, &paginate_right_button_area);
 
-    // button: go to last page
-    let clamp_right_button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{  //far right
-                relative_1: Vec2{ x: 87., y: 5. },
-                relative_2: Vec2{ x: 99., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_clamp_oldest_button(rcommands, asset_server, ui, &clamp_right_button_area);
+    // button: go to last page (far right)
+    let clamp_right_button_area = relative_widget(ctx, area.end(""), (87., 99.), (5., 95.));
+    add_clamp_oldest_button(ctx, &clamp_right_button_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_new_lobby_button(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+fn add_new_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // overlay
-    let button_area = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 25., y: 10. },
-                relative_2: Vec2{ x: 75., y: 90. },
-                ..Default::default()
-            }
-        ).unwrap();
+    let button_area = relative_widget(ctx, area.end(""), (25., 75.), (10., 90.));
 
     // button ui
-    let button_overlay = make_overlay(ui, &button_area, "new_lobby", true);
-    let button_entity  = rcommands.commands().spawn_empty().id();
+    let button_overlay = make_overlay(ctx.ui, &button_area, "new_lobby", true);
+    let button_entity  = ctx.commands().spawn_empty().id();
 
-    make_basic_button(
-            rcommands.commands(),
-            asset_server,
-            ui,
-            &button_overlay,
-            button_entity,
-            "New Lobby",
-            |world| syscall(world, (), open_new_lobby_window)
-        );
+    make_basic_button(ctx, &button_overlay, button_entity, "New Lobby", |world| syscall(world, (), open_new_lobby_window));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_lobby_list(
-    rcommands    : &mut ReactCommands,
-    asset_server : &AssetServer,
-    ui           : &mut UiTree,
-    area         : &Widget,
-){
+pub(crate) fn add_lobby_list(ctx: &mut UiBuilderCtx, area: &Widget)
+{
     // title
-    let lobby_list_title = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 0. },
-                relative_2: Vec2{ x: 100., y: 15. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_lobby_list_title(rcommands, asset_server, ui, &lobby_list_title);
+    let lobby_list_title = relative_widget(ctx, area.end(""), (0., 100.), ( 0., 15.));
+    add_lobby_list_title(ctx, &lobby_list_title);
 
     // refresh indicator
-    let lobby_list_refresh_indicator = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 70., y: 10. },
-                relative_2: Vec2{ x: 75., y: 15. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_lobby_list_refresh_indicator(rcommands, asset_server, ui, &lobby_list_refresh_indicator);
+    let lobby_list_refresh_indicator = relative_widget(ctx, area.end(""), (70., 75.), (10., 15.));
+    add_lobby_list_refresh_indicator(ctx, &lobby_list_refresh_indicator);
 
     // refresh button
-    let lobby_list_refresh_button = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 75., y: 10. },
-                relative_2: Vec2{ x: 90., y: 15. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_lobby_list_refresh_button(rcommands, asset_server, ui, &lobby_list_refresh_button);
+    let lobby_list_refresh_button = relative_widget(ctx, area.end(""), (75., 90.), (10., 15.));
+    add_lobby_list_refresh_button(ctx, &lobby_list_refresh_button);
 
     // list subsection
-    let lobby_list_subsection = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 10., y: 15. },
-                relative_2: Vec2{ x: 90., y: 75. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_lobby_list_subsection(rcommands, asset_server, ui, &lobby_list_subsection);
+    let lobby_list_subsection = relative_widget(ctx, area.end(""), (10., 90.), (15., 75.));
+    add_lobby_list_subsection(ctx, &lobby_list_subsection);
 
     // navigation subsection
-    let navigation_subsection = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 10., y: 75. },
-                relative_2: Vec2{ x: 90., y: 80. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_navigation_subsection(rcommands, asset_server, ui, &navigation_subsection);
+    let navigation_subsection = relative_widget(ctx, area.end(""), (10., 90.), (75., 80.));
+    add_navigation_subsection(ctx, &navigation_subsection);
 
     // new lobby button
-    let new_lobby_button = Widget::create(
-            ui,
-            area.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 0., y: 80. },
-                relative_2: Vec2{ x: 100., y: 95. },
-                ..Default::default()
-            }
-        ).unwrap();
-    add_new_lobby_button(rcommands, asset_server, ui, &new_lobby_button);
+    let new_lobby_button = relative_widget(ctx, area.end(""), (0., 100.), (80., 95.));
+    add_new_lobby_button(ctx, &new_lobby_button);
 
     // initialize UI listening to lobby page
-    rcommands.trigger_resource_mutation::<LobbyPage>();
-    rcommands.trigger_resource_mutation::<LobbyPageRequest>();
+    ctx.rcommands.trigger_resource_mutation::<LobbyPage>();
+    ctx.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -897,11 +617,9 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
                 //   is saturated)
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty() )
-                .run_if(resource_equals(ConnectionStatus::Connected))
+                .run_if(|status: Res<ReactRes<ConnectionStatus>>| **status == ConnectionStatus::Connected)
                 .run_if(on_timer(lobby_list_refresh)
-                    .or_else(
-                        |connection_status: Res<ConnectionStatus>| { connection_status.is_changed() }
-                    )
+                    .or_else(|status: Res<ReactRes<ConnectionStatus>>| status.is_changed())
                 )
         )
         ;

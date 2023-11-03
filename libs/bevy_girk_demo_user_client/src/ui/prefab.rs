@@ -12,7 +12,7 @@ use std::borrow::Borrow;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn basic_relative_widget(
+pub(crate) fn relative_widget(
     ctx     : &mut UiBuilderCtx,
     path    : impl Borrow<str>,
     x_range : (f32, f32),
@@ -32,11 +32,13 @@ pub(crate) fn basic_relative_widget(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn spawn_basic_text(ctx: UiBuilderCtx,
-    widget                 : Widget,
-    color                  : Color,
-    (depth, width, height) : (Option<f32>, Option<f32>, Option<f32>),
-    default_text           : &str,
+/// The text style of `params` will be overwritten.
+pub(crate) fn spawn_basic_text(
+    ctx          : &mut UiBuilderCtx,
+    widget       : Widget,
+    color        : Color,
+    params       : TextParams,
+    default_text : &str,
 ) -> Entity
 {
     let text_style = TextStyle {
@@ -45,13 +47,8 @@ pub(crate) fn spawn_basic_text(ctx: UiBuilderCtx,
             color     : color,
         };
 
-    let mut text_params = TextParams::center()
-        .with_style(&text_style)
-        .with_width(width)
-        .with_height(height);
-    if let Some(depth) = depth { text_params = text_params.with_depth(depth); }
-
-    let text_entity = ctx.rcommands.commands().spawn(TextElementBundle::new(widget, text_params, default_text)).id();
+    let text_params = params.with_style(&text_style);
+    let text_entity = ctx.commands().spawn(TextElementBundle::new(widget, text_params, default_text)).id();
 
     text_entity    
 }
@@ -59,54 +56,48 @@ pub(crate) fn spawn_basic_text(ctx: UiBuilderCtx,
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn make_basic_button(
-    commands         : &mut Commands,
-    asset_server     : &AssetServer,
-    ui               : &mut UiTree,
+    ctx              : &mut UiBuilderCtx,
     button_overlay   : &Widget,
     button_entity    : Entity,
     button_text      : &'static str,
     unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ){
     // add default button image
-    let default_button = make_overlay(ui, &button_overlay, "", true);
-    commands.spawn(
-            ImageElementBundle::new(
-                    &default_button,
-                    ImageParams::center()
-                        .with_depth(50.)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.))
-                        .with_color(Color::GRAY),
-                    asset_server.load(MISC_BUTTON),
-                    Vec2::new(250.0, 142.0)
-                )
+    let default_button = make_overlay(ctx.ui, &button_overlay, "", true);
+    let default_image = ImageElementBundle::new(
+            &default_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::GRAY),
+            ctx.asset_server.load(MISC_BUTTON),
+            Vec2::new(250.0, 142.0)
         );
+    ctx.commands().spawn(default_image);
 
     // add pressed button image
-    let pressed_button = make_overlay(ui, &button_overlay, "", false);
-    commands.spawn(
-            ImageElementBundle::new(
-                    &pressed_button,
-                    ImageParams::center()
-                        .with_depth(50.)
-                        .with_width(Some(100.))
-                        .with_height(Some(100.))
-                        .with_color(Color::DARK_GRAY),
-                    asset_server.load(MISC_BUTTON),
-                    Vec2::new(250.0, 142.0)
-                )
+    let pressed_button = make_overlay(ctx.ui, &button_overlay, "", false);
+    let pressed_image = ImageElementBundle::new(
+            &pressed_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::DARK_GRAY),
+            ctx.asset_server.load(MISC_BUTTON),
+            Vec2::new(250.0, 142.0)
         );
-
-    // button entity
-    let mut entity_commands = commands.get_entity(button_entity).unwrap();
+    ctx.commands().spawn(pressed_image);
 
     // add button text
     let text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
+            font      : ctx.asset_server.load(MISC_FONT),
             font_size : 40.0,
             color     : MISC_FONT_COLOR,
         };
 
+    let mut entity_commands = ctx.commands().get_entity(button_entity).unwrap();
     entity_commands.insert(
             TextElementBundle::new(
                     button_overlay,
@@ -118,7 +109,7 @@ pub(crate) fn make_basic_button(
                 )
         );
 
-    // interactivity
+    // build button
     InteractiveElementBuilder::new()
         .with_default_widget(default_button)
         .with_pressed_widget(pressed_button)
@@ -133,9 +124,7 @@ pub(crate) fn make_basic_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn make_basic_popup(
-    commands        : &mut Commands,
-    asset_server    : &AssetServer,
-    ui              : &mut UiTree,
+    ctx             : &mut UiBuilderCtx,
     window_scaling  : Vec2,  // x: % of screen width, y: % of screen height
     cancel_text     : &'static str,
     accept_text     : &'static str,
@@ -144,7 +133,7 @@ pub(crate) fn make_basic_popup(
 ) //-> (Widget, Widget)
 {
     // popup overlay attached to root of ui tree
-    let default_button = make_overlay(ui, &Widget::new("root"), "", true);
+    let default_button = make_overlay(ctx.ui, &Widget::new("root"), "", true);
 
     // add screen-wide barrier
 

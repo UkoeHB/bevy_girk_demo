@@ -47,46 +47,37 @@ fn deactivate_selection<U: LunexUI>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_menu_bar_button(
-    rcommands    : &mut ReactCommands,
-    ui           : &mut UiTree,
-    button       : &Widget,
-    overlay      : &Widget,
-    asset_server : &AssetServer,
-    display_name : &str,
-) -> Entity
+fn add_menu_bar_button(ctx: &mut UiBuilderCtx, button: &Widget, overlay: &Widget, display_name: &str) -> Entity
 {
     // add default button image
-    let default_button = make_overlay(ui, button, "default", true);
-    rcommands.commands().spawn(
-        ImageElementBundle::new(
-                &default_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.)),
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let default_button = make_overlay(ctx.ui, button, "default", true);
+    let default_image = ImageElementBundle::new(
+            &default_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.)),
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ui, button, "selected", false);
-    rcommands.commands().spawn(
-        ImageElementBundle::new(
-                &selected_button,
-                ImageParams::center()
-                    .with_depth(50.)
-                    .with_width(Some(100.))
-                    .with_height(Some(100.))
-                    .with_color(Color::GRAY),  //tint the default button (todo: it's ugly)
-                asset_server.load(MENU_BAR_BUTTON),
-                Vec2::new(250.0, 142.0)
-            )
-    );
+    let selected_button = make_overlay(ctx.ui, button, "selected", false);
+    let selected_image = ImageElementBundle::new(
+            &selected_button,
+            ImageParams::center()
+                .with_depth(50.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::GRAY),  //tint the default button (todo: it's ugly)
+            ctx.asset_server.load(MENU_BAR_BUTTON),
+            Vec2::new(250.0, 142.0)
+        );
+    ctx.commands().spawn(selected_image);
 
     // select callback
-    let mut entity_commands = rcommands.commands().spawn_empty();
+    let mut entity_commands = ctx.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let overlay_clone = overlay.clone();
     let select_callback =
@@ -101,7 +92,7 @@ fn add_menu_bar_button(
             syscall(world, overlay_clone.clone(), deactivate_selection::<MainUI>);
         };
 
-    // build interaction into the widget
+    // build the button
     InteractiveElementBuilder::new()
         .with_default_widget(default_button)
         .with_selected_widget(selected_button)
@@ -115,22 +106,16 @@ fn add_menu_bar_button(
     entity_commands.insert(MainMenuButton);
 
     // add button text
-    let menu_bar_text_style = TextStyle{
-            font      : asset_server.load(MENU_BAR_BUTTON_FONT),
-            font_size : 40.0,
-            color     : MENU_BAR_BUTTON_FONT_COLOR,
-        };
-
-    entity_commands.insert(
-        TextElementBundle::new(
-                button,
-                TextParams::center()
-                    .with_style(&menu_bar_text_style)
-                    .with_depth(100.)
-                    .with_height(Some(40.)),
-                display_name
-            )
-    );
+    let text = make_overlay(ctx.ui, button, "", true);
+    spawn_basic_text(
+            ctx,
+            text,
+            MENU_BAR_BUTTON_FONT_COLOR,
+            TextParams::center()
+                .with_depth(100.)
+                .with_height(Some(40.)),
+            display_name
+        );
 
     button_entity
 }
@@ -138,74 +123,32 @@ fn add_menu_bar_button(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_home_overlay(
-    rcommands    : &mut ReactCommands,
-    ui           : &mut UiTree,
-    overlay      : &Widget,
-    asset_server : &AssetServer
-){
-    // overlay
-    let home_overlay_text = Widget::create(
-            ui,
-            overlay.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 40., y: 40. },
-                relative_2: Vec2{ x: 60., y: 60. },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    let home_overlay_text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : MISC_FONT_COLOR,
-        };
-
-    rcommands.commands().spawn(
-            TextElementBundle::new(
-                home_overlay_text,
-                TextParams::center()
-                    .with_style(&home_overlay_text_style)
-                    .with_height(Some(40.)),
-                "Welcome!"
-            )
+fn add_home_overlay(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    let text = relative_widget(ctx, area.end(""), (40., 60.), (40., 60.));
+    spawn_basic_text(
+            ctx,
+            text,
+            MISC_FONT_COLOR,
+            TextParams::center()
+                .with_height(Some(40.)),
+            "Welcome!"
         );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_settings_overlay(
-    rcommands    : &mut ReactCommands,
-    ui           : &mut UiTree,
-    overlay      : &Widget,
-    asset_server : &AssetServer
-){
-    // overlay
-    let settings_overlay_text = Widget::create(
-            ui,
-            overlay.end(""),
-            RelativeLayout{  //center
-                relative_1: Vec2{ x: 40., y: 40. },
-                relative_2: Vec2{ x: 60., y: 60. },
-                ..Default::default()
-            }
-        ).unwrap();
-
-    let settings_overlay_text_style = TextStyle {
-            font      : asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : MISC_FONT_COLOR,
-        };
-
-    rcommands.commands().spawn(
-            TextElementBundle::new(
-                settings_overlay_text,
-                TextParams::center()
-                    .with_style(&settings_overlay_text_style)
-                    .with_height(Some(20.)),
-                "There are no settings yet..."
-            )
+fn add_settings_overlay(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    let text = relative_widget(ctx, area.end(""), (40., 60.), (40., 60.));
+    spawn_basic_text(
+            ctx,
+            text,
+            MISC_FONT_COLOR,
+            TextParams::center()
+                .with_height(Some(20.)),
+            "There are no settings yet..."
         );
 }
 
@@ -218,15 +161,7 @@ pub(crate) struct MainMenuButton;
 pub(crate) fn add_menu_bar_section(ctx: &mut UiBuilderCtx, menu_bar: Widget, menu_overlay: Widget)
 {
     // menu bar overlay
-    let menu_bar_overlay = Widget::create(
-            ctx.ui,
-            menu_bar.end(""),
-            RelativeLayout{
-                relative_1: Vec2{ x: 10., y: 20. },
-                relative_2: Vec2{ x: 90., y: 100. },
-                ..Default::default()
-            }
-        ).unwrap();
+    let menu_bar_overlay = relative_widget(ctx, menu_bar.end(""), (10., 90.), (20., 100.));
 
     // menu buttons: widget grid
     let menu_widgets = GridSegment::new()
@@ -238,16 +173,16 @@ pub(crate) fn add_menu_bar_section(ctx: &mut UiBuilderCtx, menu_bar: Widget, men
     // prepare each of the menu buttons and areas
     // - home
     let home_overlay = make_overlay(ctx.ui, &menu_overlay, "home_overlay", false);
-    let home_button_entity = add_menu_bar_button(ctx.rcommands, ctx.ui, &menu_widgets[0], &home_overlay, ctx.asset_server, "HOME");
-    add_home_overlay(ctx.rcommands, ctx.ui, &home_overlay, ctx.asset_server);
+    let home_button_entity = add_menu_bar_button(ctx, &menu_widgets[0], &home_overlay, "HOME");
+    add_home_overlay(ctx, &home_overlay);
 
     // - settings
     let settings_overlay = make_overlay(ctx.ui, &menu_overlay, "settings_overlay", false);
-    let _ = add_menu_bar_button(ctx.rcommands, ctx.ui, &menu_widgets[1], &settings_overlay, ctx.asset_server, "SETTINGS");
-    add_settings_overlay(ctx.rcommands, ctx.ui, &settings_overlay, ctx.asset_server);
+    let _ = add_menu_bar_button(ctx, &menu_widgets[1], &settings_overlay, "SETTINGS");
+    add_settings_overlay(ctx, &settings_overlay);
 
     // activate home button (default)
-    ctx.rcommands.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
+    ctx.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
