@@ -55,6 +55,40 @@ pub(crate) fn spawn_basic_text(
 
 //-------------------------------------------------------------------------------------------------------------------
 
+pub(crate) fn spawn_plain_box(ctx: &mut UiBuilderCtx, widget: Widget) -> Entity
+{
+    let image = ImageElementBundle::new(
+            &widget,
+            ImageParams::center()
+                .with_width(Some(100.))
+                .with_height(Some(100.)),
+            ctx.asset_server.load(BOX),
+            Vec2::new(236.0, 139.0)
+        );
+    let box_entity = ctx.commands().spawn(image).id();
+
+    box_entity
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn spawn_plain_outline(ctx: &mut UiBuilderCtx, widget: Widget) -> Entity
+{
+    let image = ImageElementBundle::new(
+            &widget,
+            ImageParams::center()
+                .with_width(Some(100.))
+                .with_height(Some(100.)),
+            ctx.asset_server.load(OUTLINE),
+            Vec2::new(236.0, 139.0)
+        );
+    let box_entity = ctx.commands().spawn(image).id();
+
+    box_entity
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 pub(crate) fn make_basic_button(
     ctx              : &mut UiBuilderCtx,
     button_overlay   : &Widget,

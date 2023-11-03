@@ -299,16 +299,7 @@ fn add_lobby_display_summary_box(ctx: &mut UiBuilderCtx, area: &Widget)
 fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // outline for header
-    let outline = ImageElementBundle::new(
-            area,
-            ImageParams::center()
-                .with_depth(50.1)
-                .with_width(Some(100.))
-                .with_height(Some(100.)),
-            ctx.asset_server.load(OUTLINE),
-            Vec2::new(236.0, 139.0)
-        );
-    ctx.commands().spawn(outline);
+    spawn_plain_outline(ctx, area.clone());
 
     // text
     let text = relative_widget(ctx, area.end(""), (5., 95.), (15., 97.5));
@@ -496,16 +487,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, ar
 fn add_lobby_display_list<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // box for entire area
-    let area_box = ImageElementBundle::new(
-            area.clone(),
-            ImageParams::center()
-                .with_depth(50.1)
-                .with_width(Some(100.))
-                .with_height(Some(100.)),
-            ctx.asset_server.load(BOX),
-            Vec2::new(236.0, 139.0)
-        );
-    ctx.commands().spawn(area_box);
+    spawn_plain_box(ctx, area.clone());
 
     // header
     let header_area = relative_widget(ctx, area.end(""), (0., 100.), (0., 20.));
@@ -524,16 +506,7 @@ fn add_lobby_display_box(ctx: &mut UiBuilderCtx, area: &Widget)
     // box for entire display
     //todo: it's better to place a box for the summary box area, but the box image gets too stretched
     let box_area = relative_widget(ctx, area.end(""), (10., 90.), (0., 100.));
-    let display_box = ImageElementBundle::new(
-            &box_area,
-            ImageParams::center()
-                .with_depth(50.)
-                .with_width(Some(100.))
-                .with_height(Some(100.)),
-            ctx.asset_server.load(BOX),
-            Vec2::new(236.0, 139.0)
-        );
-    ctx.commands().spawn(display_box);
+    spawn_plain_box(ctx, box_area.clone());
 
     // summary box
     let summary_box_area = relative_widget(ctx, box_area.end(""), (0., 100.), (0., 20.));

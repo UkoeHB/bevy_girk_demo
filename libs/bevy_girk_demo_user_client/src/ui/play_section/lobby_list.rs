@@ -342,16 +342,7 @@ fn add_lobby_list_refresh_button(ctx: &mut UiBuilderCtx, area: &Widget)
 fn add_lobby_list_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // list box
-    let list_box = ImageElementBundle::new(
-            area,
-            ImageParams::center()
-                .with_depth(50.)
-                .with_width(Some(100.))
-                .with_height(Some(100.)),
-            ctx.asset_server.load(BOX),
-            Vec2::new(236.0, 139.0)
-        );
-    ctx.commands().spawn(list_box);
+    spawn_plain_box(ctx, area.clone());
 
     // prepare contents
     let mut contents = Vec::with_capacity(LOBBY_LIST_SIZE as usize);
