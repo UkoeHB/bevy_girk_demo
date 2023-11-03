@@ -1,16 +1,35 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
-use bevy_kot::ecs::{*, syscall};
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
-use bevy_lunex::prelude::*;
+use bevy_girk_backend_public::*;
+use bevy_kot::ecs::*;
 
 //standard shortcuts
 
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Cached state of the join lobby window.
+///
+/// This is a reactive resource.
+#[derive(Debug)]
+struct JoinLobbyWindow
+{
+    lobby_id: u64,
+}
+
+impl Default for JoinLobbyWindow
+{
+    fn default() -> Self
+    {
+        Self{ lobby_id: u64::MAX }
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -42,6 +61,29 @@ fn send_join_lobby_request(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+/// This is a reactive data event used to activate the window.
+#[derive(Debug)]
+pub(crate) struct ActivateJoinLobbyWindow
+{
+    /// Index in the lobby list of the lobby corresponding to this lobby window.
+    ///
+    /// Only valid in the tick where it is set.
+    pub(crate) lobby_list_index: usize,
+}
 
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
+{
+    
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[bevy_plugin]
+pub(crate) fn UiJoinLobbyWindowPlugin(app: &mut App)
+{
+
+}
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -27,6 +27,8 @@ trait ListPageTrait: Send + Sync + 'static
 }
 
 /// Tracks the current player list page. Starts at 0.
+///
+/// This is a reactive resource.
 #[derive(Debug)]
 struct PlayerListPage(usize);
 
@@ -38,6 +40,8 @@ impl ListPageTrait for PlayerListPage
 }
 
 /// Tracks the current watcher list page. Starts at 0.
+///
+/// This is a reactive resource.
 #[derive(Debug)]
 struct WatcherListPage(usize);
 

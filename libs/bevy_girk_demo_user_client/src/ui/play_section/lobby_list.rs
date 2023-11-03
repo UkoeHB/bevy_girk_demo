@@ -261,25 +261,23 @@ fn update_lobby_list_contents(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn open_join_lobby_window(
-    In(lobby_index) : In<usize>,
-    mut rcommands   : ReactCommands,
-    lobby_page      : Res<ReactRes<LobbyPage>>,
-){
-    // get lobby id of lobby to join
-    let Some(lobby_contents) = lobby_page.get().get(lobby_index)
-    else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby attempt"); return; };
-
-    //todo: open join lobby window w/ lobby contents
+fn open_join_lobby_window(In(lobby_index): In<usize>, mut rcommands: ReactCommands)
+{
+    // activate the window
+    rcommands.send(
+            ActivateJoinLobbyWindow{
+                    lobby_list_index: lobby_index
+                }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn open_new_lobby_window(
-    mut rcommands: ReactCommands,
-){
-    //todo: open new lobby window
+fn open_make_lobby_window(mut rcommands: ReactCommands)
+{
+    // activate the window
+    rcommands.send(ActivateMakeLobbyWindow);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -548,10 +546,10 @@ fn add_new_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let button_area = relative_widget(ctx, area.end(""), (25., 75.), (10., 90.));
 
     // button ui
-    let button_overlay = make_overlay(ctx.ui(), &button_area, "new_lobby", true);
+    let button_overlay = make_overlay(ctx.ui(), &button_area, "", true);
     let button_entity  = ctx.commands().spawn_empty().id();
 
-    make_basic_button(ctx, &button_overlay, button_entity, "New Lobby", |world| syscall(world, (), open_new_lobby_window));
+    make_basic_button(ctx, &button_overlay, button_entity, "New Lobby", |world| syscall(world, (), open_make_lobby_window));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -583,6 +581,13 @@ pub(crate) fn add_lobby_list(ctx: &mut UiBuilderCtx, area: &Widget)
     let new_lobby_button = relative_widget(ctx, area.end(""), (0., 100.), (80., 95.));
     add_new_lobby_button(ctx, &new_lobby_button);
 
+
+    // prepare windows
+    // - these are defined with respect to the ui root, so we don't pass in area widgets
+    add_join_lobby_window(ctx);
+    add_make_lobby_window(ctx);
+
+
     // initialize UI listening to lobby page
     ctx.rcommands.trigger_resource_mutation::<LobbyPage>();
     ctx.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
@@ -597,6 +602,8 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
     let lobby_list_refresh = Duration::from_millis(timer_configs.lobby_list_refresh_ms);
 
     app
+        .add_plugins(UiJoinLobbyWindowPlugin)
+        .add_plugins(UiMakeLobbyWindowPlugin)
         .add_systems(PreUpdate,
             (
                 refresh_lobby_list, apply_deferred,

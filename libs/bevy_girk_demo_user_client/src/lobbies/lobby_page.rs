@@ -14,6 +14,8 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Caches the currently-displayed lobby page.
+///
+/// This is a reactive resource.
 #[derive(Debug)]
 pub(crate) struct LobbyPage
 {
@@ -74,6 +76,8 @@ impl Default for LobbyPage { fn default() -> Self { Self{ current: Vec::default(
 /// Tracks the last lobby search request sent to the host server.
 ///
 /// On startup this is initialized with the top-most lobby page.
+///
+/// This is a reactive resource.
 #[derive(Debug)]
 pub(crate) struct LobbyPageRequest
 {

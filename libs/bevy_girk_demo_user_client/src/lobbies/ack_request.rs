@@ -68,6 +68,9 @@ fn try_timeout_ack_request(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Caches the current pending ack request (if there is one).
+///
+/// This is a reactive resource.
 #[derive(Debug)]
 pub(crate) struct AckRequest
 {
