@@ -15,17 +15,9 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ui_tree(
-    mut rcommands : ReactCommands,
-    asset_server  : Res<AssetServer>,
-    mut main_ui   : Query<&mut UiTree, With<MainUI>>
-){
-    // prep builder context
-    let ctx = &mut UiBuilderCtx{
-            rcommands    : &mut rcommands,
-            asset_server : &asset_server,
-            ui           : &mut main_ui.get_single_mut().unwrap(),
-        };
+fn setup_ui_tree(mut ctx: UiBuilderCtx)
+{
+    let ctx = &mut ctx;
 
     // root widget
     let root = relative_widget(ctx, "root", (0., 100.), (0., 100.));

@@ -50,7 +50,7 @@ fn make_play_button(
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ctx.ui, &default_button_overlay, "play_default", false);
+    let default_button = make_overlay(ctx.ui(), &default_button_overlay, "play_default", false);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -64,7 +64,7 @@ fn make_play_button(
     ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ctx.ui, &selected_button_overlay, "play_selected", false);
+    let selected_button = make_overlay(ctx.ui(), &selected_button_overlay, "play_selected", false);
     let selected_image = ImageElementBundle::new(
             &selected_button,
             ImageParams::center()
@@ -78,7 +78,7 @@ fn make_play_button(
     ctx.commands().spawn(selected_image);
 
     // add button text
-    let text = make_overlay(ctx.ui, button, "play_text", false);
+    let text = make_overlay(ctx.ui(), button, "play_text", false);
     spawn_basic_text(
             ctx,
             text.clone(),
@@ -103,7 +103,7 @@ fn make_in_lobby_button(
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ctx.ui, &default_button_overlay, "inlobby_default", false);
+    let default_button = make_overlay(ctx.ui(), &default_button_overlay, "inlobby_default", false);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -117,7 +117,7 @@ fn make_in_lobby_button(
     ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ctx.ui, &selected_button_overlay, "inlobby_selected", false);
+    let selected_button = make_overlay(ctx.ui(), &selected_button_overlay, "inlobby_selected", false);
     let selected_image = ImageElementBundle::new(
             &selected_button,
             ImageParams::center()
@@ -131,7 +131,7 @@ fn make_in_lobby_button(
     ctx.commands().spawn(selected_image);
 
     // add button text
-    let text = make_overlay(ctx.ui, button, "inlobby_text", false);
+    let text = make_overlay(ctx.ui(), button, "inlobby_text", false);
     spawn_basic_text(
             ctx,
             text.clone(),
@@ -194,8 +194,8 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 pub(crate) fn add_play_button(ctx: &mut UiBuilderCtx, button: &Widget, area_overlay: &Widget) -> Entity
 {
     // prepare overlays for controlling visibility
-    let default_button_overlay = make_overlay(ctx.ui, button, "default", true);
-    let selected_button_overlay = make_overlay(ctx.ui, button, "selected", false);
+    let default_button_overlay = make_overlay(ctx.ui(), button, "default", true);
+    let selected_button_overlay = make_overlay(ctx.ui(), button, "selected", false);
 
     // prepare buttons
     let play_pack = make_play_button(ctx, button, &default_button_overlay, &selected_button_overlay);

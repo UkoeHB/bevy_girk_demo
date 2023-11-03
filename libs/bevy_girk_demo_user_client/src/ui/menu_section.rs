@@ -50,7 +50,7 @@ fn deactivate_selection<U: LunexUI>(
 fn add_menu_bar_button(ctx: &mut UiBuilderCtx, button: &Widget, overlay: &Widget, display_name: &str) -> Entity
 {
     // add default button image
-    let default_button = make_overlay(ctx.ui, button, "default", true);
+    let default_button = make_overlay(ctx.ui(), button, "default", true);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -63,7 +63,7 @@ fn add_menu_bar_button(ctx: &mut UiBuilderCtx, button: &Widget, overlay: &Widget
     ctx.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ctx.ui, button, "selected", false);
+    let selected_button = make_overlay(ctx.ui(), button, "selected", false);
     let selected_image = ImageElementBundle::new(
             &selected_button,
             ImageParams::center()
@@ -106,7 +106,7 @@ fn add_menu_bar_button(ctx: &mut UiBuilderCtx, button: &Widget, overlay: &Widget
     entity_commands.insert(MainMenuButton);
 
     // add button text
-    let text = make_overlay(ctx.ui, button, "", true);
+    let text = make_overlay(ctx.ui(), button, "", true);
     spawn_basic_text(
             ctx,
             text,
@@ -167,17 +167,17 @@ pub(crate) fn add_menu_bar_section(ctx: &mut UiBuilderCtx, menu_bar: Widget, men
     let menu_widgets = GridSegment::new()
         .with_cells(vec![GridCell::named(Vec2::splat(10.0), "home"), GridCell::named(Vec2::splat(10.0), "settings")])
         .add_gaps(1.0)
-        .build_in(ctx.ui, &menu_bar_overlay, GridOrientation::Horizontal)
+        .build_in(ctx.ui(), &menu_bar_overlay, GridOrientation::Horizontal)
         .unwrap();
 
     // prepare each of the menu buttons and areas
     // - home
-    let home_overlay = make_overlay(ctx.ui, &menu_overlay, "home_overlay", false);
+    let home_overlay = make_overlay(ctx.ui(), &menu_overlay, "home_overlay", false);
     let home_button_entity = add_menu_bar_button(ctx, &menu_widgets[0], &home_overlay, "HOME");
     add_home_overlay(ctx, &home_overlay);
 
     // - settings
-    let settings_overlay = make_overlay(ctx.ui, &menu_overlay, "settings_overlay", false);
+    let settings_overlay = make_overlay(ctx.ui(), &menu_overlay, "settings_overlay", false);
     let _ = add_menu_bar_button(ctx, &menu_widgets[1], &settings_overlay, "SETTINGS");
     add_settings_overlay(ctx, &settings_overlay);
 

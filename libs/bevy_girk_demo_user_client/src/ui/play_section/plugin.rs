@@ -29,8 +29,8 @@ fn add_play_overlay(ctx: &mut UiBuilderCtx, area: &Widget)
 
 pub(crate) fn add_play_section(ctx: &mut UiBuilderCtx, play_button: Widget, menu_overlay: Widget)
 {
-    let play_button_area = relative_widget(ctx, play_button.end(""), (1.75, 97.25), (6.25, 91.));
-    let play_overlay = make_overlay(ctx.ui, &menu_overlay, "play_overlay", false);
+    let play_button_area = relative_widget(ctx, play_button.end(""), (1.75, 97.25), (6.25, 90.5));
+    let play_overlay = make_overlay(ctx.ui(), &menu_overlay, "play_overlay", false);
     add_play_button(ctx, &play_button_area, &play_overlay);
     add_play_overlay(ctx, &play_overlay);
 }

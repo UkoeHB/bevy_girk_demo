@@ -378,7 +378,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is zero
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<ListPage>(
@@ -416,7 +416,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is maxed
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<ListPage>(
@@ -531,7 +531,7 @@ fn add_leave_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, "Leave", |world| syscall(world, (), leave_current_lobby));
 
     // disable button when there is no lobby
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
@@ -553,7 +553,7 @@ fn add_start_game_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, "Start", |world| syscall(world, (), start_current_lobby));
 
     // disable button when we don't own the lobby
-    let disable_overlay = make_overlay(ctx.ui, &area, "", true);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", true);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
@@ -584,7 +584,7 @@ fn add_lobby_buttons(ctx: &mut UiBuilderCtx, area: &Widget)
             GridCell::named(Vec2::splat(10.0), "start_game")
         ])
         .add_gaps(3.0)
-        .build_in(ctx.ui, &buttons_overlay, GridOrientation::Horizontal)
+        .build_in(ctx.ui(), &buttons_overlay, GridOrientation::Horizontal)
         .unwrap();
 
     // prepare each of the buttons

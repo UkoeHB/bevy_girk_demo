@@ -16,7 +16,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
 {
     // text layout helper
     let layout_helper = Widget::create(
-            ctx.ui,
+            ctx.ui(),
             area.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
                 absolute_1: Vec2 { x: 5., y: 6. },
@@ -29,7 +29,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
 
     // text widget
     let text = Widget::create(
-            ctx.ui,
+            ctx.ui(),
             layout_helper.end(""),
             SolidLayout::new()  //keep text in top right corner when window is resized
                 .with_horizontal_anchor(1.0)

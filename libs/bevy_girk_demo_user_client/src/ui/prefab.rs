@@ -20,7 +20,7 @@ pub(crate) fn relative_widget(
 ) -> Widget
 {
      Widget::create(
-            ctx.ui,
+            ctx.ui(),
             path,
             RelativeLayout{
                 relative_1 : Vec2 { x: x_range.0, y: y_range.0 },
@@ -97,7 +97,7 @@ pub(crate) fn make_basic_button(
     unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ){
     // add default button image
-    let default_button = make_overlay(ctx.ui, &button_overlay, "", true);
+    let default_button = make_overlay(ctx.ui(), &button_overlay, "", true);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -111,7 +111,7 @@ pub(crate) fn make_basic_button(
     ctx.commands().spawn(default_image);
 
     // add pressed button image
-    let pressed_button = make_overlay(ctx.ui, &button_overlay, "", false);
+    let pressed_button = make_overlay(ctx.ui(), &button_overlay, "", false);
     let pressed_image = ImageElementBundle::new(
             &pressed_button,
             ImageParams::center()
@@ -167,7 +167,7 @@ pub(crate) fn make_basic_popup(
 ) //-> (Widget, Widget)
 {
     // popup overlay attached to root of ui tree
-    let default_button = make_overlay(ctx.ui, &Widget::new("root"), "", true);
+    let default_button = make_overlay(ctx.ui(), &Widget::new("root"), "", true);
 
     // add screen-wide barrier
 

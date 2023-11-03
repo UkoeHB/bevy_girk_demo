@@ -305,7 +305,7 @@ fn add_lobby_list_title(ctx: &mut UiBuilderCtx, area: &Widget)
 fn add_lobby_list_refresh_indicator(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // make overlay so indicator visibility starts `false`
-    let overlay = make_overlay(ctx.ui, &area, "", false);
+    let overlay = make_overlay(ctx.ui(), &area, "", false);
 
     // indicator text
     let text = relative_widget(ctx, overlay.end(""), (5., 98.), (15., 95.));
@@ -351,7 +351,7 @@ fn add_lobby_list_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
 
     for i in 0..LOBBY_LIST_SIZE
     {
-        let content_widget = make_overlay(ctx.ui, area, "", true);
+        let content_widget = make_overlay(ctx.ui(), area, "", true);
 
         // text
         let y_start = 2.5 + (i       as f32)*entry_height;
@@ -430,7 +430,7 @@ fn add_clamp_now_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, "Now", |world| syscall(world, (), request_lobby_list_now));
 
     // disable button when displaying 'now'
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
@@ -453,7 +453,7 @@ fn add_paginate_left_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, "<", |world| syscall(world, (), request_lobby_list_next_newer));
 
     // disable button when no newer lobbies to request
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
@@ -477,7 +477,7 @@ fn add_paginate_right_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, ">", |world| syscall(world, (), request_lobby_list_next_older));
 
     // disable button when no older lobbies to request
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
@@ -501,7 +501,7 @@ fn add_clamp_oldest_button(ctx: &mut UiBuilderCtx, area: &Widget)
     make_basic_button(ctx, &area, button_entity, "Oldest", |world| syscall(world, (), request_lobby_list_oldest));
 
     // disable button when last requested the oldest lobbies
-    let disable_overlay = make_overlay(ctx.ui, &area, "", false);
+    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
@@ -548,7 +548,7 @@ fn add_new_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let button_area = relative_widget(ctx, area.end(""), (25., 75.), (10., 90.));
 
     // button ui
-    let button_overlay = make_overlay(ctx.ui, &button_area, "new_lobby", true);
+    let button_overlay = make_overlay(ctx.ui(), &button_area, "new_lobby", true);
     let button_entity  = ctx.commands().spawn_empty().id();
 
     make_basic_button(ctx, &button_overlay, button_entity, "New Lobby", |world| syscall(world, (), open_new_lobby_window));
