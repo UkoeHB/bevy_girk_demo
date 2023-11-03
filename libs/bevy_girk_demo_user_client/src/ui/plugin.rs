@@ -39,6 +39,13 @@ fn setup_ui_tree(
     let menu_bar = relative_widget(ctx, root.end("menu_bar"), (20., 90.), (0., 10.));
     ctx.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
 
+    // - add separators
+    //todo: this is very janky
+    let play_vertical = relative_widget(ctx, root.end("play_vertical"), (-2., 20.), (-5., 10.));
+    spawn_plain_outline(ctx, play_vertical);
+    let header_underline = relative_widget(ctx, root.end("header_underline"), (-10., 110.), (-10., 10.));
+    spawn_plain_outline(ctx, header_underline);
+
     // - menu item overlay area (everything below the menu bar)
     let menu_overlay = relative_widget(ctx, root.end("menu_overlay"), (0., 100.), (10., 100.));
     ctx.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));

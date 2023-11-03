@@ -161,7 +161,7 @@ pub(crate) struct MainMenuButton;
 pub(crate) fn add_menu_bar_section(ctx: &mut UiBuilderCtx, menu_bar: Widget, menu_overlay: Widget)
 {
     // menu bar overlay
-    let menu_bar_overlay = relative_widget(ctx, menu_bar.end(""), (10., 90.), (20., 100.));
+    let menu_bar_overlay = relative_widget(ctx, menu_bar.end(""), (10., 90.), (10., 90.));
 
     // menu buttons: widget grid
     let menu_widgets = GridSegment::new()
