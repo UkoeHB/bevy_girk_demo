@@ -103,33 +103,17 @@ fn send_join_lobby_request(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_join_request_reactors(
+fn setup_window_reactors(
     In(popup_pack) : In<BasicPopupPack>,
     mut ctx        : UiBuilderCtx,
-    lobby_join     : Query<Entity, With<JoinLobby>>,
+    join_lobby     : Query<Entity, With<JoinLobby>>,
 ){
-    let lobby_join_entity = lobby_join.single();
-
-    // prepare blocker for cancel button
-    let cancel_disable = make_overlay(ctx.ui(), &popup_pack.cancel_button, "", false);
-    let cancel_entity = popup_pack.cancel_entity;
-    ctx.commands().spawn((cancel_disable.clone(), UIInteractionBarrier::<MainUI>::default()));
-
-    // when a join-lobby request begins
-    let cancel_disable_clone = cancel_disable.clone();
-    ctx.rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
-            lobby_join_entity,
-            move |world: &mut World|
-            {
-                // block the cancel button
-                syscall(world, (false, cancel_disable_clone.clone(), cancel_entity), toggle_button_availability);
-            }
-        );
+    let join_lobby_entity = join_lobby.single();
 
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
     ctx.rcommands.add_entity_removal_reactor::<React<PendingRequest>>(
-            lobby_join_entity,
+            join_lobby_entity,
             move |world: &mut World|
             {
                 // access the window state
@@ -142,9 +126,6 @@ fn setup_join_request_reactors(
                     (req_status == bevy_simplenet::RequestStatus::Waiting)
                 { return; }
 
-                // unblock cancel button
-                syscall(world, (true, cancel_disable.clone(), cancel_entity), toggle_button_availability);
-
                 // close window if request succeeded
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
@@ -156,7 +137,6 @@ fn setup_join_request_reactors(
             }
         );
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -193,7 +173,7 @@ pub(crate) struct ActivateJoinLobbyWindow
 pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ctx, (40., 40.), "Cancel", "Join", |_| (),
+    let popup_pack = spawn_basic_popup(ctx, (80., 80.), "Close", "Join", |_| (),
             |world| syscall(world, (), send_join_lobby_request),
         );
 
@@ -211,7 +191,10 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
         );
 
     // handle request results
-    ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_join_request_reactors));
+    ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
+
+    // initialize ui
+    ctx.rcommands.trigger_resource_mutation::<JoinLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

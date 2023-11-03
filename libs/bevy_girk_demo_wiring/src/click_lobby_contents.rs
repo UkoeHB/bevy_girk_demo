@@ -19,6 +19,15 @@ pub struct ClickLobbyConfig
     pub max_watchers: u16,
 }
 
+impl ClickLobbyConfig
+{
+    pub fn is_single_player(&self) -> bool
+    {
+        self.max_players == 1 &&
+        self.max_watchers == 0
+    }
+}
+
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

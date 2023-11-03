@@ -197,35 +197,35 @@ pub(crate) fn spawn_basic_popup(
     let barrier_img = ImageElementBundle::new(
             &barrier,
             ImageParams::center()
-                .with_depth(500.)
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
             ctx.asset_server.load(FILM),
             Vec2::new(236.0, 139.0)
         );
     ctx.commands().spawn(barrier_img);
+    ctx.commands().spawn((barrier, UIInteractionBarrier::<MainUI>::default()));
 
     // window box
-    let xmod = window_scaling.0.max(100.).min(0.) / 2.;
-    let ymod = window_scaling.1.max(100.).min(0.) / 2.;
+    let xmod = window_scaling.0.max(0.).min(100.) / 2.;
+    let ymod = window_scaling.1.max(0.).min(100.) / 2.;
     let window = relative_widget(ctx, window_overlay.end(""), (50. - xmod, 50. + xmod), (50. - ymod, 50. + ymod));
     let window_img = ImageElementBundle::new(
             &window,
             ImageParams::center()
-                .with_depth(500.)
+                .with_depth(0.1)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::TEAL),
+                .with_color(Color::AZURE),
             ctx.asset_server.load(BOX),
             Vec2::new(236.0, 139.0)
         );
-    ctx.commands().spawn(window_img);
+    ctx.commands().spawn((window_img, UIInteractionBarrier::<MainUI>::default()));
 
     // region for caller's content
-    let content_section = relative_widget(ctx, window.end(""), (0., 100.), (0., 85.));
+    let content_section = relative_widget(ctx, window.end(""), (0., 100.), (0., 82.));
 
     // cancel button
-    let cancel_button = relative_widget(ctx, window.end(""), (15., 25.), (90., 97.));
+    let cancel_button = relative_widget(ctx, window.end(""), (15., 27.), (87., 95.));
     let cancel_entity = ctx.commands().spawn_empty().id();
     let window_overlay_clone = window_overlay.clone();
     make_basic_button(ctx, &cancel_button, cancel_entity, cancel_text,
@@ -237,9 +237,13 @@ pub(crate) fn spawn_basic_popup(
         );
 
     // accept button
-    let accept_button = relative_widget(ctx, window.end(""), (75., 85.), (90., 97.));
+    let accept_button = relative_widget(ctx, window.end(""), (73., 85.), (87., 95.));
     let accept_entity = ctx.commands().spawn_empty().id();
     make_basic_button(ctx, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
+
+    // set depth of window above all other ui elements
+    let branch = window_overlay.fetch_mut(ctx.ui()).unwrap();
+    branch.set_depth(500.);
 
     BasicPopupPack{
             window_overlay,
