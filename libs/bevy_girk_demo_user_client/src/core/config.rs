@@ -13,9 +13,8 @@ pub(crate) const MISC_BUTTON          : &'static str = "button.png";
 pub(crate) const MENU_BAR_BUTTON      : &'static str = "button.png";
 pub(crate) const OUTLINE              : &'static str = "outline.png";
 pub(crate) const BOX                  : &'static str = "box.png";
+pub(crate) const FILM                 : &'static str = "film.png";
 pub(crate) const MISC_FONT            : &'static str = "fonts/FiraSans-Bold.ttf";
-pub(crate) const STATUS_FONT          : &'static str = "fonts/FiraSans-Bold.ttf";
-pub(crate) const MENU_BAR_BUTTON_FONT : &'static str = "fonts/FiraSans-Bold.ttf";
 
 pub(crate) const MISC_FONT_COLOR             : Color = Color::WHITE;
 pub(crate) const STATUS_FONT_COLOR           : Color = Color::WHITE;

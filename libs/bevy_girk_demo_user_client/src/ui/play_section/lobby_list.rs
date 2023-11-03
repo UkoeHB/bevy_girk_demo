@@ -261,14 +261,10 @@ fn update_lobby_list_contents(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn open_join_lobby_window(In(lobby_index): In<usize>, mut rcommands: ReactCommands)
+fn open_join_lobby_window(In(lobby_list_index): In<usize>, mut rcommands: ReactCommands)
 {
     // activate the window
-    rcommands.send(
-            ActivateJoinLobbyWindow{
-                    lobby_list_index: lobby_index
-                }
-        );
+    rcommands.send(ActivateJoinLobbyWindow{ lobby_list_index });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -317,9 +313,7 @@ fn add_lobby_list_refresh_indicator(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // setup reactors
-    ctx.commands().add(
-            move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors)
-        );
+    ctx.commands().add(move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -614,7 +608,7 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 //todo: not in game
                 // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
                 //   is saturated)
-                .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty() )
+                .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
                 .run_if(|status: Res<ReactRes<ConnectionStatus>>| **status == ConnectionStatus::Connected)
                 .run_if(on_timer(lobby_list_refresh)
                     .or_else(|status: Res<ReactRes<ConnectionStatus>>| status.is_changed())

@@ -7,6 +7,9 @@ use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_kot::ecs::*;
+use bevy_kot::ui::*;
+use bevy_kot::ui::builtin::*;
+use bevy_lunex::prelude::*;
 
 //standard shortcuts
 
@@ -20,49 +23,163 @@ use bevy_kot::ecs::*;
 #[derive(Debug)]
 struct JoinLobbyWindow
 {
-    lobby_id: u64,
+    /// Lobby contents.
+    contents: Option<ClickLobbyContents>,
+
+    /// Cached member type.
+    member_type: ClickLobbyMemberType,
+    /// Cached password.
+    pwd: String,
+
+    /// Last request sent
+    last_req: Option<PendingRequest>,
 }
 
 impl Default for JoinLobbyWindow
 {
     fn default() -> Self
     {
-        Self{ lobby_id: u64::MAX }
+        Self{
+            contents    : None,
+            member_type : ClickLobbyMemberType::Player,
+            pwd         : String::default(),
+            last_req    : None,
+        }
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn update_join_lobby_window(
+    In(event)     : In<ReactEvent<ActivateJoinLobbyWindow>>,
+    mut rcommands : ReactCommands,
+    lobby_page    : Res<ReactRes<LobbyPage>>,
+    mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
+){
+    // get lobby id of lobby to join
+    let lobby_index = event.lobby_list_index;
+
+    let Some(lobby_contents) = lobby_page.get().get(lobby_index)
+    else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window"); return; };
+
+    // update the window state
+    *window.get_mut(&mut rcommands) = JoinLobbyWindow{ contents: Some(lobby_contents.clone()), ..Default::default() };
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn send_join_lobby_request(
-    In((
-        lobby_id,
-        member_type,
-        pwd,
-    ))            : In<(u64, ClickLobbyMemberType, String)>,
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
-    join_lobby    : Query<Entity, With<JoinLobby>>,
+    join_lobby    : Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
+    mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
 ){
+    // get request entity
+    // - do nothing if there is already a pending join lobby request
+    let Ok(target_entity) = join_lobby.get_single() else { return; };
+
+    // fail if there is no lobby
+    let Some(lobby_contents) = &window.contents
+    else { tracing::error!("lobby contents are missing for join lobby request"); return; };
+
     // request to join the specified lobby
     // - note: do not log the password
-    tracing::trace!(lobby_id, ?member_type, "requesting to join lobby");
+    let lobby_id = lobby_contents.id;
+    tracing::trace!(lobby_id, ?window.member_type, "requesting to join lobby");
 
     let Ok(new_req) = client.request(
-            UserToHostRequest::JoinLobby{ id: lobby_id, mcolor: member_type.into(), pwd }
+            UserToHostRequest::JoinLobby{ id: lobby_id, mcolor: window.member_type.into(), pwd: window.pwd.clone() }
         )
     else { return; };
 
     // save request
-    let target_entity = join_lobby.single();
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    let request = PendingRequest::new(new_req.clone());
+    rcommands.insert(target_entity, request.clone());
+    window.get_mut_noreact().last_req = Some(request);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup_join_request_reactors(
+    In(popup_pack) : In<BasicPopupPack>,
+    mut ctx        : UiBuilderCtx,
+    lobby_join     : Query<Entity, With<JoinLobby>>,
+){
+    let lobby_join_entity = lobby_join.single();
+
+    // prepare blocker for cancel button
+    let cancel_disable = make_overlay(ctx.ui(), &popup_pack.cancel_button, "", false);
+    let cancel_entity = popup_pack.cancel_entity;
+    ctx.commands().spawn((cancel_disable.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    // when a join-lobby request begins
+    let cancel_disable_clone = cancel_disable.clone();
+    ctx.rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
+            lobby_join_entity,
+            move |world: &mut World|
+            {
+                // block the cancel button
+                syscall(world, (false, cancel_disable_clone.clone(), cancel_entity), toggle_button_availability);
+            }
+        );
+
+    // when a join-lobby request completes
+    let window_overlay = popup_pack.window_overlay;
+    ctx.rcommands.add_entity_removal_reactor::<React<PendingRequest>>(
+            lobby_join_entity,
+            move |world: &mut World|
+            {
+                // access the window state
+                let window = world.resource::<ReactRes<JoinLobbyWindow>>();
+                let Some(req) = &window.last_req else { return; };
+                let req_status = req.status();
+
+                // do nothing if still sending
+                if  (req_status == bevy_simplenet::RequestStatus::Sending) ||
+                    (req_status == bevy_simplenet::RequestStatus::Waiting)
+                { return; }
+
+                // unblock cancel button
+                syscall(world, (true, cancel_disable.clone(), cancel_entity), toggle_button_availability);
+
+                // close window if request succeeded
+                if req_status == bevy_simplenet::RequestStatus::Responded
+                {
+                    syscall(world, (MainUI, [], [window_overlay.clone()]), toggle_ui_visibility);
+                }
+
+                // remove cached request
+                world.resource_mut::<ReactRes<JoinLobbyWindow>>().get_mut_noreact().last_req = None;
+            }
+        );
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_window_contents(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // title
+    //Join Lobby
+
+    // info subtitle
+    //lobby id: ###### -- owner id: ######
+    //reacts to changes in window state
+
+    // form section: lobby member type
+
+    // form section: password
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// This is a reactive data event used to activate the window.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct ActivateJoinLobbyWindow
 {
     /// Index in the lobby list of the lobby corresponding to this lobby window.
@@ -75,7 +192,26 @@ pub(crate) struct ActivateJoinLobbyWindow
 
 pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
 {
-    
+    // spawn window
+    let popup_pack = spawn_basic_popup(ctx, (40., 40.), "Cancel", "Join", |_| (),
+            |world| syscall(world, (), send_join_lobby_request),
+        );
+
+    // add window contents
+    add_window_contents(ctx, &popup_pack.content_section);
+
+    // update window state and open window when activation event is detected
+    let window_overlay = popup_pack.window_overlay.clone();
+    ctx.rcommands.add_event_reactor(
+            move |world: &mut World, event: ReactEvent<ActivateJoinLobbyWindow>|
+            {
+                syscall(world, event, update_join_lobby_window);
+                syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
+            }
+        );
+
+    // handle request results
+    ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_join_request_reactors));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -83,7 +219,7 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
 #[bevy_plugin]
 pub(crate) fn UiJoinLobbyWindowPlugin(app: &mut App)
 {
-
+    app.insert_resource(ReactRes::new(JoinLobbyWindow::default()));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

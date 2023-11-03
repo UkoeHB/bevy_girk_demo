@@ -21,8 +21,10 @@ use bevy_kot::ecs::*;
 #[derive(Debug)]
 struct MakeLobbyWindow
 {
-    member_type : ClickLobbyMemberType,
-    password    : String,
+    /// Cached member type.
+    member_type: ClickLobbyMemberType,
+    /// Cached password.
+    password: String,
 }
 
 impl Default for MakeLobbyWindow
@@ -83,7 +85,7 @@ pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
 #[bevy_plugin]
 pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
 {
-
+    app.insert_resource(ReactRes::new(MakeLobbyWindow::default()));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

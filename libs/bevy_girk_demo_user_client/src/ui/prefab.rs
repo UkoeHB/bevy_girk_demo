@@ -3,6 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_kot::ecs::*;
 use bevy_kot::ui::*;
 use bevy_kot::ui::builtin::*;
 use bevy_lunex::prelude::*;
@@ -157,27 +158,97 @@ pub(crate) fn make_basic_button(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn make_basic_popup(
+#[derive(Debug, Clone)]
+pub(crate) struct BasicPopupPack
+{
+    pub(crate) window_overlay  : Widget,
+    pub(crate) content_section : Widget,
+    pub(crate) cancel_button   : Widget,
+    pub(crate) cancel_entity   : Entity,
+    pub(crate) accept_button   : Widget,
+    pub(crate) accept_entity   : Entity,
+}
+
+/// Make a basic popup.
+///
+/// The popup is a square with cancel and accept buttons. The button text and behavior can be customized. Pressing the
+/// cancel button will set the popup overlay visibility to `false`. You should set it to `true` manually in order to
+/// 'activate' the popup.
+///
+/// The popup is attached to the `"root"` widget. This function will panic if the root of your main ui tree does not
+/// contain a widget with that name.
+///
+/// The popup is arbitrarily set at a depth of `500.0` in order to supercede the normal UI tree. Multiple concurrent
+/// popups will NOT stack on each other properly.
+pub(crate) fn spawn_basic_popup(
     ctx             : &mut UiBuilderCtx,
-    window_scaling  : Vec2,  // x: % of screen width, y: % of screen height
+    window_scaling  : (f32, f32),  // (% of screen width, % of screen height)
     cancel_text     : &'static str,
     accept_text     : &'static str,
     cancel_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
     accept_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
-) //-> (Widget, Widget)
+) -> BasicPopupPack
 {
     // popup overlay attached to root of ui tree
-    let default_button = make_overlay(ctx.ui(), &Widget::new("root"), "", true);
+    let window_overlay = make_overlay(ctx.ui(), &Widget::new("root"), "", false);
 
     // add screen-wide barrier
+    let barrier = relative_widget(ctx, window_overlay.end(""), (-10., 110.), (-10., 110.));
+    let barrier_img = ImageElementBundle::new(
+            &barrier,
+            ImageParams::center()
+                .with_depth(500.)
+                .with_width(Some(100.))
+                .with_height(Some(100.)),
+            ctx.asset_server.load(FILM),
+            Vec2::new(236.0, 139.0)
+        );
+    ctx.commands().spawn(barrier_img);
 
     // window box
+    let xmod = window_scaling.0.max(100.).min(0.) / 2.;
+    let ymod = window_scaling.1.max(100.).min(0.) / 2.;
+    let window = relative_widget(ctx, window_overlay.end(""), (50. - xmod, 50. + xmod), (50. - ymod, 50. + ymod));
+    let window_img = ImageElementBundle::new(
+            &window,
+            ImageParams::center()
+                .with_depth(500.)
+                .with_width(Some(100.))
+                .with_height(Some(100.))
+                .with_color(Color::TEAL),
+            ctx.asset_server.load(BOX),
+            Vec2::new(236.0, 139.0)
+        );
+    ctx.commands().spawn(window_img);
 
     // region for caller's content
+    let content_section = relative_widget(ctx, window.end(""), (0., 100.), (0., 85.));
 
     // cancel button
+    let cancel_button = relative_widget(ctx, window.end(""), (15., 25.), (90., 97.));
+    let cancel_entity = ctx.commands().spawn_empty().id();
+    let window_overlay_clone = window_overlay.clone();
+    make_basic_button(ctx, &cancel_button, cancel_entity, cancel_text,
+            move |world|
+            {
+                syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
+                (cancel_callback)(world);
+            }
+        );
 
     // accept button
+    let accept_button = relative_widget(ctx, window.end(""), (75., 85.), (90., 97.));
+    let accept_entity = ctx.commands().spawn_empty().id();
+    make_basic_button(ctx, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
+
+    BasicPopupPack{
+            window_overlay,
+            content_section,
+            cancel_button,
+            cancel_entity,
+            accept_button,
+            accept_entity,
+        }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
