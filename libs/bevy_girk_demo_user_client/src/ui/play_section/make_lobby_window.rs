@@ -70,12 +70,17 @@ fn reset_window_state(mut rcommands: ReactCommands, mut window: ResMut<ReactRes<
 fn send_make_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
-    make_lobby    : Query<Entity, With<MakeLobby>>,
-    window        : Res<ReactRes<MakeLobbyWindow>>
+    make_lobby    : Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
+    mut window    : ResMut<ReactRes<MakeLobbyWindow>>
 ){
+    // get request entity
+    // - do nothing if there is already a pending request
+    let Ok(target_entity) = make_lobby.get_single()
+    else { tracing::warn!("ignoring join lobby request because a request is already pending"); return; };
+
     //todo: handle single player vs multiplayer
     if window.is_single_player()
-    { tracing::debug!("making local single player not yet supported, making game on server instead"); }
+    { tracing::warn!("making local single player not yet supported, making game on server instead"); }
 
     // request to make a lobby
     // - note: do not log the password
@@ -91,8 +96,9 @@ fn send_make_lobby_request(
     else { return; };
 
     // save request
-    let target_entity = make_lobby.single();
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    let request = PendingRequest::new(new_req);
+    rcommands.insert(target_entity, request.clone());
+    window.get_mut_noreact().last_req = Some(request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -104,6 +110,17 @@ fn setup_window_reactors(
     make_lobby     : Query<Entity, With<MakeLobby>>,
 ){
     let make_lobby_entity = make_lobby.single();
+
+    // when a request starts
+    let accept_entity = popup_pack.accept_entity;
+    ctx.rcommands.add_entity_insertion_reactor::<PendingRequest>(
+            make_lobby_entity,
+            move |world: &mut World|
+            {
+                // modify accept button text
+                syscall(world, (accept_entity, String::from("...")), update_ui_text);
+            }
+        );
 
     // when a request completes
     let window_overlay = popup_pack.window_overlay;
@@ -136,6 +153,8 @@ fn setup_window_reactors(
                     world.resource_mut::<ReactRes<MakeLobbyWindow>>().get_mut_noreact().last_req = None;                    
                 }
 
+                // reset accept button text
+                syscall(world, (accept_entity, String::from("Make")), update_ui_text);
             }
         );
 
@@ -203,7 +222,7 @@ pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
             }
         );
 
-    // handle request results
+    // setup window reactors
     ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui

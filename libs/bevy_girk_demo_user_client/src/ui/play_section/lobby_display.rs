@@ -78,12 +78,20 @@ fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &List
 //-------------------------------------------------------------------------------------------------------------------
 
 fn leave_current_lobby(
-    client : Res<HostUserClient>,
-    lobby  : Res<ReactRes<LobbyDisplay>>,
+    client     : Res<HostUserClient>,
+    lobby      : Res<ReactRes<LobbyDisplay>>,
+    //join_lobby : Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
 ){
+    //todo: need request/response pattern for LeaveLobby
+    // check for existing request
+    //if !join_lobby.is_empty()
+    //{ tracing::warn!("ignoring leave lobby request because a request is already pending"); return }
+
+    // check if we are in a lobby
     let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to leave lobby but we aren't in a lobby"); return; };
 
+    // leave the lobby
     match lobby.lobby_type()
     {
         None => { tracing::error!("tried to leave lobby but there is no lobby type"); return; }
@@ -96,8 +104,6 @@ fn leave_current_lobby(
         {
             if let Err(err) = client.send(UserToHostMsg::LeaveLobby{ id: lobby_id })
             { tracing::warn!(?err, lobby_id, "failed sending leave lobby message to host server"); }
-
-            //todo: request/response pattern? and make the leave lobby button do nothing when waiting
         }
     }
 }

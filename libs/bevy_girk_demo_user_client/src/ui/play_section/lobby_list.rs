@@ -173,7 +173,7 @@ fn request_lobby_list_oldest(
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
-    else { tracing::debug!("ignoring lobby search request because a search is already pending"); return; };
+    else { tracing::warn!("ignoring lobby search request because a request is already pending"); return; };
 
     // make request
     // - we request the lowest-possible lobby id in order to get the oldest available lobby

@@ -77,8 +77,9 @@ fn send_join_lobby_request(
     mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
 ){
     // get request entity
-    // - do nothing if there is already a pending join lobby request
-    let Ok(target_entity) = join_lobby.get_single() else { return; };
+    // - do nothing if there is already a pending request
+    let Ok(target_entity) = join_lobby.get_single()
+    else { tracing::warn!("ignoring join lobby request because a request is already pending"); return; };
 
     // fail if there is no lobby
     let Some(lobby_contents) = &window.contents
@@ -95,7 +96,7 @@ fn send_join_lobby_request(
     else { return; };
 
     // save request
-    let request = PendingRequest::new(new_req.clone());
+    let request = PendingRequest::new(new_req);
     rcommands.insert(target_entity, request.clone());
     window.get_mut_noreact().last_req = Some(request);
 }
@@ -109,6 +110,17 @@ fn setup_window_reactors(
     join_lobby     : Query<Entity, With<JoinLobby>>,
 ){
     let join_lobby_entity = join_lobby.single();
+
+    // when a request starts
+    let accept_entity = popup_pack.accept_entity;
+    ctx.rcommands.add_entity_insertion_reactor::<PendingRequest>(
+            join_lobby_entity,
+            move |world: &mut World|
+            {
+                // modify accept button text
+                syscall(world, (accept_entity, String::from("...")), update_ui_text);
+            }
+        );
 
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
@@ -134,6 +146,9 @@ fn setup_window_reactors(
 
                 // remove cached request
                 world.resource_mut::<ReactRes<JoinLobbyWindow>>().get_mut_noreact().last_req = None;
+
+                // reset accept button text
+                syscall(world, (accept_entity, String::from("Join")), update_ui_text);
             }
         );
 }
@@ -190,7 +205,7 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
             }
         );
 
-    // handle request results
+    // setup window reactors
     ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui

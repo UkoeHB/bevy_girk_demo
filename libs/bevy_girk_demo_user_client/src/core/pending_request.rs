@@ -7,7 +7,7 @@
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct PendingRequest(bevy_simplenet::RequestSignal);
 
 impl PendingRequest
