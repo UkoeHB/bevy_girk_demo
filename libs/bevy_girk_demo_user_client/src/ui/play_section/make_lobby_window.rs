@@ -113,7 +113,7 @@ fn setup_window_reactors(
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ctx.rcommands.add_entity_insertion_reactor::<PendingRequest>(
+    ctx.rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
             make_lobby_entity,
             move |world: &mut World|
             {

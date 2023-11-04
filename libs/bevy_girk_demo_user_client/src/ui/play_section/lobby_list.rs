@@ -200,7 +200,7 @@ fn setup_refresh_indicator_reactors(
 
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
-    rcommands.add_entity_insertion_reactor::<PendingRequest>(
+    rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
             lobby_search_entity,
             move |world: &mut World| syscall(world, (MainUI, [text_widget_clone.clone()], []), toggle_ui_visibility)
         );
