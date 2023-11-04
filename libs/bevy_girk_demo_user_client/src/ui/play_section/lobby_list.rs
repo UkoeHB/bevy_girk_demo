@@ -334,7 +334,7 @@ fn add_lobby_list_refresh_button(ctx: &mut UiBuilderCtx, area: &Widget)
 fn add_lobby_list_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // list box
-    spawn_plain_box(ctx, area.clone());
+    spawn_plain_box(ctx, area.clone(), None);
 
     // prepare contents
     let mut contents = Vec::with_capacity(LOBBY_LIST_SIZE as usize);

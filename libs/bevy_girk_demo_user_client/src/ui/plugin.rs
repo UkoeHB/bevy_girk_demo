@@ -34,9 +34,9 @@ fn setup_ui_tree(mut ctx: UiBuilderCtx)
     // - add separators
     //todo: this is very janky
     let play_vertical = relative_widget(ctx, root.end("play_vertical"), (-2., 20.), (-5., 10.));
-    spawn_plain_outline(ctx, play_vertical);
+    spawn_plain_outline(ctx, play_vertical, None);
     let header_underline = relative_widget(ctx, root.end("header_underline"), (-10., 110.), (-10., 10.));
-    spawn_plain_outline(ctx, header_underline);
+    spawn_plain_outline(ctx, header_underline, None);
 
     // - menu item overlay area (everything below the menu bar)
     let menu_overlay = relative_widget(ctx, root.end("menu_overlay"), (0., 100.), (10., 100.));

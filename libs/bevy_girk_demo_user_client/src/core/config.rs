@@ -17,6 +17,7 @@ pub(crate) const FILM                 : &'static str = "film.png";
 pub(crate) const MISC_FONT            : &'static str = "fonts/FiraSans-Bold.ttf";
 
 pub(crate) const MISC_FONT_COLOR             : Color = Color::WHITE;
+pub(crate) const DARK_FONT_COLOR             : Color = Color::BLACK;
 pub(crate) const STATUS_FONT_COLOR           : Color = Color::WHITE;
 pub(crate) const MENU_BAR_BUTTON_FONT_COLOR  : Color = Color::WHITE;
 pub(crate) const DISABLED_BUTTON_FONT_COLOR  : Color = Color::GRAY;

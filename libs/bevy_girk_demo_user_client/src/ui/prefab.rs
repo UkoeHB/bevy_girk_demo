@@ -56,11 +56,12 @@ pub(crate) fn spawn_basic_text(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn spawn_plain_box(ctx: &mut UiBuilderCtx, widget: Widget) -> Entity
+pub(crate) fn spawn_plain_box(ctx: &mut UiBuilderCtx, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
             ImageParams::center()
+                .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
             ctx.asset_server.load(BOX),
@@ -73,11 +74,12 @@ pub(crate) fn spawn_plain_box(ctx: &mut UiBuilderCtx, widget: Widget) -> Entity
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn spawn_plain_outline(ctx: &mut UiBuilderCtx, widget: Widget) -> Entity
+pub(crate) fn spawn_plain_outline(ctx: &mut UiBuilderCtx, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
             ImageParams::center()
+                .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
             ctx.asset_server.load(OUTLINE),
@@ -225,7 +227,7 @@ pub(crate) fn spawn_basic_popup(
     let content_section = relative_widget(ctx, window.end(""), (0., 100.), (0., 82.));
 
     // cancel button
-    let cancel_button = relative_widget(ctx, window.end(""), (15., 27.), (87., 95.));
+    let cancel_button = relative_widget(ctx, window.end(""), (15., 27.), (86., 94.));
     let cancel_entity = ctx.commands().spawn_empty().id();
     let window_overlay_clone = window_overlay.clone();
     make_basic_button(ctx, &cancel_button, cancel_entity, cancel_text,
@@ -237,7 +239,7 @@ pub(crate) fn spawn_basic_popup(
         );
 
     // accept button
-    let accept_button = relative_widget(ctx, window.end(""), (73., 85.), (87., 95.));
+    let accept_button = relative_widget(ctx, window.end(""), (73., 85.), (86., 94.));
     let accept_entity = ctx.commands().spawn_empty().id();
     make_basic_button(ctx, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
 

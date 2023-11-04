@@ -179,19 +179,148 @@ fn setup_window_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_window_title(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // title text
+    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            text,
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_height(Some(100.)),
+            "New Lobby"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_join_as_field(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // field outline
+    spawn_plain_outline(ctx, area.clone(), Some(700.));
+
+    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            text,
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Join as: Player\n(UI todo)"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_config_field(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // field outline
+    spawn_plain_outline(ctx, area.clone(), Some(700.));
+
+    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            text,
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Config: 1 player, 0 watchers\n(UI todo)"
+        );
+    //disable options when disconnected (don't reset selections, just disable new choices)
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_password_field(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // field outline
+    spawn_plain_outline(ctx, area.clone(), Some(700.));
+
+    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            text,
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Password: <empty>\n(UI todo)"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
+{
+    // single-player text
+    let sp_text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            sp_text.clone(),
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_height(Some(80.)),
+            "Single-player lobby: does not require a server connection."
+        );
+
+    // multiplayer text
+    let mp_text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ctx,
+            mp_text.clone(),
+            DARK_FONT_COLOR,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_height(Some(80.)),
+            "Muliplayer lobby: requires a server connection."
+        );
+
+    // adjust text depending on the lobby type
+    ctx.rcommands.add_resource_mutation_reactor::<MakeLobbyWindow>(
+            move |world: &mut World|
+            {
+                match world.resource::<ReactRes<MakeLobbyWindow>>().is_single_player()
+                {
+                    true => syscall(world, (MainUI, [sp_text.clone()], [mp_text.clone()]), toggle_ui_visibility),
+                    false => syscall(world, (MainUI, [mp_text.clone()], [sp_text.clone()]), toggle_ui_visibility),
+                }
+            }
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn add_window_contents(ctx: &mut UiBuilderCtx, area: &Widget)
 {
     // title
-    //New Lobby
+    let title_area = relative_widget(ctx, area.end(""), (45., 65.), (5., 15.));
+    add_window_title(ctx, &title_area);
 
     // form section: 'join as' lobby member type for owner
-
-    // form section: password
+    let join_as_area = relative_widget(ctx, area.end(""), (15., 47.), (20., 50.));
+    add_join_as_field(ctx, &join_as_area);
 
     // form section: max players, max watchers
-    //disable options when disconnected (don't reset selections, just disable new choices)
+    let config_area = relative_widget(ctx, area.end(""), (53., 85.), (20., 50.));
+    add_config_field(ctx, &config_area);
+
+    // form section: password
+    let password_area = relative_widget(ctx, area.end(""), (30., 70.), (57., 87.));
+    add_password_field(ctx, &password_area);
 
     // indicator for local single-player
+    let connection_requirement_area = relative_widget(ctx, area.end(""), (10., 90.), (95., 100.));
+    add_connection_requirement_field(ctx, &connection_requirement_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
