@@ -29,7 +29,7 @@ fn focus_window_on_ack_request(
 
 fn setup_ack_request(mut rcommands: ReactCommands)
 {
-    rcommands.add_resource_mutation_reactor::<AckRequest>(
+    rcommands.on_resource_mutation::<ReactRes<AckRequest>>(
             |world| syscall(world, (), focus_window_on_ack_request)
         );
 }

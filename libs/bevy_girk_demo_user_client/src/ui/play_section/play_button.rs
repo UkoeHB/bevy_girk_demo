@@ -34,7 +34,7 @@ fn set_play_button_state(
 
 fn setup(mut rcommands: ReactCommands)
 {
-    rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             |world: &mut World| { syscall(world, (), set_play_button_state); }
         );
 }

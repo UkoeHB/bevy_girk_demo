@@ -58,7 +58,7 @@ fn update_join_lobby_window(
     mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
 ){
     // get lobby id of lobby to join
-    let lobby_index = event.lobby_list_index;
+    let lobby_index = event.get().lobby_list_index;
 
     let Some(lobby_contents) = lobby_page.get().get(lobby_index)
     else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window"); return; };
@@ -113,7 +113,7 @@ fn setup_window_reactors(
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ctx.rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
+    ctx.rcommands.on_entity_insertion::<React<PendingRequest>>(
             join_lobby_entity,
             move |world: &mut World|
             {
@@ -124,7 +124,7 @@ fn setup_window_reactors(
 
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
-    ctx.rcommands.add_entity_removal_reactor::<React<PendingRequest>>(
+    ctx.rcommands.on_entity_removal::<React<PendingRequest>>(
             join_lobby_entity,
             move |world: &mut World|
             {
@@ -197,7 +197,7 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
 
     // update window state and open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ctx.rcommands.add_event_reactor(
+    ctx.rcommands.on_event(
             move |world: &mut World, event: ReactEvent<ActivateJoinLobbyWindow>|
             {
                 syscall(world, event, update_join_lobby_window);
@@ -209,7 +209,7 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
     ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ctx.rcommands.trigger_resource_mutation::<JoinLobbyWindow>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<JoinLobbyWindow>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -278,7 +278,7 @@ fn add_lobby_display_summary_box(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // update the text when the lobby display changes
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 // define updated text
@@ -336,7 +336,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area
         );
 
     // update the text when the lobby display changes
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 // define updated text
@@ -391,7 +391,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<ListPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
             move |world: &mut World|
             {
                 let enable = world.resource::<ReactRes<ListPage>>().get() != 0;
@@ -429,7 +429,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<ListPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
             move |world: &mut World|
             {
                 let enable = !page_is_maxed::<ListPage>(
@@ -477,7 +477,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, ar
 
     // update the contents when the lobby display changes
     let content_entities_clone = content_entities.clone();
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             syscall(world, content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
@@ -544,7 +544,7 @@ fn add_leave_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 let enable = world.resource::<ReactRes<LobbyDisplay>>().is_set();
@@ -566,7 +566,7 @@ fn add_start_game_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", true);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyDisplay>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 let enable = match world.resource::<ReactRes<LobbyDisplay>>().get()
@@ -620,9 +620,9 @@ pub(crate) fn add_lobby_display(ctx: &mut UiBuilderCtx, area: &Widget)
     add_lobby_buttons(ctx, &lobby_leave_button);
 
     // initialize UI listening to lobby display
-    ctx.rcommands.trigger_resource_mutation::<LobbyDisplay>();
-    ctx.rcommands.trigger_resource_mutation::<PlayerListPage>();
-    ctx.rcommands.trigger_resource_mutation::<WatcherListPage>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<LobbyDisplay>>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<PlayerListPage>>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<WatcherListPage>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

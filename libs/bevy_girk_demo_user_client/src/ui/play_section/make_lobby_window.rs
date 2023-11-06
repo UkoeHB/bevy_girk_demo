@@ -113,7 +113,7 @@ fn setup_window_reactors(
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ctx.rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
+    ctx.rcommands.on_entity_insertion::<React<PendingRequest>>(
             make_lobby_entity,
             move |world: &mut World|
             {
@@ -124,7 +124,7 @@ fn setup_window_reactors(
 
     // when a request completes
     let window_overlay = popup_pack.window_overlay;
-    ctx.rcommands.add_entity_removal_reactor::<React<PendingRequest>>(
+    ctx.rcommands.on_entity_removal::<React<PendingRequest>>(
             make_lobby_entity,
             move |world: &mut World|
             {
@@ -172,8 +172,8 @@ fn setup_window_reactors(
             syscall(world, (enable, accept_disable.clone(), accept_entity), toggle_button_availability);
         };
 
-    ctx.rcommands.add_resource_mutation_reactor::<ConnectionStatus>(make_button_disabler.clone());
-    ctx.rcommands.add_resource_mutation_reactor::<MakeLobbyWindow>(make_button_disabler);
+    ctx.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(make_button_disabler.clone());
+    ctx.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(make_button_disabler);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // adjust text depending on the lobby type
-    ctx.rcommands.add_resource_mutation_reactor::<MakeLobbyWindow>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(
             move |world: &mut World|
             {
                 match world.resource::<ReactRes<MakeLobbyWindow>>().is_single_player()
@@ -344,7 +344,7 @@ pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
 
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ctx.rcommands.add_event_reactor(
+    ctx.rcommands.on_event(
             move |world: &mut World, _event: ReactEvent<ActivateMakeLobbyWindow>|
             {
                 syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
@@ -355,7 +355,7 @@ pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
     ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ctx.rcommands.trigger_resource_mutation::<MakeLobbyWindow>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<MakeLobbyWindow>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

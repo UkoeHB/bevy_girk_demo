@@ -200,13 +200,13 @@ fn setup_refresh_indicator_reactors(
 
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
-    rcommands.add_entity_insertion_reactor::<React<PendingRequest>>(
+    rcommands.on_entity_insertion::<React<PendingRequest>>(
             lobby_search_entity,
             move |world: &mut World| syscall(world, (MainUI, [text_widget_clone.clone()], []), toggle_ui_visibility)
         );
 
     // deactivate text when there is not a pending request
-    rcommands.add_entity_removal_reactor::<React<PendingRequest>>(
+    rcommands.on_entity_removal::<React<PendingRequest>>(
             lobby_search_entity,
             move |world: &mut World| syscall(world, (MainUI, [], [text_widget.clone()]), toggle_ui_visibility)
         );
@@ -375,7 +375,7 @@ fn add_lobby_list_subsection(ctx: &mut UiBuilderCtx, area: &Widget)
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
             move |world: &mut World| syscall(world, contents.clone(), update_lobby_list_contents)
         );
 }
@@ -396,7 +396,7 @@ fn add_lobby_list_stats(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // update stats when lobby page updates
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
             move |world: &mut World|
             {
                 // define updated text
@@ -425,7 +425,7 @@ fn add_clamp_now_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPageRequest>>(
             move |world: &mut World|
             {
                 let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_now();
@@ -448,7 +448,7 @@ fn add_paginate_left_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
             move |world: &mut World|
             {
                 let (first, _, _) = world.resource::<ReactRes<LobbyPage>>().stats();
@@ -472,7 +472,7 @@ fn add_paginate_right_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPage>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
             move |world: &mut World|
             {
                 let (_, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
@@ -496,7 +496,7 @@ fn add_clamp_oldest_button(ctx: &mut UiBuilderCtx, area: &Widget)
     let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
     ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.add_resource_mutation_reactor::<LobbyPageRequest>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyPageRequest>>(
             move |world: &mut World|
             {
                 let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_oldest();
@@ -583,8 +583,8 @@ pub(crate) fn add_lobby_list(ctx: &mut UiBuilderCtx, area: &Widget)
 
 
     // initialize UI listening to lobby page
-    ctx.rcommands.trigger_resource_mutation::<LobbyPage>();
-    ctx.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<LobbyPage>>();
+    ctx.rcommands.trigger_resource_mutation::<ReactRes<LobbyPageRequest>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

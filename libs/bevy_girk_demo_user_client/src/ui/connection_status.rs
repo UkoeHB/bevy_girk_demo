@@ -45,7 +45,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
         );
 
     // update text when connection status changes
-    ctx.rcommands.add_resource_mutation_reactor::<ConnectionStatus>(
+    ctx.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(
             move |world: &mut World|
             {
                 // define updated text
