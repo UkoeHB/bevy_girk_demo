@@ -3,7 +3,7 @@
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
-use bevy_kot::misc::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 

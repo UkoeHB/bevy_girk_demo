@@ -5,7 +5,7 @@ use bevy_girk_demo_wiring::*;
 //third-party shortcuts
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 use std::vec::Vec;

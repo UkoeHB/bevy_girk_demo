@@ -5,7 +5,7 @@ use bevy_girk_demo_game_core::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_client_fw::*;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 

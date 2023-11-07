@@ -2,7 +2,7 @@
 use crate::*;
 
 //third-party shortcuts
-use bevy_kot::prelude::{*, builtin::*};
+use bevy_kot::prelude::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_lunex::prelude::*;

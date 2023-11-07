@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_utils::*;
-use bevy_kot::prelude::{*, builtin::*};
+use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts

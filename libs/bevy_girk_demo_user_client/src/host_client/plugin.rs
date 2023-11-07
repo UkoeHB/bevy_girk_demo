@@ -4,7 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 
@@ -20,7 +20,7 @@ pub(crate) fn HostClientPlugin(app: &mut App)
             (
                 handle_connection_changes,
                 handle_host_incoming,
-                bevy_kot::ecs::react_to_all_removals_and_despawns,
+                react_to_all_removals_and_despawns,
             ).chain()
         )
         ;

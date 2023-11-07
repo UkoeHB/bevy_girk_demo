@@ -5,7 +5,7 @@ use crate::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_fn_plugin::bevy_plugin;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 use std::time::Duration;

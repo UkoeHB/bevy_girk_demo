@@ -55,7 +55,7 @@ fn BevyEnginePlugin(app: &mut App)
 pub fn ClickUserClientPlugin(app: &mut App)
 {
     app
-        .add_plugins(bevy_kot::ecs::ReactPlugin)
+        .add_plugins(bevy_kot::prelude::ReactPlugin)
         .add_plugins(BevyEnginePlugin)
         .add_plugins(HostClientPlugin)
         .add_plugins(LobbiesPlugin)

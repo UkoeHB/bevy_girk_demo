@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 
