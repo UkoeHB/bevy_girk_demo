@@ -3,7 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_kot::ecs::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy_fn_plugin::*;
 use bevy_lunex::prelude::*;
 
@@ -12,11 +12,11 @@ use bevy_lunex::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
+pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: Widget)
 {
     // text layout helper
     let layout_helper = Widget::create(
-            ctx.ui(),
+            ui.tree(),
             area.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
                 absolute_1: Vec2 { x: 5., y: 6. },
@@ -29,7 +29,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
 
     // text widget
     let text = Widget::create(
-            ctx.ui(),
+            ui.tree(),
             layout_helper.end(""),
             SolidLayout::new()  //keep text in top right corner when window is resized
                 .with_horizontal_anchor(1.0)
@@ -37,7 +37,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
         ).unwrap();
 
     let text_entity = spawn_basic_text(
-            ctx,
+            ui,
             text,
             STATUS_FONT_COLOR,
             TextParams::topright(),
@@ -45,7 +45,7 @@ pub(crate) fn add_status_section(ctx: &mut UiBuilderCtx, area: Widget)
         );
 
     // update text when connection status changes
-    ctx.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(
             move |world: &mut World|
             {
                 // define updated text

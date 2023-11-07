@@ -2,38 +2,12 @@
 use crate::*;
 
 //third-party shortcuts
-use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy_kot::ecs::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
 
-
-//-------------------------------------------------------------------------------------------------------------------
-
-#[derive(SystemParam)]
-pub(crate) struct UiBuilderCtx<'w, 's>
-{
-    pub(crate) rcommands    : ReactCommands<'w, 's>,
-    pub(crate) asset_server : ResMut<'w, AssetServer>,
-
-    main_ui: Query<'w, 's, &'static mut UiTree, With<MainUI>>
-}
-
-impl<'w, 's> UiBuilderCtx<'w, 's>
-{
-    pub(crate) fn commands<'a>(&'a mut self) -> &'a mut Commands<'w, 's>
-    {
-        self.rcommands.commands()
-    }
-
-    pub(crate) fn ui<'a>(&'a mut self) -> &'a mut UiTree
-    {
-        self.main_ui.single_mut().into_inner()
-    }
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 

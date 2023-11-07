@@ -7,9 +7,7 @@ use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_utils::*;
-use bevy_kot::ecs::*;
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -106,14 +104,14 @@ fn send_make_lobby_request(
 
 fn setup_window_reactors(
     In(popup_pack) : In<BasicPopupPack>,
-    mut ctx        : UiBuilderCtx,
+    mut ui        : UiBuilder<MainUI>,
     make_lobby     : Query<Entity, With<MakeLobby>>,
 ){
     let make_lobby_entity = make_lobby.single();
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ctx.rcommands.on_entity_insertion::<React<PendingRequest>>(
+    ui.rcommands.on_entity_insertion::<React<PendingRequest>>(
             make_lobby_entity,
             move |world: &mut World|
             {
@@ -124,7 +122,7 @@ fn setup_window_reactors(
 
     // when a request completes
     let window_overlay = popup_pack.window_overlay;
-    ctx.rcommands.on_entity_removal::<React<PendingRequest>>(
+    ui.rcommands.on_entity_removal::<React<PendingRequest>>(
             make_lobby_entity,
             move |world: &mut World|
             {
@@ -159,9 +157,9 @@ fn setup_window_reactors(
         );
 
     // prepare blocker for make button
-    let accept_disable = make_overlay(ctx.ui(), &popup_pack.accept_button, "", false);
+    let accept_disable = make_overlay(ui.tree(), &popup_pack.accept_button, "", false);
     let accept_entity = popup_pack.accept_entity;
-    ctx.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // disable 'make' button when disconnected and configs are non-local
     let make_button_disabler =
@@ -172,19 +170,19 @@ fn setup_window_reactors(
             syscall(world, (enable, accept_disable.clone(), accept_entity), toggle_button_availability);
         };
 
-    ctx.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(make_button_disabler.clone());
-    ctx.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(make_button_disabler);
+    ui.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(make_button_disabler.clone());
+    ui.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(make_button_disabler);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title text
-    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             text,
             DARK_FONT_COLOR,
             TextParams::center()
@@ -197,14 +195,14 @@ fn add_window_title(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_join_as_field(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_join_as_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ctx, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone(), Some(700.));
 
-    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             text,
             DARK_FONT_COLOR,
             TextParams::center()
@@ -217,14 +215,14 @@ fn add_join_as_field(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_config_field(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ctx, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone(), Some(700.));
 
-    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             text,
             DARK_FONT_COLOR,
             TextParams::center()
@@ -238,14 +236,14 @@ fn add_config_field(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_password_field(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ctx, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone(), Some(700.));
 
-    let text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             text,
             DARK_FONT_COLOR,
             TextParams::center()
@@ -258,12 +256,12 @@ fn add_password_field(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // single-player text
-    let sp_text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let sp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             sp_text.clone(),
             DARK_FONT_COLOR,
             TextParams::center()
@@ -273,9 +271,9 @@ fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // multiplayer text
-    let mp_text = relative_widget(ctx, area.end(""), (0., 100.), (0., 100.));
+    let mp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
-            ctx,
+            ui,
             mp_text.clone(),
             DARK_FONT_COLOR,
             TextParams::center()
@@ -285,7 +283,7 @@ fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // adjust text depending on the lobby type
-    ctx.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(
             move |world: &mut World|
             {
                 match world.resource::<ReactRes<MakeLobbyWindow>>().is_single_player()
@@ -300,27 +298,27 @@ fn add_connection_requirement_field(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_contents(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    let title_area = relative_widget(ctx, area.end(""), (45., 65.), (5., 15.));
-    add_window_title(ctx, &title_area);
+    let title_area = relative_widget(ui.tree(), area.end(""), (45., 65.), (5., 15.));
+    add_window_title(ui, &title_area);
 
     // form section: 'join as' lobby member type for owner
-    let join_as_area = relative_widget(ctx, area.end(""), (15., 47.), (20., 50.));
-    add_join_as_field(ctx, &join_as_area);
+    let join_as_area = relative_widget(ui.tree(), area.end(""), (15., 47.), (20., 50.));
+    add_join_as_field(ui, &join_as_area);
 
     // form section: max players, max watchers
-    let config_area = relative_widget(ctx, area.end(""), (53., 85.), (20., 50.));
-    add_config_field(ctx, &config_area);
+    let config_area = relative_widget(ui.tree(), area.end(""), (53., 85.), (20., 50.));
+    add_config_field(ui, &config_area);
 
     // form section: password
-    let password_area = relative_widget(ctx, area.end(""), (30., 70.), (57., 87.));
-    add_password_field(ctx, &password_area);
+    let password_area = relative_widget(ui.tree(), area.end(""), (30., 70.), (57., 87.));
+    add_password_field(ui, &password_area);
 
     // indicator for local single-player
-    let connection_requirement_area = relative_widget(ctx, area.end(""), (10., 90.), (95., 100.));
-    add_connection_requirement_field(ctx, &connection_requirement_area);
+    let connection_requirement_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (95., 100.));
+    add_connection_requirement_field(ui, &connection_requirement_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -332,19 +330,19 @@ pub(crate) struct ActivateMakeLobbyWindow;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
+pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ctx, (80., 80.), "Close", "Make", |_| (),
+    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Make", |_| (),
             |world| syscall(world, (), send_make_lobby_request),
         );
 
     // add window contents
-    add_window_contents(ctx, &popup_pack.content_section);
+    add_window_contents(ui, &popup_pack.content_section);
 
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ctx.rcommands.on_event(
+    ui.rcommands.on_event(
             move |world: &mut World, _event: ReactEvent<ActivateMakeLobbyWindow>|
             {
                 syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
@@ -352,10 +350,10 @@ pub(crate) fn add_make_lobby_window(ctx: &mut UiBuilderCtx)
         );
 
     // setup window reactors
-    ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
+    ui.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ctx.rcommands.trigger_resource_mutation::<ReactRes<MakeLobbyWindow>>();
+    ui.rcommands.trigger_resource_mutation::<ReactRes<MakeLobbyWindow>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

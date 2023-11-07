@@ -6,9 +6,7 @@ use bevy_girk_demo_wiring::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::ecs::*;
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -106,14 +104,14 @@ fn send_join_lobby_request(
 
 fn setup_window_reactors(
     In(popup_pack) : In<BasicPopupPack>,
-    mut ctx        : UiBuilderCtx,
+    mut ui        : UiBuilder<MainUI>,
     join_lobby     : Query<Entity, With<JoinLobby>>,
 ){
     let join_lobby_entity = join_lobby.single();
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ctx.rcommands.on_entity_insertion::<React<PendingRequest>>(
+    ui.rcommands.on_entity_insertion::<React<PendingRequest>>(
             join_lobby_entity,
             move |world: &mut World|
             {
@@ -124,7 +122,7 @@ fn setup_window_reactors(
 
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
-    ctx.rcommands.on_entity_removal::<React<PendingRequest>>(
+    ui.rcommands.on_entity_removal::<React<PendingRequest>>(
             join_lobby_entity,
             move |world: &mut World|
             {
@@ -156,7 +154,7 @@ fn setup_window_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_contents(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
     //Join Lobby
@@ -185,19 +183,19 @@ pub(crate) struct ActivateJoinLobbyWindow
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
+pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ctx, (80., 80.), "Close", "Join", |_| (),
+    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Join", |_| (),
             |world| syscall(world, (), send_join_lobby_request),
         );
 
     // add window contents
-    add_window_contents(ctx, &popup_pack.content_section);
+    add_window_contents(ui, &popup_pack.content_section);
 
     // update window state and open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ctx.rcommands.on_event(
+    ui.rcommands.on_event(
             move |world: &mut World, event: ReactEvent<ActivateJoinLobbyWindow>|
             {
                 syscall(world, event, update_join_lobby_window);
@@ -206,10 +204,10 @@ pub(crate) fn add_join_lobby_window(ctx: &mut UiBuilderCtx)
         );
 
     // setup window reactors
-    ctx.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
+    ui.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ctx.rcommands.trigger_resource_mutation::<ReactRes<JoinLobbyWindow>>();
+    ui.rcommands.trigger_resource_mutation::<ReactRes<JoinLobbyWindow>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

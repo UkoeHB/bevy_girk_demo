@@ -4,9 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
-use bevy_kot::ecs::*;
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -43,14 +41,14 @@ fn setup(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_play_button(
-    ctx                     : &mut UiBuilderCtx,
+    ui                     : &mut UiBuilder<MainUI>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ctx.ui(), &default_button_overlay, "play_default", false);
+    let default_button = make_overlay(ui.tree(), &default_button_overlay, "play_default", false);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -58,13 +56,13 @@ fn make_play_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::BISQUE),  //tint the default button (todo: it's ugly)
-            ctx.asset_server.load(MENU_BAR_BUTTON),
+            ui.asset_server.load(MENU_BAR_BUTTON),
             Vec2::new(250.0, 142.0)
         );
-    ctx.commands().spawn(default_image);
+    ui.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ctx.ui(), &selected_button_overlay, "play_selected", false);
+    let selected_button = make_overlay(ui.tree(), &selected_button_overlay, "play_selected", false);
     let selected_image = ImageElementBundle::new(
             &selected_button,
             ImageParams::center()
@@ -72,15 +70,15 @@ fn make_play_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-            ctx.asset_server.load(MENU_BAR_BUTTON),
+            ui.asset_server.load(MENU_BAR_BUTTON),
             Vec2::new(250.0, 142.0)
         );
-    ctx.commands().spawn(selected_image);
+    ui.commands().spawn(selected_image);
 
     // add button text
-    let text = make_overlay(ctx.ui(), button, "play_text", false);
+    let text = make_overlay(ui.tree(), button, "play_text", false);
     spawn_basic_text(
-            ctx,
+            ui,
             text.clone(),
             MENU_BAR_BUTTON_FONT_COLOR,
             TextParams::center()
@@ -96,14 +94,14 @@ fn make_play_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_in_lobby_button(
-    ctx                     : &mut UiBuilderCtx,
+    ui                     : &mut UiBuilder<MainUI>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
 ) -> [Widget; 3]
 {
     // add default button image
-    let default_button = make_overlay(ctx.ui(), &default_button_overlay, "inlobby_default", false);
+    let default_button = make_overlay(ui.tree(), &default_button_overlay, "inlobby_default", false);
     let default_image = ImageElementBundle::new(
             &default_button,
             ImageParams::center()
@@ -111,13 +109,13 @@ fn make_in_lobby_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::YELLOW),  //use tint to differentiate (todo: it's ugly)
-            ctx.asset_server.load(MENU_BAR_BUTTON),
+            ui.asset_server.load(MENU_BAR_BUTTON),
             Vec2::new(250.0, 142.0)
         );
-    ctx.commands().spawn(default_image);
+    ui.commands().spawn(default_image);
 
     // add selected button image
-    let selected_button = make_overlay(ctx.ui(), &selected_button_overlay, "inlobby_selected", false);
+    let selected_button = make_overlay(ui.tree(), &selected_button_overlay, "inlobby_selected", false);
     let selected_image = ImageElementBundle::new(
             &selected_button,
             ImageParams::center()
@@ -125,15 +123,15 @@ fn make_in_lobby_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-            ctx.asset_server.load(MENU_BAR_BUTTON),
+            ui.asset_server.load(MENU_BAR_BUTTON),
             Vec2::new(250.0, 142.0)
         );
-    ctx.commands().spawn(selected_image);
+    ui.commands().spawn(selected_image);
 
     // add button text
-    let text = make_overlay(ctx.ui(), button, "inlobby_text", false);
+    let text = make_overlay(ui.tree(), button, "inlobby_text", false);
     spawn_basic_text(
-            ctx,
+            ui,
             text.clone(),
             MENU_BAR_BUTTON_FONT_COLOR,
             TextParams::center()
@@ -191,18 +189,18 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_play_button(ctx: &mut UiBuilderCtx, button: &Widget, area_overlay: &Widget) -> Entity
+pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_overlay: &Widget) -> Entity
 {
     // prepare overlays for controlling visibility
-    let default_button_overlay = make_overlay(ctx.ui(), button, "default", true);
-    let selected_button_overlay = make_overlay(ctx.ui(), button, "selected", false);
+    let default_button_overlay = make_overlay(ui.tree(), button, "default", true);
+    let selected_button_overlay = make_overlay(ui.tree(), button, "selected", false);
 
     // prepare buttons
-    let play_pack = make_play_button(ctx, button, &default_button_overlay, &selected_button_overlay);
-    let inlobby_pack = make_in_lobby_button(ctx, button, &default_button_overlay, &selected_button_overlay);
+    let play_pack = make_play_button(ui, button, &default_button_overlay, &selected_button_overlay);
+    let inlobby_pack = make_in_lobby_button(ui, button, &default_button_overlay, &selected_button_overlay);
 
     // select/deselect callbacks
-    let mut entity_commands = ctx.commands().spawn_empty();
+    let mut entity_commands = ui.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let area_overlay_clone = area_overlay.clone();
     let select_callback =
@@ -251,7 +249,7 @@ pub(crate) fn add_play_button(ctx: &mut UiBuilderCtx, button: &Widget, area_over
     entity_commands.insert(toggle_play_callback);
 
     // initialize button value
-    ctx.commands().add(
+    ui.commands().add(
             move |world: &mut World|
             { let _ = try_callback_with::<Toggle, MainPlayButton>(world, button_entity, MainPlayButton::Play); }
         );

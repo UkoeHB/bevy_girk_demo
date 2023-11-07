@@ -6,9 +6,7 @@ use bevy_girk_demo_wiring::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::ecs::{*, syscall};
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -245,11 +243,11 @@ fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_title(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
-    let text = relative_widget(ctx, area.end(""), (20., 80.), (40., 70.));
+    let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));
     spawn_basic_text(
-            ctx,
+            ui,
             text,
             MISC_FONT_COLOR,
             TextParams::center()
@@ -261,14 +259,14 @@ fn add_lobby_display_title(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_summary_box(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // add text to summary box (center)
-    let text = relative_widget(ctx, area.end(""), (5., 95.), (15., 97.5));
+    let text = relative_widget(ui.tree(), area.end(""), (5., 95.), (15., 97.5));
 
     let default_text = "Lobby: ?????? -- Owner: ??????";
     let text_entity = spawn_basic_text(
-            ctx,
+            ui,
             text,
             LOBBY_DISPLAY_FONT_COLOR,
             TextParams::center()
@@ -278,7 +276,7 @@ fn add_lobby_display_summary_box(ctx: &mut UiBuilderCtx, area: &Widget)
         );
 
     // update the text when the lobby display changes
-    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 // define updated text
@@ -306,13 +304,13 @@ fn add_lobby_display_summary_box(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // outline for header
-    spawn_plain_outline(ctx, area.clone(), None);
+    spawn_plain_outline(ui, area.clone(), None);
 
     // text
-    let text = relative_widget(ctx, area.end(""), (5., 95.), (15., 97.5));
+    let text = relative_widget(ui.tree(), area.end(""), (5., 95.), (15., 97.5));
 
     let member_type = ListPage::member_type();
     let tag = match member_type
@@ -326,7 +324,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area
         ClickLobbyMemberType::Watcher => "Watchers: 00/00",
     };
     let text_entity = spawn_basic_text(
-            ctx,
+            ui,
             text,
             LOBBY_DISPLAY_FONT_COLOR,
             TextParams::center()
@@ -336,7 +334,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area
         );
 
     // update the text when the lobby display changes
-    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 // define updated text
@@ -366,14 +364,14 @@ fn add_display_list_header<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_display_list_page_left_button<ListPage: ListPageTrait>(
-    ctx      : &mut UiBuilderCtx,
+    ui      : &mut UiBuilder<MainUI>,
     area     : &Widget,
     entities : Arc<Vec<Entity>>,
 ){
     // button ui
     // - decrement page number and update display contents
-    let button_entity = ctx.commands().spawn_empty().id();
-    make_basic_button(ctx, &area, button_entity, "<",
+    let button_entity = ui.commands().spawn_empty().id();
+    make_basic_button(ui, &area, button_entity, "<",
             move |world|
             {
                 syscall(
@@ -388,10 +386,10 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is zero
-    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
-    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
             move |world: &mut World|
             {
                 let enable = world.resource::<ReactRes<ListPage>>().get() != 0;
@@ -404,14 +402,14 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_display_list_page_right_button<ListPage: ListPageTrait>(
-    ctx      : &mut UiBuilderCtx,
+    ui      : &mut UiBuilder<MainUI>,
     area     : &Widget,
     entities : Arc<Vec<Entity>>,
 ){
     // button ui
     // - increment page number and update display contents
-    let button_entity = ctx.commands().spawn_empty().id();
-    make_basic_button(ctx, &area, button_entity, ">",
+    let button_entity = ui.commands().spawn_empty().id();
+    make_basic_button(ui, &area, button_entity, ">",
             move |world|
             {
                 syscall(
@@ -426,10 +424,10 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is maxed
-    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
-    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
             move |world: &mut World|
             {
                 let enable = !page_is_maxed::<ListPage>(
@@ -444,7 +442,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_contents<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // prepare content widgets
     let mut content_entities = Vec::with_capacity(NUM_LOBBY_CONTENT_ENTRIES);
@@ -458,10 +456,10 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, ar
                 5. + (i       as f32)*entry_height,
                 5. + ((i + 1) as f32)*entry_height
             );
-        let text = relative_widget(ctx, area.end(""), (20., 80.), y_range);
+        let text = relative_widget(ui.tree(), area.end(""), (20., 80.), y_range);
 
         let text_entity = spawn_basic_text(
-                ctx,
+                ui,
                 text,
                 LOBBY_DISPLAY_FONT_COLOR,
                 TextParams::centerleft()
@@ -477,74 +475,74 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, ar
 
     // update the contents when the lobby display changes
     let content_entities_clone = content_entities.clone();
-    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             syscall(world, content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
 
     // paginate left button (bottom left corner)
-    let page_left_area = relative_widget(ctx, area.end(""), (1., 15.), (85., 98.));
-    add_display_list_page_left_button::<ListPage>(ctx, &page_left_area, content_entities.clone());
+    let page_left_area = relative_widget(ui.tree(), area.end(""), (1., 15.), (85., 98.));
+    add_display_list_page_left_button::<ListPage>(ui, &page_left_area, content_entities.clone());
 
     // paginate right button (bottom right corner)
-    let page_right_area = relative_widget(ctx, area.end(""), (85., 99.), (85., 98.));
-    add_display_list_page_right_button::<ListPage>(ctx, &page_right_area, content_entities);
+    let page_right_area = relative_widget(ui.tree(), area.end(""), (85., 99.), (85., 98.));
+    add_display_list_page_right_button::<ListPage>(ui, &page_right_area, content_entities);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_list<ListPage: ListPageTrait>(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // box for entire area
-    spawn_plain_box(ctx, area.clone(), None);
+    spawn_plain_box(ui, area.clone(), None);
 
     // header
-    let header_area = relative_widget(ctx, area.end(""), (0., 100.), (0., 20.));
-    add_display_list_header::<ListPage>(ctx, &header_area);
+    let header_area = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 20.));
+    add_display_list_header::<ListPage>(ui, &header_area);
 
     // contents
-    let contents_area = relative_widget(ctx, area.end(""), (0., 100.), (20., 100.));
-    add_display_list_contents::<ListPage>(ctx, &contents_area);
+    let contents_area = relative_widget(ui.tree(), area.end(""), (0., 100.), (20., 100.));
+    add_display_list_contents::<ListPage>(ui, &contents_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_box(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // box for entire display
     //todo: it's better to place a box for the summary box area, but the box image gets too stretched
-    let box_area = relative_widget(ctx, area.end(""), (10., 90.), (0., 100.));
-    spawn_plain_box(ctx, box_area.clone(), None);
+    let box_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (0., 100.));
+    spawn_plain_box(ui, box_area.clone(), None);
 
     // summary box
-    let summary_box_area = relative_widget(ctx, box_area.end(""), (0., 100.), (0., 20.));
-    add_lobby_display_summary_box(ctx, &summary_box_area);
+    let summary_box_area = relative_widget(ui.tree(), box_area.end(""), (0., 100.), (0., 20.));
+    add_lobby_display_summary_box(ui, &summary_box_area);
 
     // players list
-    let player_list_area = relative_widget(ctx, box_area.end(""), (0.5, 50.), (20., 100.));
-    add_lobby_display_list::<PlayerListPage>(ctx, &player_list_area);
+    let player_list_area = relative_widget(ui.tree(), box_area.end(""), (0.5, 50.), (20., 100.));
+    add_lobby_display_list::<PlayerListPage>(ui, &player_list_area);
 
     // watchers list
-    let watcher_list_area = relative_widget(ctx, box_area.end(""), (50., 99.5), (20., 100.));
-    add_lobby_display_list::<WatcherListPage>(ctx, &watcher_list_area);
+    let watcher_list_area = relative_widget(ui.tree(), box_area.end(""), (50., 99.5), (20., 100.));
+    add_lobby_display_list::<WatcherListPage>(ui, &watcher_list_area);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_leave_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = ctx.commands().spawn_empty().id();
-    make_basic_button(ctx, &area, button_entity, "Leave", |world| syscall(world, (), leave_current_lobby));
+    let button_entity = ui.commands().spawn_empty().id();
+    make_basic_button(ui, &area, button_entity, "Leave", |world| syscall(world, (), leave_current_lobby));
 
     // disable button when there is no lobby
-    let disable_overlay = make_overlay(ctx.ui(), &area, "", false);
-    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 let enable = world.resource::<ReactRes<LobbyDisplay>>().is_set();
@@ -556,17 +554,17 @@ fn add_leave_lobby_button(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_start_game_button(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = ctx.commands().spawn_empty().id();
-    make_basic_button(ctx, &area, button_entity, "Start", |world| syscall(world, (), start_current_lobby));
+    let button_entity = ui.commands().spawn_empty().id();
+    make_basic_button(ui, &area, button_entity, "Start", |world| syscall(world, (), start_current_lobby));
 
     // disable button when we don't own the lobby
-    let disable_overlay = make_overlay(ctx.ui(), &area, "", true);
-    ctx.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let disable_overlay = make_overlay(ui.tree(), &area, "", true);
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ctx.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
                 let enable = match world.resource::<ReactRes<LobbyDisplay>>().get()
@@ -582,10 +580,10 @@ fn add_start_game_button(ctx: &mut UiBuilderCtx, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_buttons(ctx: &mut UiBuilderCtx, area: &Widget)
+fn add_lobby_buttons(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // overlay
-    let buttons_overlay = relative_widget(ctx, area.end(""), (10., 90.), (10., 90.));
+    let buttons_overlay = relative_widget(ui.tree(), area.end(""), (10., 90.), (10., 90.));
 
     // buttons: widget grid
     let lobby_button_widgets = GridSegment::new()
@@ -594,35 +592,35 @@ fn add_lobby_buttons(ctx: &mut UiBuilderCtx, area: &Widget)
             GridCell::named(Vec2::splat(10.0), "start_game")
         ])
         .add_gaps(3.0)
-        .build_in(ctx.ui(), &buttons_overlay, GridOrientation::Horizontal)
+        .build_in(ui.tree(), &buttons_overlay, GridOrientation::Horizontal)
         .unwrap();
 
     // prepare each of the buttons
-    add_leave_lobby_button(ctx, &lobby_button_widgets[0]);
-    add_start_game_button(ctx, &lobby_button_widgets[1]);
+    add_leave_lobby_button(ui, &lobby_button_widgets[0]);
+    add_start_game_button(ui, &lobby_button_widgets[1]);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_lobby_display(ctx: &mut UiBuilderCtx, area: &Widget)
+pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    let lobby_display_title = relative_widget(ctx, area.end(""), (0., 100.), (0., 15.));
-    add_lobby_display_title(ctx, &lobby_display_title);
+    let lobby_display_title = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 15.));
+    add_lobby_display_title(ui, &lobby_display_title);
 
     // display box
-    let lobby_display_box = relative_widget(ctx, area.end(""), (0., 100.), (15., 75.));
-    add_lobby_display_box(ctx, &lobby_display_box);
+    let lobby_display_box = relative_widget(ui.tree(), area.end(""), (0., 100.), (15., 75.));
+    add_lobby_display_box(ui, &lobby_display_box);
 
     // leave/launch buttons
-    let lobby_leave_button = relative_widget(ctx, area.end(""), (0., 100.), (75., 90.));
-    add_lobby_buttons(ctx, &lobby_leave_button);
+    let lobby_leave_button = relative_widget(ui.tree(), area.end(""), (0., 100.), (75., 90.));
+    add_lobby_buttons(ui, &lobby_leave_button);
 
     // initialize UI listening to lobby display
-    ctx.rcommands.trigger_resource_mutation::<ReactRes<LobbyDisplay>>();
-    ctx.rcommands.trigger_resource_mutation::<ReactRes<PlayerListPage>>();
-    ctx.rcommands.trigger_resource_mutation::<ReactRes<WatcherListPage>>();
+    ui.rcommands.trigger_resource_mutation::<ReactRes<LobbyDisplay>>();
+    ui.rcommands.trigger_resource_mutation::<ReactRes<PlayerListPage>>();
+    ui.rcommands.trigger_resource_mutation::<ReactRes<WatcherListPage>>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

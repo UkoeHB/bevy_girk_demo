@@ -2,9 +2,7 @@
 use crate::*;
 
 //third-party shortcuts
-use bevy_kot::ecs::*;
-use bevy_kot::ui::*;
-use bevy_kot::ui::builtin::*;
+use bevy_kot::prelude::{*, builtin::*};
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_lunex::prelude::*;
@@ -15,41 +13,41 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ui_tree(mut ctx: UiBuilderCtx)
+fn setup_ui_tree(mut ui: UiBuilder<MainUI>)
 {
-    let ctx = &mut ctx;
+    let ui = &mut ui;
 
     // root widget
-    let root = relative_widget(ctx, "root", (0., 100.), (0., 100.));
+    let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));
 
     // root zones
     // - play button (top left)
-    let play_button = relative_widget(ctx, root.end("play_button"), (0., 20.), (0., 10.));
-    ctx.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let play_button = relative_widget(ui.tree(), root.end("play_button"), (0., 20.), (0., 10.));
+    ui.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - menu bar (center top)
-    let menu_bar = relative_widget(ctx, root.end("menu_bar"), (20., 90.), (0., 10.));
-    ctx.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let menu_bar = relative_widget(ui.tree(), root.end("menu_bar"), (20., 90.), (0., 10.));
+    ui.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - add separators
     //todo: this is very janky
-    let play_vertical = relative_widget(ctx, root.end("play_vertical"), (-2., 20.), (-5., 10.));
-    spawn_plain_outline(ctx, play_vertical, None);
-    let header_underline = relative_widget(ctx, root.end("header_underline"), (-10., 110.), (-10., 10.));
-    spawn_plain_outline(ctx, header_underline, None);
+    let play_vertical = relative_widget(ui.tree(), root.end("play_vertical"), (-2., 20.), (-5., 10.));
+    spawn_plain_outline(ui, play_vertical, None);
+    let header_underline = relative_widget(ui.tree(), root.end("header_underline"), (-10., 110.), (-10., 10.));
+    spawn_plain_outline(ui, header_underline, None);
 
     // - menu item overlay area (everything below the menu bar)
-    let menu_overlay = relative_widget(ctx, root.end("menu_overlay"), (0., 100.), (10., 100.));
-    ctx.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    let menu_overlay = relative_widget(ui.tree(), root.end("menu_overlay"), (0., 100.), (10., 100.));
+    ui.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     // - connection status (upper right corner)
-    let status = relative_widget(ctx, root.end("status"), (90., 100.), (0., 10.));
+    let status = relative_widget(ui.tree(), root.end("status"), (90., 100.), (0., 10.));
 
 
     // add child widgets
-    add_play_section(ctx, play_button, menu_overlay.clone());
-    add_menu_bar_section(ctx, menu_bar, menu_overlay);
-    add_status_section(ctx, status);
+    add_play_section(ui, play_button, menu_overlay.clone());
+    add_menu_bar_section(ui, menu_bar, menu_overlay);
+    add_status_section(ui, status);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -66,8 +64,8 @@ fn setup_ui(mut commands: Commands)
     commands.spawn((bevy_lunex::prelude::Cursor::new(0.0), Transform::default(), MainMouseCursor));
 
     // add new ui tree to ecs
-    let ui = UiTree::new("ui");
-    commands.spawn((ui, MainUI));
+    commands.insert_resource(StyleStackRes::<MainUI>::default());
+    commands.spawn((UiTree::new("ui"), MainUI));
 
     // initialize ui tree
     // - we do this after spawning the ui tree so that initialization can add commands that query the ui tree
