@@ -55,8 +55,8 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+                ui.asset_server.load(MENU_BAR_BUTTON.0),
+                MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(default_image);
 
@@ -69,8 +69,8 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::GRAY),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+            ui.asset_server.load(MENU_BAR_BUTTON.0),
+            MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(selected_image);
 
@@ -108,7 +108,6 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
     spawn_basic_text(
             ui,
             text,
-            MENU_BAR_BUTTON_FONT_COLOR,
             TextParams::center()
                 .with_depth(100.)
                 .with_height(Some(40.)),
@@ -127,7 +126,6 @@ fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            MISC_FONT_COLOR,
             TextParams::center()
                 .with_height(Some(40.)),
             "Welcome!"
@@ -143,7 +141,6 @@ fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            MISC_FONT_COLOR,
             TextParams::center()
                 .with_height(Some(20.)),
             "There are no settings yet..."

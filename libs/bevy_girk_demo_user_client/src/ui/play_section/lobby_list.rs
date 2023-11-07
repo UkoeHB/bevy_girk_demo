@@ -284,7 +284,6 @@ fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            MISC_FONT_COLOR,
             TextParams::center()
                 .with_height(Some(100.)),
             "Lobby List"
@@ -304,7 +303,6 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            MISC_FONT_COLOR,
             TextParams::centerright()
                 .with_height(Some(40.)),
             "Loading..."
@@ -349,7 +347,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
  
         let text = relative_widget(ui.tree(), content_widget.end(""), (10., 78.), (y_start, y_end));
 
-        let content_entity = spawn_basic_text(
+        let content_entity = spawn_basic_text_temp(
                 ui,
                 text,
                 LOBBY_DISPLAY_FONT_COLOR,
@@ -384,7 +382,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // stats text
-    let text_entity = spawn_basic_text(
+    let text_entity = spawn_basic_text_temp(
             ui,
             area.clone(),
             LOBBY_LIST_STATS_FONT_COLOR,

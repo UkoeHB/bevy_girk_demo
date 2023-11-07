@@ -13,9 +13,12 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ui_tree(mut ui: UiBuilder<MainUI>)
+fn build_ui(mut ui: UiBuilder<MainUI>)
 {
     let ui = &mut ui;
+
+    // set base style pack
+    ui.add(PrefabStyles::default());
 
     // root widget
     let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));
@@ -66,10 +69,6 @@ fn setup_ui(mut commands: Commands)
     // add new ui tree to ecs
     commands.insert_resource(StyleStackRes::<MainUI>::default());
     commands.spawn((UiTree::new("ui"), MainUI));
-
-    // initialize ui tree
-    // - we do this after spawning the ui tree so that initialization can add commands that query the ui tree
-    commands.add(|world: &mut World| syscall(world, (), setup_ui_tree));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -81,11 +80,8 @@ pub(crate) fn UIPlugin(app: &mut App)
     app
         .add_plugins(LunexUiPlugin)
         .register_interaction_source(MouseLButtonMain::default())
-        .add_systems(Startup,
-            (
-                setup_ui, apply_deferred,
-            ).chain()
-        )
+        .add_systems(PreStartup, setup_ui)
+        .add_systems(Startup, build_ui)
 
         // ui plugins
         .add_plugins(UiConnectionStatusPlugin)

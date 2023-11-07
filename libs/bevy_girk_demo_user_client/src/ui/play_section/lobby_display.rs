@@ -249,7 +249,6 @@ fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            MISC_FONT_COLOR,
             TextParams::center()
                 .with_height(Some(100.)),
             "Current Lobby"
@@ -265,7 +264,7 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let text = relative_widget(ui.tree(), area.end(""), (5., 95.), (15., 97.5));
 
     let default_text = "Lobby: ?????? -- Owner: ??????";
-    let text_entity = spawn_basic_text(
+    let text_entity = spawn_basic_text_temp(
             ui,
             text,
             LOBBY_DISPLAY_FONT_COLOR,
@@ -323,7 +322,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
         ClickLobbyMemberType::Player  => "Players: 00/00\0",  //want default text to have same width for each type
         ClickLobbyMemberType::Watcher => "Watchers: 00/00",
     };
-    let text_entity = spawn_basic_text(
+    let text_entity = spawn_basic_text_temp(
             ui,
             text,
             LOBBY_DISPLAY_FONT_COLOR,
@@ -458,7 +457,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
             );
         let text = relative_widget(ui.tree(), area.end(""), (20., 80.), y_range);
 
-        let text_entity = spawn_basic_text(
+        let text_entity = spawn_basic_text_temp(
                 ui,
                 text,
                 LOBBY_DISPLAY_FONT_COLOR,

@@ -181,7 +181,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             text,
             DARK_FONT_COLOR,
@@ -201,7 +201,7 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             text,
             DARK_FONT_COLOR,
@@ -221,7 +221,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             text,
             DARK_FONT_COLOR,
@@ -242,7 +242,7 @@ fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             text,
             DARK_FONT_COLOR,
@@ -260,7 +260,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // single-player text
     let sp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             sp_text.clone(),
             DARK_FONT_COLOR,
@@ -272,7 +272,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // multiplayer text
     let mp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
+    spawn_basic_text_temp(
             ui,
             mp_text.clone(),
             DARK_FONT_COLOR,

@@ -12,12 +12,12 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// The text style of `params` will be overwritten.
-pub(crate) fn spawn_basic_text(
+pub(crate) fn spawn_basic_text_temp(
     ui           : &mut UiBuilder<MainUI>,
     widget       : Widget,
     color        : Color,
     params       : TextParams,
-    default_text : &str,
+    initial_text : &str,
 ) -> Entity
 {
     let text_style = TextStyle {
@@ -27,7 +27,31 @@ pub(crate) fn spawn_basic_text(
         };
 
     let text_params = params.with_style(&text_style);
-    let text_entity = ui.commands().spawn(TextElementBundle::new(widget, text_params, default_text)).id();
+    let text_entity = ui.commands().spawn(TextElementBundle::new(widget, text_params, initial_text)).id();
+
+    text_entity    
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// The text style of `params` will be overwritten.
+pub(crate) fn spawn_basic_text(
+    ui           : &mut UiBuilder<MainUI>,
+    widget       : Widget,
+    params       : TextParams,
+    initial_text : &str,
+) -> Entity
+{
+    let style = ui.get::<BasicText>().unwrap();
+
+    let text_style = TextStyle {
+            font      : ui.asset_server.load(style.font),
+            font_size : 45.0,
+            color     : style.color,
+        };
+
+    let text_params = params.with_style(&text_style);
+    let text_entity = ui.commands().spawn(TextElementBundle::new(widget, text_params, initial_text)).id();
 
     text_entity    
 }
@@ -42,8 +66,8 @@ pub(crate) fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth:
                 .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(BOX),
-            Vec2::new(236.0, 139.0)
+            ui.asset_server.load(BOX.0),
+            BOX.1
         );
     let box_entity = ui.commands().spawn(image).id();
 
@@ -60,8 +84,8 @@ pub(crate) fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, de
                 .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(OUTLINE),
-            Vec2::new(236.0, 139.0)
+            ui.asset_server.load(OUTLINE.0),
+            OUTLINE.1
         );
     let box_entity = ui.commands().spawn(image).id();
 
@@ -77,6 +101,8 @@ pub(crate) fn make_basic_button(
     button_text      : &'static str,
     unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ){
+    let style = (*ui.get::<BasicButton>().unwrap()).clone();
+
     // add default button image
     let default_button = make_overlay(ui.tree(), &button_overlay, "", true);
     let default_image = ImageElementBundle::new(
@@ -85,9 +111,9 @@ pub(crate) fn make_basic_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::GRAY),
-            ui.asset_server.load(MISC_BUTTON),
-            Vec2::new(250.0, 142.0)
+                .with_color(style.default_img_color),
+            ui.asset_server.load(style.default_img.0),
+            style.default_img.1
         );
     ui.commands().spawn(default_image);
 
@@ -99,17 +125,17 @@ pub(crate) fn make_basic_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::DARK_GRAY),
-            ui.asset_server.load(MISC_BUTTON),
-            Vec2::new(250.0, 142.0)
+                .with_color(style.pressed_img_color),
+            ui.asset_server.load(style.pressed_img.0),
+            style.pressed_img.1
         );
     ui.commands().spawn(pressed_image);
 
     // add button text
     let text_style = TextStyle {
-            font      : ui.asset_server.load(MISC_FONT),
+            font      : ui.asset_server.load(style.text.font),
             font_size : 40.0,
-            color     : MISC_FONT_COLOR,
+            color     : style.text.color,
         };
 
     let mut entity_commands = ui.commands().get_entity(button_entity).unwrap();
@@ -169,6 +195,8 @@ pub(crate) fn spawn_basic_popup(
     accept_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
+    let style = (*ui.get::<BasicPopup>().unwrap()).clone();
+
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);
 
@@ -179,8 +207,8 @@ pub(crate) fn spawn_basic_popup(
             ImageParams::center()
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(FILM),
-            Vec2::new(236.0, 139.0)
+            ui.asset_server.load(style.background.0),
+            style.background.1
         );
     ui.commands().spawn(barrier_img);
     ui.commands().spawn((barrier, UIInteractionBarrier::<MainUI>::default()));
@@ -195,31 +223,45 @@ pub(crate) fn spawn_basic_popup(
                 .with_depth(0.1)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::AZURE),
-            ui.asset_server.load(BOX),
-            Vec2::new(236.0, 139.0)
+                .with_color(style.window_color),
+            ui.asset_server.load(style.window.0),
+            style.window.1
         );
     ui.commands().spawn((window_img, UIInteractionBarrier::<MainUI>::default()));
 
     // region for caller's content
     let content_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (0., 82.));
 
-    // cancel button
-    let cancel_button = relative_widget(ui.tree(), window.end(""), (15., 27.), (86., 94.));
-    let cancel_entity = ui.commands().spawn_empty().id();
+    // region for buttons
+    let buttons_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (82., 100.));
     let window_overlay_clone = window_overlay.clone();
-    make_basic_button(ui, &cancel_button, cancel_entity, cancel_text,
-            move |world|
-            {
-                syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
-                (cancel_callback)(world);
-            }
-        );
+    let (
+        cancel_button,
+        cancel_entity,
+        accept_button,
+        accept_entity,
+    ) = ui.div(move |ui| {
+        // add button style
+        ui.add(style.button);
 
-    // accept button
-    let accept_button = relative_widget(ui.tree(), window.end(""), (73., 85.), (86., 94.));
-    let accept_entity = ui.commands().spawn_empty().id();
-    make_basic_button(ui, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
+        // cancel button
+        let cancel_button = relative_widget(ui.tree(), buttons_section.end(""), (15., 27.), (22., 67.));
+        let cancel_entity = ui.commands().spawn_empty().id();
+        make_basic_button(ui, &cancel_button, cancel_entity, cancel_text,
+                move |world|
+                {
+                    syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
+                    (cancel_callback)(world);
+                }
+            );
+
+        // accept button
+        let accept_button = relative_widget(ui.tree(), buttons_section.end(""), (73., 85.), (22., 67.));
+        let accept_entity = ui.commands().spawn_empty().id();
+        make_basic_button(ui, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
+
+        (cancel_button, cancel_entity, accept_button, accept_entity)
+    });
 
     // set depth of window above all other ui elements
     let branch = window_overlay.fetch_mut(ui.tree()).unwrap();

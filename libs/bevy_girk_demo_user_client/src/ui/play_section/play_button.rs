@@ -56,8 +56,8 @@ fn make_play_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::BISQUE),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+                ui.asset_server.load(MENU_BAR_BUTTON.0),
+                MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(default_image);
 
@@ -70,8 +70,8 @@ fn make_play_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+                ui.asset_server.load(MENU_BAR_BUTTON.0),
+                MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(selected_image);
 
@@ -80,7 +80,6 @@ fn make_play_button(
     spawn_basic_text(
             ui,
             text.clone(),
-            MENU_BAR_BUTTON_FONT_COLOR,
             TextParams::center()
                 .with_depth(100.)
                 .with_height(Some(40.)),
@@ -109,8 +108,8 @@ fn make_in_lobby_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::YELLOW),  //use tint to differentiate (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+            ui.asset_server.load(MENU_BAR_BUTTON.0),
+            MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(default_image);
 
@@ -123,8 +122,8 @@ fn make_in_lobby_button(
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON),
-            Vec2::new(250.0, 142.0)
+            ui.asset_server.load(MENU_BAR_BUTTON.0),
+            MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(selected_image);
 
@@ -133,7 +132,6 @@ fn make_in_lobby_button(
     spawn_basic_text(
             ui,
             text.clone(),
-            MENU_BAR_BUTTON_FONT_COLOR,
             TextParams::center()
                 .with_depth(100.)
                 .with_height(Some(40.)),

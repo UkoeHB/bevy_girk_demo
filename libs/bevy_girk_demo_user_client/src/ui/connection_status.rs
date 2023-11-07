@@ -39,7 +39,6 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: Widget)
     let text_entity = spawn_basic_text(
             ui,
             text,
-            STATUS_FONT_COLOR,
             TextParams::topright(),
             "Connecting..."
         );
