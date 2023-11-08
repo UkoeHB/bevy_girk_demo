@@ -59,6 +59,7 @@ pub fn ClickUserClientPlugin(app: &mut App)
         .add_plugins(BevyEnginePlugin)
         .add_plugins(HostClientPlugin)
         .add_plugins(LobbiesPlugin)
+        .add_plugins(GamePlugin)
         .add_plugins(UIPlugin);
 }
 

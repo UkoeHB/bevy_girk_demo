@@ -19,7 +19,6 @@ pub(crate) const BASIC_FONT           : &'static str = "fonts/FiraSans-Bold.ttf"
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) const NUM_LOBBY_CONTENT_ENTRIES : usize = 8;
-pub(crate) const LOBBY_LIST_SIZE           : usize = 10;
 
 //-------------------------------------------------------------------------------------------------------------------
 

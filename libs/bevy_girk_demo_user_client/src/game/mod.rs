@@ -2,4 +2,4 @@
 mod plugin;
 
 //API exports
-pub use crate::game::plugin::*;
+pub(crate) use crate::game::plugin::*;

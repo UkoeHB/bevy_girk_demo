@@ -2,6 +2,7 @@
 
 //local shortcuts
 use bevy_girk_demo_user_client::*;
+use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -47,7 +48,7 @@ fn main()
 
     // define configs (TEMPORARY: use asset instead ?)
     let timer_configs = TimerConfigs{
-            ack_request_timeout_ms : 15_000,
+            ack_request_timeout_ms : ACK_TIMEOUT_MILLIS + 5_000,
             lobby_list_refresh_ms  : 10_000,
         };
 

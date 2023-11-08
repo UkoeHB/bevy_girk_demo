@@ -18,6 +18,7 @@ bevy_girk_backend_public = { workspace = true }
 bevy_girk_utils          = { workspace = true }
 
 bevy_girk_demo_user_client = { path = "../../libs/bevy_girk_demo_user_client" }
+bevy_girk_demo_wiring      = { path = "../../libs/bevy_girk_demo_wiring" }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 console_error_panic_hook = { version = "0.1" }

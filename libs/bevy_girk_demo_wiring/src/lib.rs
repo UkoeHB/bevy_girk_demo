@@ -5,6 +5,7 @@ mod client_app_setup;
 mod game_app_setup;
 mod game_factory;
 mod game_launch_pack_source;
+mod host_client_config;
 
 //API exports
 pub use crate::click_lobby_checker::*;
@@ -13,3 +14,4 @@ pub use crate::client_app_setup::*;
 pub use crate::game_app_setup::*;
 pub use crate::game_factory::*;
 pub use crate::game_launch_pack_source::*;
+pub use crate::host_client_config::*;
