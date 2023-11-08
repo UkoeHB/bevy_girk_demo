@@ -75,6 +75,9 @@ fn make_play_button(
         );
     ui.commands().spawn(selected_image);
 
+    // set text style
+    ui.add(basic_text_default_light_style());
+
     // add button text
     let text = make_overlay(ui.tree(), button, "play_text", false);
     spawn_basic_text(
@@ -126,6 +129,9 @@ fn make_in_lobby_button(
             MENU_BAR_BUTTON.1
         );
     ui.commands().spawn(selected_image);
+
+    // set text style
+    ui.add(basic_text_default_light_style());
 
     // add button text
     let text = make_overlay(ui.tree(), button, "inlobby_text", false);

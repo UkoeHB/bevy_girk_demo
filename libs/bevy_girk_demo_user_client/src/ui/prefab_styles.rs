@@ -11,10 +11,10 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone)]
-pub(crate) struct BasicText
+pub struct BasicText
 {
-    pub(crate) color: Color,
-    pub(crate) font: &'static str,
+    pub color: Color,
+    pub font: &'static str,
 }
 
 impl Default for BasicText
@@ -22,24 +22,32 @@ impl Default for BasicText
     fn default() -> Self
     {
         Self{
-            color: MISC_FONT_COLOR,
-            font: MISC_FONT,
+            color: Color::BLACK,
+            font: BASIC_FONT,
         }
     }
+}
+
+pub fn basic_text_default_light_style() -> BasicText
+{
+    BasicText{
+            color: Color::WHITE,
+            font: BASIC_FONT,
+        }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone)]
-pub(crate) struct BasicButton
+pub struct BasicButton
 {
-    pub(crate) default_img: (&'static str, Vec2),
-    pub(crate) pressed_img: (&'static str, Vec2),
+    pub default_img: (&'static str, Vec2),
+    pub pressed_img: (&'static str, Vec2),
 
-    pub(crate) default_img_color: Color,
-    pub(crate) pressed_img_color: Color,
+    pub default_img_color: Color,
+    pub pressed_img_color: Color,
 
-    pub(crate) text: BasicText,
+    pub text: BasicText,
 }
 
 impl Default for BasicButton
@@ -51,7 +59,32 @@ impl Default for BasicButton
             pressed_img: MISC_BUTTON,
             default_img_color: Color::GRAY,
             pressed_img_color: Color::DARK_GRAY,
-            text: BasicText::default(),
+            text: basic_button_default_text_style(),
+        }
+    }
+}
+
+pub fn basic_button_default_text_style() -> BasicText
+{
+    basic_text_default_light_style()
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone)]
+pub struct BasicButtonAvailability
+{
+    pub active: Color,
+    pub inactive: Color,
+}
+
+impl Default for BasicButtonAvailability
+{
+    fn default() -> Self
+    {
+        Self{
+            active: basic_button_default_text_style().color,
+            inactive: Color::GRAY,
         }
     }
 }
@@ -59,12 +92,12 @@ impl Default for BasicButton
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone)]
-pub(crate) struct BasicPopup
+pub struct BasicPopup
 {
-    pub(crate) button: BasicButton,
-    pub(crate) background: (&'static str, Vec2),
-    pub(crate) window: (&'static str, Vec2),
-    pub(crate) window_color: Color,
+    pub button: BasicButton,
+    pub background: (&'static str, Vec2),
+    pub window: (&'static str, Vec2),
+    pub window_color: Color,
 }
 
 impl Default for BasicPopup
@@ -80,13 +113,19 @@ impl Default for BasicPopup
     }
 }
 
+pub fn basic_popup_default_button_style() -> BasicButton
+{
+    BasicButton::default()
+}
+
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(StyleBundle, Default)]
-pub(crate) struct PrefabStyles
+pub struct PrefabStyles
 {
     basic_text: BasicText,
     basic_button: BasicButton,
+    basic_button_availability: BasicButtonAvailability,
     basic_popup: BasicPopup,
 }
 

@@ -279,6 +279,9 @@ fn open_make_lobby_window(mut rcommands: ReactCommands)
 
 fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
+    // set text style
+    ui.add(basic_text_default_light_style());
+
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));
     spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "Lobby List");
@@ -291,6 +294,9 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // make overlay so indicator visibility starts `false`
     let overlay = make_overlay(ui.tree(), &area, "", false);
+
+    // set text style
+    ui.add(basic_text_default_light_style());
 
     // indicator text
     let text = relative_widget(ui.tree(), overlay.end(""), (5., 98.), (15., 95.));
@@ -335,10 +341,9 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
  
         let text = relative_widget(ui.tree(), content_widget.end(""), (10., 78.), (y_start, y_end));
 
-        let content_entity = spawn_basic_text_temp(
+        let content_entity = spawn_basic_text(
                 ui,
                 text,
-                LOBBY_DISPLAY_FONT_COLOR,
                 TextParams::centerleft()
                     .with_width(Some(100.))
                     .with_height(Some(70.)),
@@ -370,14 +375,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // stats text
-    let text_entity = spawn_basic_text_temp(
-            ui,
-            area.clone(),
-            LOBBY_LIST_STATS_FONT_COLOR,
-            TextParams::center()
-                .with_width(Some(100.)),
-            "(????-???? / ????)"
-        );
+    let text_entity = spawn_basic_text(ui, area.clone(), TextParams::center().with_width(Some(100.)), "(????-???? / ????)");
 
     // update stats when lobby page updates
     ui.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(

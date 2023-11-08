@@ -154,10 +154,28 @@ fn setup_window_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+{
+    // title text
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ui,
+            text,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_height(Some(100.)),
+            "Join Lobby"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    //Join Lobby
+    let title_area = relative_widget(ui.tree(), area.end(""), (45., 65.), (5., 15.));
+    ui.div(|ui| add_window_title(ui, &title_area));
 
     // info subtitle
     //lobby id: ###### -- owner id: ######

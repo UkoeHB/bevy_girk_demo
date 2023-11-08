@@ -14,6 +14,9 @@ use std::fmt::Write;
 
 pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
+    // set text style
+    ui.add(basic_text_default_light_style());
+
     // text layout helper
     let layout_helper = Widget::create(
             ui.tree(),

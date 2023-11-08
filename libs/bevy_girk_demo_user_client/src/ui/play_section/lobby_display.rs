@@ -245,6 +245,10 @@ fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
 
 fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
+    // set text style
+    ui.add(basic_text_default_light_style());
+
+    // spawn text
     let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));
     spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "Current Lobby");
 }
@@ -258,15 +262,7 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let text = relative_widget(ui.tree(), area.end(""), (5., 95.), (15., 97.5));
 
     let default_text = "Lobby: ?????? -- Owner: ??????";
-    let text_entity = spawn_basic_text_temp(
-            ui,
-            text,
-            LOBBY_DISPLAY_FONT_COLOR,
-            TextParams::center()
-                .with_depth(100.)
-                .with_width(Some(90.)),
-            default_text
-        );
+    let text_entity = spawn_basic_text(ui, text, TextParams::center().with_width(Some(90.)), default_text);
 
     // update the text when the lobby display changes
     ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
@@ -311,15 +307,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
         ClickLobbyMemberType::Player  => "Players: 00/00\0",  //want default text to have same width for each type
         ClickLobbyMemberType::Watcher => "Watchers: 00/00",
     };
-    let text_entity = spawn_basic_text_temp(
-            ui,
-            text,
-            LOBBY_DISPLAY_FONT_COLOR,
-            TextParams::center()
-                .with_depth(100.)
-                .with_width(Some(90.)),
-            default_text
-        );
+    let text_entity = spawn_basic_text(ui, text, TextParams::center().with_width(Some(90.)), default_text);
 
     // update the text when the lobby display changes
     ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
@@ -442,10 +430,9 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
             );
         let text = relative_widget(ui.tree(), area.end(""), (20., 80.), y_range);
 
-        let text_entity = spawn_basic_text_temp(
+        let text_entity = spawn_basic_text(
                 ui,
                 text,
-                LOBBY_DISPLAY_FONT_COLOR,
                 TextParams::centerleft()
                     .with_width(Some(100.))
                     .with_height(Some(100.)),

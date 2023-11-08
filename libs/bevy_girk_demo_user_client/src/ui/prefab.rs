@@ -12,30 +12,7 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// The text style of `params` will be overwritten.
-pub(crate) fn spawn_basic_text_temp(
-    ui           : &mut UiBuilder<MainUI>,
-    widget       : Widget,
-    color        : Color,
-    params       : TextParams,
-    initial_text : &str,
-) -> Entity
-{
-    let text_style = TextStyle {
-            font      : ui.asset_server.load(MISC_FONT),
-            font_size : 45.0,
-            color     : color,
-        };
-
-    let text_params = params.with_style(&text_style);
-    let text_entity = ui.commands().spawn(TextElementBundle::new(widget, text_params, initial_text)).id();
-
-    text_entity    
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-/// The text style of `params` will be overwritten.
-pub(crate) fn spawn_basic_text(
+pub fn spawn_basic_text(
     ui           : &mut UiBuilder<MainUI>,
     widget       : Widget,
     params       : TextParams,
@@ -58,7 +35,7 @@ pub(crate) fn spawn_basic_text(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
@@ -76,7 +53,7 @@ pub(crate) fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth:
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
@@ -94,7 +71,7 @@ pub(crate) fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, de
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn make_basic_button(
+pub fn make_basic_button(
     ui               : &mut UiBuilder<MainUI>,
     button_overlay   : &Widget,
     button_entity    : Entity,
@@ -165,14 +142,14 @@ pub(crate) fn make_basic_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Debug, Clone)]
-pub(crate) struct BasicPopupPack
+pub struct BasicPopupPack
 {
-    pub(crate) window_overlay  : Widget,
-    pub(crate) content_section : Widget,
-    pub(crate) cancel_button   : Widget,
-    pub(crate) cancel_entity   : Entity,
-    pub(crate) accept_button   : Widget,
-    pub(crate) accept_entity   : Entity,
+    pub window_overlay  : Widget,
+    pub content_section : Widget,
+    pub cancel_button   : Widget,
+    pub cancel_entity   : Entity,
+    pub accept_button   : Widget,
+    pub accept_entity   : Entity,
 }
 
 /// Make a basic popup.
@@ -186,7 +163,7 @@ pub(crate) struct BasicPopupPack
 ///
 /// The popup is arbitrarily set at a depth of `500.0` in order to supercede the normal UI tree. Multiple concurrent
 /// popups will NOT stack on each other properly.
-pub(crate) fn spawn_basic_popup(
+pub fn spawn_basic_popup(
     ui              : &mut UiBuilder<MainUI>,
     window_scaling  : (f32, f32),  // (% of screen width, % of screen height)
     cancel_text     : &'static str,

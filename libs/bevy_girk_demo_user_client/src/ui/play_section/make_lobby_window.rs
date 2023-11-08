@@ -181,10 +181,9 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             text,
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(100.)),
@@ -201,10 +200,9 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             text,
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
@@ -221,10 +219,9 @@ fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             text,
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
@@ -242,10 +239,9 @@ fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             text,
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
@@ -260,10 +256,9 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // single-player text
     let sp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             sp_text.clone(),
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(80.)),
@@ -272,10 +267,9 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // multiplayer text
     let mp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text_temp(
+    spawn_basic_text(
             ui,
             mp_text.clone(),
-            DARK_FONT_COLOR,
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(80.)),
