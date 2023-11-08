@@ -243,6 +243,7 @@ fn update_lobby_list_contents(
         // update entry text
         let Some(entry) = entry else { continue; };
 
+        text_section.clear();
         let _ = write!(
                 text_section,
                 "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
@@ -339,21 +340,21 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
         let y_start = 2.5 + (i       as f32)*entry_height;
         let y_end   = 2.5 + ((i + 1) as f32)*entry_height;
  
-        let text = relative_widget(ui.tree(), content_widget.end(""), (10., 78.), (y_start, y_end));
+        let text = relative_widget(ui.tree(), content_widget.end(""), (5., 78.), (y_start, y_end));
 
         let content_entity = spawn_basic_text(
                 ui,
                 text,
                 TextParams::centerleft()
-                    .with_width(Some(100.))
-                    .with_height(Some(70.)),
+                    .with_width(Some(100.)),
                 "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
             );
 
         // button
         let join_button_area = relative_widget(ui.tree(), content_widget.end(""), (80., 98.), (y_start + 0.5, y_end - 0.5));
+        let button_entity = ui.commands().spawn_empty().id();
 
-        make_basic_button(ui, &join_button_area, content_entity, "Join",
+        make_basic_button(ui, &join_button_area, button_entity, "Join",
                 move |world| syscall(world, i, open_join_lobby_window)
             );
 
@@ -588,11 +589,12 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // - connected to host
                 //todo: not in game
                 // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
-                //   is saturated)
+                //   is saturated) OR the lobby display was just changed
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
                 .run_if(|status: Res<ReactRes<ConnectionStatus>>| **status == ConnectionStatus::Connected)
                 .run_if(on_timer(lobby_list_refresh)
                     .or_else(|status: Res<ReactRes<ConnectionStatus>>| status.is_changed())
+                    .or_else(|display: Res<ReactRes<LobbyDisplay>>| display.is_changed())
                 )
         )
         ;

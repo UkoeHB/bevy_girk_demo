@@ -10,7 +10,7 @@ use bevy_kot::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Style, Clone)]
+#[derive(Style, Clone, Debug)]
 pub struct BasicText
 {
     pub color: Color,
@@ -38,7 +38,7 @@ pub fn basic_text_default_light_style() -> BasicText
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Style, Clone)]
+#[derive(Style, Clone, Debug)]
 pub struct BasicButton
 {
     pub default_img: (&'static str, Vec2),
@@ -71,7 +71,7 @@ pub fn basic_button_default_text_style() -> BasicText
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Style, Clone)]
+#[derive(Style, Clone, Debug)]
 pub struct BasicButtonAvailability
 {
     pub active: Color,
@@ -91,7 +91,7 @@ impl Default for BasicButtonAvailability
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Style, Clone)]
+#[derive(Style, Clone, Debug)]
 pub struct BasicPopup
 {
     pub button: BasicButton,
@@ -120,7 +120,7 @@ pub fn basic_popup_default_button_style() -> BasicButton
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(StyleBundle, Default)]
+#[derive(StyleBundle, Default, Debug)]
 pub struct PrefabStyles
 {
     basic_text: BasicText,

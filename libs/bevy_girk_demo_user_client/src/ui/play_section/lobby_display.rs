@@ -434,8 +434,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
                 ui,
                 text,
                 TextParams::centerleft()
-                    .with_width(Some(100.))
-                    .with_height(Some(100.)),
+                    .with_width(Some(100.)),
                 "Watcher 00: ??????" //default value to set the scaling (want same scaling for all member types)
             );
 

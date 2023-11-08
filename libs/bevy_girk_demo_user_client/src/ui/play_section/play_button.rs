@@ -41,7 +41,7 @@ fn setup(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_play_button(
-    ui                     : &mut UiBuilder<MainUI>,
+    ui                      : &mut UiBuilder<MainUI>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
@@ -96,7 +96,7 @@ fn make_play_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_in_lobby_button(
-    ui                     : &mut UiBuilder<MainUI>,
+    ui                      : &mut UiBuilder<MainUI>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
@@ -200,8 +200,8 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
     let selected_button_overlay = make_overlay(ui.tree(), button, "selected", false);
 
     // prepare buttons
-    let play_pack = make_play_button(ui, button, &default_button_overlay, &selected_button_overlay);
-    let inlobby_pack = make_in_lobby_button(ui, button, &default_button_overlay, &selected_button_overlay);
+    let play_pack = ui.div(|ui| make_play_button(ui, button, &default_button_overlay, &selected_button_overlay));
+    let inlobby_pack = ui.div(|ui| make_in_lobby_button(ui, button, &default_button_overlay, &selected_button_overlay));
 
     // select/deselect callbacks
     let mut entity_commands = ui.commands().spawn_empty();
