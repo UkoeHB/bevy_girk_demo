@@ -48,7 +48,7 @@ impl Default for MakeLobbyWindow
         Self{
             member_type : ClickLobbyMemberType::Player,
             pwd         : String::default(),
-            config      : ClickLobbyConfig{ max_players: 1, max_watchers: 0 },
+            config      : ClickLobbyConfig{ max_players: 2, max_watchers: 1 },
             last_req    : None,
         }
     }
@@ -227,7 +227,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
                 .with_width(Some(75.)),
             "Config: 1 player, 0 watchers\n(UI todo)"
         );
-    //disable options when disconnected (don't reset selections, just disable new choices)
+    //disable non-singleplayer options when disconnected (don't reset selections, just disable new choices)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -295,7 +295,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    let title_area = relative_widget(ui.tree(), area.end(""), (45., 65.), (5., 15.));
+    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
     ui.div(|ui| add_window_title(ui, &title_area));
 
     // form section: 'join as' lobby member type for owner

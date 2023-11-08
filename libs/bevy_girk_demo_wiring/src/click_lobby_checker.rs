@@ -91,15 +91,17 @@ impl LobbyChecker for ClickLobbyChecker
         let Ok((num_players, num_watchers)) = Self::count_members(&lobby.data) else { return false; };
 
         // check if the member's type has exceeded lobby capacity
+        let Some(config) = deser_msg::<ClickLobbyConfig>(&lobby.custom_data()) else { return false; };
+
         match member_type
         {
             ClickLobbyMemberType::Player =>
             {
-                if num_players >= self.max_lobby_players as usize { return false; }
+                if num_players >= config.max_players as usize { return false; }
             }
             ClickLobbyMemberType::Watcher =>
             {
-                if num_watchers >= self.max_lobby_watchers as usize { return false; }
+                if num_watchers >= config.max_watchers as usize { return false; }
             }
         }
 

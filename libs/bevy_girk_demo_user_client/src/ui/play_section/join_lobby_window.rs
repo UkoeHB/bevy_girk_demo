@@ -171,19 +171,100 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
+{
+    // add text
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
+
+    let default_text = "Lobby: ?????? -- Owner: ??????";
+    let text_entity = spawn_basic_text(
+            ui,
+            text,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_height(Some(40.)),
+            default_text
+        );
+
+    // update the text when the window changes
+    ui.rcommands.on_resource_mutation::<ReactRes<JoinLobbyWindow>>(
+            move |world: &mut World|
+            {
+                // update the text
+                match &world.resource::<ReactRes<JoinLobbyWindow>>().contents
+                {
+                    Some(lobby_contents) =>
+                    {
+                        let id       = lobby_contents.id % 1_000_000u64;
+                        let owner_id = lobby_contents.owner_id % 1_000_000u128;
+                        write_ui_text(world, text_entity, |text| {
+                            let _ = write!(text, "Lobby: {} -- Owner: {}", id, owner_id);
+                        });
+                    }
+                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
+                };
+            }
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_member_type_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+{
+    // field outline
+    spawn_plain_outline(ui, area.clone(), Some(700.));
+
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ui,
+            text,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Member type: Player\n(UI todo)"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+{
+    // field outline
+    spawn_plain_outline(ui, area.clone(), Some(700.));
+
+    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
+    spawn_basic_text(
+            ui,
+            text,
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Password: <empty>\n(UI todo)"
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    let title_area = relative_widget(ui.tree(), area.end(""), (45., 65.), (5., 15.));
+    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
     ui.div(|ui| add_window_title(ui, &title_area));
 
     // info subtitle
-    //lobby id: ###### -- owner id: ######
-    //reacts to changes in window state
+    let subtitle_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (20., 30.));
+    ui.div(|ui| add_subtitle(ui, &subtitle_area));
 
     // form section: lobby member type
+    let member_type_area = relative_widget(ui.tree(), area.end(""), (15., 47.), (40., 70.));
+    ui.div(|ui| add_member_type_field(ui, &member_type_area));
 
     // form section: password
+    let password_area = relative_widget(ui.tree(), area.end(""), (53., 85.), (40., 70.));
+    ui.div(|ui| add_password_field(ui, &password_area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

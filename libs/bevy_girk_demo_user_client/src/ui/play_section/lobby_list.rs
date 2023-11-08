@@ -526,6 +526,18 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let button_entity  = ui.commands().spawn_empty().id();
 
     make_basic_button(ui, &button_overlay, button_entity, "New Lobby", |world| syscall(world, (), open_make_lobby_window));
+
+    // disable button when we are in a lobby already
+    let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+
+    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+            move |world: &mut World|
+            {
+                let enable = !world.resource::<ReactRes<LobbyDisplay>>().is_set();
+                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
