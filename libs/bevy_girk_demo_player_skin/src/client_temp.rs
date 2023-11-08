@@ -131,12 +131,10 @@ fn GIRKSetupPlugin(app: &mut App)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Realtime systems
-fn refresh_fps_indicator(mut indicator_query: Query<&mut Text, With<FPSIndicator>>,
-    fps_tracker: Res<FPSTracker>)
+fn refresh_fps_indicator(mut indicator_query: Query<&mut Text, With<FPSIndicator>>, fps_tracker: Res<FPSTracker>)
 {
     // 1. only refresh once per second
-    if fps_tracker.current_time().as_secs() <= fps_tracker.previous_time().as_secs()
-        { return }
+    if fps_tracker.current_time().as_secs() <= fps_tracker.previous_time().as_secs() { return }
 
     // 2. refresh
     let indicator_value = &mut indicator_query.single_mut().sections[1].value;

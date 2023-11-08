@@ -179,7 +179,7 @@ pub(crate) struct BasicPopupPack
 ///
 /// The popup is a square with cancel and accept buttons. The button text and behavior can be customized. Pressing the
 /// cancel button will set the popup overlay visibility to `false`. You should set it to `true` manually in order to
-/// 'activate' the popup.
+/// activate the popup.
 ///
 /// The popup is attached to the `"root"` widget. This function will panic if the root of your main ui tree does not
 /// contain a widget with that name.
@@ -235,12 +235,9 @@ pub(crate) fn spawn_basic_popup(
     // region for buttons
     let buttons_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (82., 100.));
     let window_overlay_clone = window_overlay.clone();
-    let (
-        cancel_button,
-        cancel_entity,
-        accept_button,
-        accept_entity,
-    ) = ui.div(move |ui| {
+
+    let (cancel_button, cancel_entity, accept_button, accept_entity) =
+    ui.div(move |ui| {
         // add button style
         ui.add(style.button);
 

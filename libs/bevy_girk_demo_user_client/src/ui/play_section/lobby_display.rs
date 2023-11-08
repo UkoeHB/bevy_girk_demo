@@ -278,24 +278,19 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
-                // define updated text
-                let mut text_buffer = String::from(default_text);
+                // update the text
                 match world.resource::<ReactRes<LobbyDisplay>>().get()
                 {
                     Some(lobby_contents) =>
                     {
-                        let _ = write!(
-                                text_buffer,
-                                "Lobby: {} -- Owner: {}",
-                                lobby_contents.id % 1_000_000u64,
-                                lobby_contents.owner_id % 1_000_000u128
-                            );
+                        let id       = lobby_contents.id % 1_000_000u64;
+                        let owner_id = lobby_contents.owner_id % 1_000_000u128;
+                        write_ui_text(world, text_entity, |text| {
+                            let _ = write!(text, "Lobby: {} -- Owner: {}", id, owner_id);
+                        });
                     }
-                    None => ()
+                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
                 };
-
-                // update UI text
-                syscall(world, (text_entity, text_buffer), update_ui_text);
             }
         );
 }
@@ -336,25 +331,19 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
     ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
             move |world: &mut World|
             {
-                // define updated text
-                let mut text_buffer = String::from(default_text);
+                // update the text
                 match world.resource::<ReactRes<LobbyDisplay>>().get()
                 {
                     Some(lobby_contents) =>
                     {
-                        let _ = write!(
-                                text_buffer,
-                                "{}: {}/{}",
-                                tag,
-                                lobby_contents.num(member_type),
-                                lobby_contents.max(member_type),
-                            );
+                        let num_members = lobby_contents.num(member_type);
+                        let max_members = lobby_contents.max(member_type);
+                        write_ui_text(world, text_entity, |text| {
+                            let _ = write!(text, "{}: {}/{}", tag, num_members, max_members);
+                        });
                     }
-                    None => ()
+                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
                 };
-
-                // update UI text
-                syscall(world, (text_entity, text_buffer), update_ui_text);
             }
         );
 }

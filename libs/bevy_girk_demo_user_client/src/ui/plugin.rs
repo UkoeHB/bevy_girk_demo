@@ -15,9 +15,7 @@ use bevy_lunex::prelude::*;
 
 fn build_ui(mut ui: UiBuilder<MainUI>)
 {
-    let ui = &mut ui;
-
-    // set base style pack
+    // set base styles
     ui.add(PrefabStyles::default());
 
     // root widget
@@ -35,9 +33,9 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
     // - add separators
     //todo: this is very janky
     let play_vertical = relative_widget(ui.tree(), root.end("play_vertical"), (-2., 20.), (-5., 10.));
-    spawn_plain_outline(ui, play_vertical, None);
     let header_underline = relative_widget(ui.tree(), root.end("header_underline"), (-10., 110.), (-10., 10.));
-    spawn_plain_outline(ui, header_underline, None);
+    spawn_plain_outline(&mut ui, play_vertical, None);
+    spawn_plain_outline(&mut ui, header_underline, None);
 
     // - menu item overlay area (everything below the menu bar)
     let menu_overlay = relative_widget(ui.tree(), root.end("menu_overlay"), (0., 100.), (10., 100.));
@@ -46,11 +44,11 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
     // - connection status (upper right corner)
     let status = relative_widget(ui.tree(), root.end("status"), (90., 100.), (0., 10.));
 
-
-    // add child widgets
-    add_play_section(ui, play_button, menu_overlay.clone());
-    add_menu_bar_section(ui, menu_bar, menu_overlay);
-    add_status_section(ui, status);
+    // add content sections
+    let menu_overlay_clone = menu_overlay.clone();
+    ui.div(move |ui| add_play_section(ui, play_button, menu_overlay_clone));
+    ui.div(move |ui| add_menu_bar_section(ui, menu_bar, menu_overlay));
+    ui.div(move |ui| add_status_section(ui, status));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -11,7 +11,7 @@ use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
-
+use std::fmt::Write;
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ fn setup_window_reactors(
             move |world: &mut World|
             {
                 // modify accept button text
-                syscall(world, (accept_entity, String::from("...")), update_ui_text);
+                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "..."); });
             }
         );
 
@@ -152,7 +152,7 @@ fn setup_window_reactors(
                 }
 
                 // reset accept button text
-                syscall(world, (accept_entity, String::from("Make")), update_ui_text);
+                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "Make"); });
             }
         );
 

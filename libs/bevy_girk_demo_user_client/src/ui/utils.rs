@@ -43,12 +43,17 @@ pub(crate) fn toggle_button_availability(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Update the text in a UI element with a new value.
-pub(crate) fn update_ui_text(In((text_entity, new_text)): In<(Entity, String)>, mut text_query: Query<&mut Text>)
+/// Write to the first text section in a text entity.
+pub(crate) fn write_ui_text(world: &mut World, text_entity: Entity, writer: impl FnOnce(&mut String))
 {
-    let Ok(mut text) = text_query.get_mut(text_entity)
-    else { tracing::error!(?new_text, "text entity is missing for update ui text"); return; };
-    text.sections[0].value = new_text;
+    let Some(mut entity) = world.get_entity_mut(text_entity)
+    else { tracing::error!("failed writing ui text, missing entity"); return; };
+    let Some(text) = entity.get_mut::<Text>()
+    else { tracing::error!("failed writing ui text, entity missing Text component"); return; };
+
+    let text_section = &mut text.into_inner().sections[0].value;
+    text_section.clear();
+    (writer)(text_section);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -398,11 +398,10 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
                 // define updated text
                 let (first, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
 
-                let mut text_buffer = String::new();
-                let _ = write!(text_buffer, "({}-{} / {})", first, last, total);
-
                 // update UI text
-                syscall(world, (text_entity, text_buffer), update_ui_text);
+                write_ui_text(world, text_entity, |text| {
+                    let _ = write!(text, "({}-{} / {})", first, last, total);
+                });
             }
         );
 }
