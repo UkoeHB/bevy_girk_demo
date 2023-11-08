@@ -306,3 +306,24 @@ pub(crate) fn handle_response_lost(
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn handle_request_aborted(
+    In(request_id)   : In<u64>,
+    mut commands     : Commands,
+    pending_requests : Query<(Entity, &React<PendingRequest>)>
+){
+    tracing::info!(request_id, "request aborted");
+
+    // find pending request and remove it
+    //todo: consider allowing a custom callback for lost responses
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------

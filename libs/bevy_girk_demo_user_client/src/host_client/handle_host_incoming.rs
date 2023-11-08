@@ -45,6 +45,7 @@ pub(crate) fn handle_host_incoming(world: &mut World)
             HostUserServerVal::Reject(request_id)       => syscall(world, request_id, handle_request_rejected),
             HostUserServerVal::SendFailed(request_id)   => syscall(world, request_id, handle_send_failed),
             HostUserServerVal::ResponseLost(request_id) => syscall(world, request_id, handle_response_lost),
+            HostUserServerVal::Aborted(request_id)      => syscall(world, request_id, handle_request_aborted),
         }
     }
 }
