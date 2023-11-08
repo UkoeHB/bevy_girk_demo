@@ -101,7 +101,7 @@ pub(crate) fn make_basic_button(
     button_text      : &'static str,
     unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ){
-    let style = (*ui.get::<BasicButton>().unwrap()).clone();
+    let style = ui.get::<BasicButton>().unwrap();
 
     // add default button image
     let default_button = make_overlay(ui.tree(), &button_overlay, "", true);
@@ -195,7 +195,7 @@ pub(crate) fn spawn_basic_popup(
     accept_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
-    let style = (*ui.get::<BasicPopup>().unwrap()).clone();
+    let style = ui.get::<BasicPopup>().unwrap();
 
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);
