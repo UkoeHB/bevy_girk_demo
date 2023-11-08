@@ -239,7 +239,7 @@ pub(crate) fn spawn_basic_popup(
     let (cancel_button, cancel_entity, accept_button, accept_entity) =
     ui.div(move |ui| {
         // add button style
-        ui.add(style.button);
+        ui.add(style.button.clone());
 
         // cancel button
         let cancel_button = relative_widget(ui.tree(), buttons_section.end(""), (15., 27.), (22., 67.));

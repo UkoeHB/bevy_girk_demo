@@ -45,10 +45,9 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
     let status = relative_widget(ui.tree(), root.end("status"), (90., 100.), (0., 10.));
 
     // add content sections
-    let menu_overlay_clone = menu_overlay.clone();
-    ui.div(move |ui| add_play_section(ui, play_button, menu_overlay_clone));
-    ui.div(move |ui| add_menu_bar_section(ui, menu_bar, menu_overlay));
-    ui.div(move |ui| add_status_section(ui, status));
+    ui.div(|ui| add_play_section(ui, &play_button, &menu_overlay));
+    ui.div(|ui| add_menu_bar_section(ui, &menu_bar, &menu_overlay));
+    ui.div(|ui| add_status_section(ui, &status));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

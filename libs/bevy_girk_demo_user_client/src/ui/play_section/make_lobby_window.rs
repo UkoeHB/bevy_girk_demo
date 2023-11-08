@@ -302,23 +302,23 @@ fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
     let title_area = relative_widget(ui.tree(), area.end(""), (45., 65.), (5., 15.));
-    add_window_title(ui, &title_area);
+    ui.div(|ui| add_window_title(ui, &title_area));
 
     // form section: 'join as' lobby member type for owner
     let join_as_area = relative_widget(ui.tree(), area.end(""), (15., 47.), (20., 50.));
-    add_join_as_field(ui, &join_as_area);
+    ui.div(|ui| add_join_as_field(ui, &join_as_area));
 
     // form section: max players, max watchers
     let config_area = relative_widget(ui.tree(), area.end(""), (53., 85.), (20., 50.));
-    add_config_field(ui, &config_area);
+    ui.div(|ui| add_config_field(ui, &config_area));
 
     // form section: password
     let password_area = relative_widget(ui.tree(), area.end(""), (30., 70.), (57., 87.));
-    add_password_field(ui, &password_area);
+    ui.div(|ui| add_password_field(ui, &password_area));
 
     // indicator for local single-player
     let connection_requirement_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (95., 100.));
-    add_connection_requirement_field(ui, &connection_requirement_area);
+    ui.div(|ui| add_connection_requirement_field(ui, &connection_requirement_area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -338,7 +338,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
         );
 
     // add window contents
-    add_window_contents(ui, &popup_pack.content_section);
+    ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();

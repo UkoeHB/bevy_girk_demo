@@ -191,7 +191,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
         );
 
     // add window contents
-    add_window_contents(ui, &popup_pack.content_section);
+    ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // update window state and open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();

@@ -281,13 +281,7 @@ fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));
-    spawn_basic_text(
-            ui,
-            text,
-            TextParams::center()
-                .with_height(Some(100.)),
-            "Lobby List"
-        );
+    spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "Lobby List");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -300,13 +294,7 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // indicator text
     let text = relative_widget(ui.tree(), overlay.end(""), (5., 98.), (15., 95.));
-    spawn_basic_text(
-            ui,
-            text,
-            TextParams::centerright()
-                .with_height(Some(40.)),
-            "Loading..."
-        );
+    spawn_basic_text(ui, text, TextParams::centerright().with_height(Some(40.)), "Loading...");
 
     // setup reactors
     ui.commands().add(move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors));
@@ -507,23 +495,23 @@ fn add_navigation_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // text displaying lobby li (center)st position
     let lobby_list_stats_area = relative_widget(ui.tree(), area.end(""), (38., 62.), (20., 60.));
-    add_lobby_list_stats(ui, &lobby_list_stats_area);
+    ui.div(|ui| add_lobby_list_stats(ui, &lobby_list_stats_area));
 
     // button: go to first page (far left)
     let clamp_left_button_area = relative_widget(ui.tree(), area.end(""), (1., 13.), (5., 95.));
-    add_clamp_now_button(ui, &clamp_left_button_area);
+    ui.div(|ui| add_clamp_now_button(ui, &clamp_left_button_area));
 
     // button: paginate left (mid left)
     let paginate_left_button_area = relative_widget(ui.tree(), area.end(""), (14., 26.), (5., 95.));
-    add_paginate_left_button(ui, &paginate_left_button_area);
+    ui.div(|ui| add_paginate_left_button(ui, &paginate_left_button_area));
 
     // button: paginate right (mid right)
     let paginate_right_button_area = relative_widget(ui.tree(), area.end(""), (74., 86.), (5., 95.));
-    add_paginate_right_button(ui, &paginate_right_button_area);
+    ui.div(|ui| add_paginate_right_button(ui, &paginate_right_button_area));
 
     // button: go to last page (far right)
     let clamp_right_button_area = relative_widget(ui.tree(), area.end(""), (87., 99.), (5., 95.));
-    add_clamp_oldest_button(ui, &clamp_right_button_area);
+    ui.div(|ui| add_clamp_oldest_button(ui, &clamp_right_button_area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -548,33 +536,33 @@ pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
     let lobby_list_title = relative_widget(ui.tree(), area.end(""), (0., 100.), ( 0., 15.));
-    add_lobby_list_title(ui, &lobby_list_title);
+    ui.div(|ui| add_lobby_list_title(ui, &lobby_list_title));
 
     // refresh indicator
     let lobby_list_refresh_indicator = relative_widget(ui.tree(), area.end(""), (70., 75.), (10., 15.));
-    add_lobby_list_refresh_indicator(ui, &lobby_list_refresh_indicator);
+    ui.div(|ui| add_lobby_list_refresh_indicator(ui, &lobby_list_refresh_indicator));
 
     // refresh button
     let lobby_list_refresh_button = relative_widget(ui.tree(), area.end(""), (75., 90.), (10., 15.));
-    add_lobby_list_refresh_button(ui, &lobby_list_refresh_button);
+    ui.div(|ui| add_lobby_list_refresh_button(ui, &lobby_list_refresh_button));
 
     // list subsection
     let lobby_list_subsection = relative_widget(ui.tree(), area.end(""), (10., 90.), (15., 75.));
-    add_lobby_list_subsection(ui, &lobby_list_subsection);
+    ui.div(|ui| add_lobby_list_subsection(ui, &lobby_list_subsection));
 
     // navigation subsection
     let navigation_subsection = relative_widget(ui.tree(), area.end(""), (10., 90.), (75., 80.));
-    add_navigation_subsection(ui, &navigation_subsection);
+    ui.div(|ui| add_navigation_subsection(ui, &navigation_subsection));
 
     // new lobby button
     let new_lobby_button = relative_widget(ui.tree(), area.end(""), (0., 100.), (80., 95.));
-    add_new_lobby_button(ui, &new_lobby_button);
+    ui.div(|ui| add_new_lobby_button(ui, &new_lobby_button));
 
 
     // prepare windows
     // - these are defined with respect to the ui root, so we don't pass in area widgets
-    add_join_lobby_window(ui);
-    add_make_lobby_window(ui);
+    ui.div(|ui| add_join_lobby_window(ui));
+    ui.div(|ui| add_make_lobby_window(ui));
 
 
     // initialize UI listening to lobby page

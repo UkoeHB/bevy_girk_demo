@@ -12,7 +12,7 @@ use std::fmt::Write;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: Widget)
+pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // text layout helper
     let layout_helper = Widget::create(

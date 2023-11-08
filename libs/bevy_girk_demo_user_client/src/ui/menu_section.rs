@@ -123,13 +123,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
 fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     let text = relative_widget(ui.tree(), area.end(""), (40., 60.), (40., 60.));
-    spawn_basic_text(
-            ui,
-            text,
-            TextParams::center()
-                .with_height(Some(40.)),
-            "Welcome!"
-        );
+    spawn_basic_text(ui, text, TextParams::center().with_height(Some(40.)), "Welcome!");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -138,13 +132,7 @@ fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     let text = relative_widget(ui.tree(), area.end(""), (40., 60.), (40., 60.));
-    spawn_basic_text(
-            ui,
-            text,
-            TextParams::center()
-                .with_height(Some(20.)),
-            "There are no settings yet..."
-        );
+    spawn_basic_text(ui, text, TextParams::center().with_height(Some(20.)), "There are no settings yet...");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -153,7 +141,7 @@ fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 #[derive(Component, Default, Copy, Clone, Eq, PartialEq, Debug)]
 pub(crate) struct MainMenuButton;
 
-pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUI>, menu_bar: Widget, menu_overlay: Widget)
+pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUI>, menu_bar: &Widget, menu_overlay: &Widget)
 {
     // menu bar overlay
     let menu_bar_overlay = relative_widget(ui.tree(), menu_bar.end(""), (10., 90.), (10., 90.));
@@ -167,14 +155,16 @@ pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUI>, menu_bar: Widget,
 
     // prepare each of the menu buttons and areas
     // - home
-    let home_overlay = make_overlay(ui.tree(), &menu_overlay, "home_overlay", false);
-    let home_button_entity = add_menu_bar_button(ui, &menu_widgets[0], &home_overlay, "HOME");
-    add_home_overlay(ui, &home_overlay);
+    let home_overlay = make_overlay(ui.tree(), menu_overlay, "home_overlay", false);
+    let home_button_entity =
+    ui.div(|ui| add_menu_bar_button(ui, &menu_widgets[0], &home_overlay, "HOME"));
+    ui.div(|ui| add_home_overlay(ui, &home_overlay));
 
     // - settings
-    let settings_overlay = make_overlay(ui.tree(), &menu_overlay, "settings_overlay", false);
-    let _ = add_menu_bar_button(ui, &menu_widgets[1], &settings_overlay, "SETTINGS");
-    add_settings_overlay(ui, &settings_overlay);
+    let settings_overlay = make_overlay(ui.tree(), menu_overlay, "settings_overlay", false);
+    let _ =
+    ui.div(|ui| add_menu_bar_button(ui, &menu_widgets[1], &settings_overlay, "SETTINGS"));
+    ui.div(|ui| add_settings_overlay(ui, &settings_overlay));
 
     // activate home button (default)
     ui.commands().add(move |world: &mut World| { let _ = try_callback::<Select>(world, home_button_entity); } );
