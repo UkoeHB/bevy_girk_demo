@@ -340,9 +340,8 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 ){
     // button ui
     // - decrement page number and update display contents
-    let button_entity = ui.commands().spawn_empty().id();
     let content_entities = entities.clone();
-    make_basic_button(ui, &area, button_entity, "<",
+    let button_entity = spawn_basic_button(ui, &area, "<",
             move |world|
             {
                 syscall(
@@ -379,9 +378,8 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 ){
     // button ui
     // - increment page number and update display contents
-    let button_entity = ui.commands().spawn_empty().id();
     let content_entities = entities.clone();
-    make_basic_button(ui, &area, button_entity, ">",
+    let button_entity = spawn_basic_button(ui, &area, ">",
             move |world|
             {
                 syscall(
@@ -505,8 +503,7 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = ui.commands().spawn_empty().id();
-    make_basic_button(ui, &area, button_entity, "Leave", |world| syscall(world, (), leave_current_lobby));
+    let button_entity = spawn_basic_button(ui, &area, "Leave", |world| syscall(world, (), leave_current_lobby));
 
     // disable button when there is no lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -527,8 +524,7 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = ui.commands().spawn_empty().id();
-    make_basic_button(ui, &area, button_entity, "Start", |world| syscall(world, (), start_current_lobby));
+    let button_entity = spawn_basic_button(ui, &area, "Start", |world| syscall(world, (), start_current_lobby));
 
     // disable button when we don't own the lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);

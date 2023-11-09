@@ -71,13 +71,13 @@ pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Op
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn make_basic_button(
+pub fn spawn_basic_button(
     ui               : &mut UiBuilder<MainUI>,
     button_overlay   : &Widget,
-    button_entity    : Entity,
     button_text      : &'static str,
     unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
-){
+) -> Entity
+{
     let style = ui.get::<BasicButton>().unwrap();
 
     // add default button image
@@ -115,7 +115,7 @@ pub fn make_basic_button(
             color     : style.text.color,
         };
 
-    let mut entity_commands = ui.commands().get_entity(button_entity).unwrap();
+    let mut entity_commands = ui.commands().spawn_empty();
     entity_commands.insert(
             TextElementBundle::new(
                     button_overlay,
@@ -137,6 +137,8 @@ pub fn make_basic_button(
         .unpress_callback(move |world, _| (unpress_callback)(world))
         .build::<MouseLButtonMain>(&mut entity_commands, button_overlay.clone())
         .unwrap();
+
+    entity_commands.id()
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -220,8 +222,7 @@ pub fn spawn_basic_popup(
 
         // cancel button
         let cancel_button = relative_widget(ui.tree(), buttons_section.end(""), (15., 27.), (22., 67.));
-        let cancel_entity = ui.commands().spawn_empty().id();
-        make_basic_button(ui, &cancel_button, cancel_entity, cancel_text,
+        let cancel_entity = spawn_basic_button(ui, &cancel_button, cancel_text,
                 move |world|
                 {
                     syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
@@ -231,8 +232,7 @@ pub fn spawn_basic_popup(
 
         // accept button
         let accept_button = relative_widget(ui.tree(), buttons_section.end(""), (73., 85.), (22., 67.));
-        let accept_entity = ui.commands().spawn_empty().id();
-        make_basic_button(ui, &accept_button, accept_entity, accept_text, move |world| (accept_callback)(world));
+        let accept_entity = spawn_basic_button(ui, &accept_button, accept_text, move |world| (accept_callback)(world));
 
         (cancel_button, cancel_entity, accept_button, accept_entity)
     });
