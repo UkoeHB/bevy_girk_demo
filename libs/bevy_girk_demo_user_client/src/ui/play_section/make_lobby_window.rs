@@ -19,7 +19,7 @@ use std::fmt::Write;
 /// Cached state of the make lobby window.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 struct MakeLobbyWindow
 {
     /// Cached member type.
@@ -57,7 +57,7 @@ impl Default for MakeLobbyWindow
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn reset_window_state(mut rcommands: ReactCommands, mut window: ResMut<ReactRes<MakeLobbyWindow>>)
+fn reset_window_state(mut rcommands: ReactCommands, mut window: ReactResMut<MakeLobbyWindow>)
 {
     *window.get_mut(&mut rcommands) = MakeLobbyWindow::default();
 }
@@ -69,7 +69,7 @@ fn send_make_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
     make_lobby    : Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
-    mut window    : ResMut<ReactRes<MakeLobbyWindow>>
+    mut window    : ReactResMut<MakeLobbyWindow>
 ){
     // get request entity
     // - do nothing if there is already a pending request
@@ -111,8 +111,7 @@ fn setup_window_reactors(
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ui.rcommands.on_entity_insertion::<React<PendingRequest>>(
-            make_lobby_entity,
+    ui.rcommands.on(entity_insertion::<PendingRequest>(make_lobby_entity),
             move |world: &mut World|
             {
                 // modify accept button text
@@ -122,12 +121,11 @@ fn setup_window_reactors(
 
     // when a request completes
     let window_overlay = popup_pack.window_overlay;
-    ui.rcommands.on_entity_removal::<React<PendingRequest>>(
-            make_lobby_entity,
+    ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
             move |world: &mut World|
             {
                 // access the window state
-                let window = world.resource::<ReactRes<MakeLobbyWindow>>();
+                let window = world.react_resource::<MakeLobbyWindow>();
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
@@ -148,7 +146,7 @@ fn setup_window_reactors(
                 else
                 {
                     // remove cached request
-                    world.resource_mut::<ReactRes<MakeLobbyWindow>>().get_mut_noreact().last_req = None;                    
+                    world.react_resource_mut_noreact::<MakeLobbyWindow>().last_req = None;                    
                 }
 
                 // reset accept button text
@@ -165,13 +163,13 @@ fn setup_window_reactors(
     let make_button_disabler =
         move |world: &mut World|
         {
-            let enable = **world.resource::<ReactRes<ConnectionStatus>>() == ConnectionStatus::Connected ||
-                world.resource::<ReactRes<MakeLobbyWindow>>().is_single_player();
+            let enable = *world.react_resource::<ConnectionStatus>() == ConnectionStatus::Connected ||
+                world.react_resource::<MakeLobbyWindow>().is_single_player();
             syscall(world, (enable, accept_disable.clone(), accept_entity), toggle_button_availability);
         };
 
-    ui.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(make_button_disabler.clone());
-    ui.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(make_button_disabler);
+    ui.rcommands.on(resource_mutation::<ConnectionStatus>(), make_button_disabler.clone());
+    ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(), make_button_disabler);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -277,10 +275,10 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
         );
 
     // adjust text depending on the lobby type
-    ui.rcommands.on_resource_mutation::<ReactRes<MakeLobbyWindow>>(
+    ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(),
             move |world: &mut World|
             {
-                match world.resource::<ReactRes<MakeLobbyWindow>>().is_single_player()
+                match world.react_resource::<MakeLobbyWindow>().is_single_player()
                 {
                     true => syscall(world, (MainUI, [sp_text.clone()], [mp_text.clone()]), toggle_ui_visibility),
                     false => syscall(world, (MainUI, [mp_text.clone()], [sp_text.clone()]), toggle_ui_visibility),
@@ -336,8 +334,8 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ui.rcommands.on_event(
-            move |world: &mut World, _event: ReactEvent<ActivateMakeLobbyWindow>|
+    ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
+            move |_, world: &mut World|
             {
                 syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
             }
@@ -347,7 +345,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<ReactRes<MakeLobbyWindow>>();
+    ui.rcommands.trigger_resource_mutation::<MakeLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -355,7 +353,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 #[bevy_plugin]
 pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
 {
-    app.insert_resource(ReactRes::new(MakeLobbyWindow::default()));
+    app.insert_react_resource(MakeLobbyWindow::default());
 }
 
 //-------------------------------------------------------------------------------------------------------------------

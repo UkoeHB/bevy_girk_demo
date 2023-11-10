@@ -23,7 +23,7 @@ fn refresh_lobby_list(
     mut rcommands  : ReactCommands,
     client         : Res<HostUserClient>,
     lobby_search   : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
-    lobby_page_req : Res<ReactRes<LobbyPageRequest>>,
+    lobby_page_req : ReactRes<LobbyPageRequest>,
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
@@ -41,7 +41,7 @@ fn request_lobby_list_now(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
-    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+    mut lobby_page_req : ReactResMut<LobbyPageRequest>,
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
@@ -67,8 +67,8 @@ fn request_lobby_list_next_newer(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
-    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
-    lobby_page         : Res<ReactRes<LobbyPage>>,
+    mut lobby_page_req : ReactResMut<LobbyPageRequest>,
+    lobby_page         : ReactRes<LobbyPage>,
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
@@ -117,8 +117,8 @@ fn request_lobby_list_next_older(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
-    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
-    lobby_page         : Res<ReactRes<LobbyPage>>,
+    mut lobby_page_req : ReactResMut<LobbyPageRequest>,
+    lobby_page         : ReactRes<LobbyPage>,
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
@@ -167,7 +167,7 @@ fn request_lobby_list_oldest(
     mut rcommands      : ReactCommands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
-    mut lobby_page_req : ResMut<ReactRes<LobbyPageRequest>>,
+    mut lobby_page_req : ReactResMut<LobbyPageRequest>,
 ){
     // do nothing if there is already a pending lobby search
     let Ok(target_entity) = lobby_search.get_single()
@@ -198,14 +198,12 @@ fn setup_refresh_indicator_reactors(
 
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
-    rcommands.on_entity_insertion::<React<PendingRequest>>(
-            lobby_search_entity,
+    rcommands.on(entity_insertion::<PendingRequest>(lobby_search_entity),
             move |world: &mut World| syscall(world, (MainUI, [text_widget_clone.clone()], []), toggle_ui_visibility)
         );
 
     // deactivate text when there is not a pending request
-    rcommands.on_entity_removal::<React<PendingRequest>>(
-            lobby_search_entity,
+    rcommands.on(entity_removal::<PendingRequest>(lobby_search_entity),
             move |world: &mut World| syscall(world, (MainUI, [], [text_widget.clone()]), toggle_ui_visibility)
         );
 }
@@ -217,7 +215,7 @@ fn update_lobby_list_contents(
     In(contents)   : In<Arc<Vec<(Entity, Widget)>>>,
     mut ui         : Query<&mut UiTree, With<MainUI>>,
     mut text_query : Query<&mut Text>,
-    lobby_page     : Res<ReactRes<LobbyPage>>,
+    lobby_page     : ReactRes<LobbyPage>,
 ){
     // ui tree
     let mut ui = ui.single_mut();
@@ -359,7 +357,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
+    ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |world: &mut World| syscall(world, contents.clone(), update_lobby_list_contents)
         );
 }
@@ -373,11 +371,11 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let text_entity = spawn_basic_text(ui, area.clone(), TextParams::center().with_width(Some(100.)), "(????-???? / ????)");
 
     // update stats when lobby page updates
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
+    ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |world: &mut World|
             {
                 // define updated text
-                let (first, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
+                let (first, last, total) = world.react_resource::<LobbyPage>().stats();
 
                 // update UI text
                 write_ui_text(world, text_entity, |text| {
@@ -400,10 +398,10 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPageRequest>>(
+    ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |world: &mut World|
             {
-                let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_now();
+                let enable = !world.react_resource::<LobbyPageRequest>().is_now();
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -422,10 +420,10 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
+    ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |world: &mut World|
             {
-                let (first, _, _) = world.resource::<ReactRes<LobbyPage>>().stats();
+                let (first, _, _) = world.react_resource::<LobbyPage>().stats();
                 let enable = first != 1;
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
@@ -445,10 +443,10 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPage>>(
+    ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |world: &mut World|
             {
-                let (_, last, total) = world.resource::<ReactRes<LobbyPage>>().stats();
+                let (_, last, total) = world.react_resource::<LobbyPage>().stats();
                 let enable = last != total;
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
@@ -468,10 +466,10 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyPageRequest>>(
+    ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |world: &mut World|
             {
-                let enable = !world.resource::<ReactRes<LobbyPageRequest>>().is_oldest();
+                let enable = !world.react_resource::<LobbyPageRequest>().is_oldest();
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -521,10 +519,10 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             {
-                let enable = !world.resource::<ReactRes<LobbyDisplay>>().is_set();
+                let enable = !world.react_resource::<LobbyDisplay>().is_set();
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -567,8 +565,8 @@ pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
 
     // initialize UI listening to lobby page
-    ui.rcommands.trigger_resource_mutation::<ReactRes<LobbyPage>>();
-    ui.rcommands.trigger_resource_mutation::<ReactRes<LobbyPageRequest>>();
+    ui.rcommands.trigger_resource_mutation::<LobbyPage>();
+    ui.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -593,10 +591,10 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
                 //   is saturated) OR the lobby display was just changed
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
-                .run_if(|status: Res<ReactRes<ConnectionStatus>>| **status == ConnectionStatus::Connected)
+                .run_if(|status: ReactRes<ConnectionStatus>| *status == ConnectionStatus::Connected)
                 .run_if(on_timer(lobby_list_refresh)
-                    .or_else(|status: Res<ReactRes<ConnectionStatus>>| status.is_changed())
-                    .or_else(|display: Res<ReactRes<LobbyDisplay>>| display.is_changed())
+                    .or_else(|status: ReactRes<ConnectionStatus>| status.is_changed())
+                    .or_else(|display: ReactRes<LobbyDisplay>| display.is_changed())
                 )
         )
         ;

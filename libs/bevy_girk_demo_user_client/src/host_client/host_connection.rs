@@ -11,7 +11,7 @@ use bevy_kot::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(ReactResource, Copy, Clone, Eq, PartialEq, Debug)]
 pub(crate) enum ConnectionStatus
 {
     Connecting,
@@ -37,10 +37,10 @@ impl ConnectionStatus
 pub(crate) fn handle_connection_changes(
     mut rcommands     : ReactCommands,
     client            : Res<HostUserClient>,
-    mut status        : ResMut<ReactRes<ConnectionStatus>>,
+    mut status        : ReactResMut<ConnectionStatus>,
     mut pending_reset : ResMut<PendingLobbyReset>,
 ){
-    let mut new_status = **status;
+    let mut new_status = *status;
 
     while let Some(connection_report) = client.next_report()
     {
@@ -59,7 +59,7 @@ pub(crate) fn handle_connection_changes(
         }
     }
 
-    if new_status != **status { *status.get_mut(&mut rcommands) = new_status; }
+    if new_status != *status { *status.get_mut(&mut rcommands) = new_status; }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

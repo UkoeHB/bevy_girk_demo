@@ -17,11 +17,11 @@ use bevy_kot::prelude::*;
 fn handle_lobby_reset(
     mut rcommands     : ReactCommands,
     client            : Res<HostUserClient>,
-    mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
-    mut ack_request   : ResMut<ReactRes<AckRequest>>,
+    mut lobby_display : ReactResMut<LobbyDisplay>,
+    mut ack_request   : ReactResMut<AckRequest>,
     mut pending_reset : ResMut<PendingLobbyReset>,
     lobby_search      : Query<Entity, With<LobbySearch>>,
-    lobby_page_req    : Res<ReactRes<LobbyPageRequest>>,
+    lobby_page_req    : ReactRes<LobbyPageRequest>,
 ){
     // clear pending reset
     pending_reset.clear();
@@ -44,7 +44,7 @@ fn handle_lobby_reset(
 pub(crate) fn handle_lobby_state_update(
     In(lobby_data)    : In<LobbyData>,
     mut rcommands     : ReactCommands,
-    mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
+    mut lobby_display : ReactResMut<LobbyDisplay>,
 ){
     let lobby_id = lobby_data.id;
     tracing::info!(lobby_id, "lobby state update received");
@@ -69,7 +69,7 @@ pub(crate) fn handle_lobby_state_update(
 pub(crate) fn handle_lobby_leave(
     In(lobby_id)      : In<u64>,
     mut rcommands     : ReactCommands,
-    mut lobby_display : ResMut<ReactRes<LobbyDisplay>>,
+    mut lobby_display : ReactResMut<LobbyDisplay>,
 ){
     tracing::info!(lobby_id, "lobby leave received");
 
@@ -89,7 +89,7 @@ pub(crate) fn handle_lobby_leave(
 pub(crate) fn handle_pending_lobby_ack_request(
     In(lobby_id)    : In<u64>,
     mut rcommands   : ReactCommands,
-    mut ack_request : ResMut<ReactRes<AckRequest>>,
+    mut ack_request : ReactResMut<AckRequest>,
 ){
     tracing::info!(lobby_id, "pending lobby ack request received");
 
@@ -102,7 +102,7 @@ pub(crate) fn handle_pending_lobby_ack_request(
 pub(crate) fn handle_pending_lobby_ack_fail(
     In(lobby_id)    : In<u64>,
     mut rcommands   : ReactCommands,
-    mut ack_request : ResMut<ReactRes<AckRequest>>,
+    mut ack_request : ReactResMut<AckRequest>,
 ){
     tracing::info!(lobby_id, "pending lobby ack fail received");
 
@@ -122,8 +122,8 @@ pub(crate) fn handle_pending_lobby_ack_fail(
 pub(crate) fn handle_game_start(
     In((lobby_id, _game_connect)) : In<(u64, GameConnectInfo)>,
     mut rcommands                 : ReactCommands,
-    mut lobby_display             : ResMut<ReactRes<LobbyDisplay>>,
-    mut ack_request               : ResMut<ReactRes<AckRequest>>,
+    mut lobby_display             : ReactResMut<LobbyDisplay>,
+    mut ack_request               : ReactResMut<AckRequest>,
 ){
     tracing::info!(lobby_id, "game start info received");
 
@@ -172,7 +172,7 @@ pub(crate) fn handle_lobby_search_result(
     ))                 : In<(u64, LobbySearchResult)>,
     mut rcommands      : ReactCommands,
     mut pending_search : Query<(Entity, &React<PendingRequest>), With<LobbySearch>>,
-    mut lobby_page     : ResMut<ReactRes<LobbyPage>>,
+    mut lobby_page     : ReactResMut<LobbyPage>,
 ){
     tracing::info!(request_id, "lobby search result received");
 
@@ -193,7 +193,7 @@ pub(crate) fn handle_lobby_search_result(
 pub(crate) fn handle_lobby_join(
     In((request_id, lobby_data)) : In<(u64, LobbyData)>,
     mut rcommands                : ReactCommands,
-    mut lobby_display            : ResMut<ReactRes<LobbyDisplay>>,
+    mut lobby_display            : ReactResMut<LobbyDisplay>,
     pending_lobby_join           : Query<(Entity, &React<PendingRequest>), Or<(With<JoinLobby>, With<MakeLobby>)>>
 ){
     let lobby_id = lobby_data.id;

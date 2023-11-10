@@ -1,13 +1,14 @@
 //local shortcuts
 
 //third-party shortcuts
+use bevy_kot::prelude::*;
 
 //standard shortcuts
 
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Debug, Clone)]
+#[derive(ReactComponent, Debug, Clone)]
 pub(crate) struct PendingRequest(bevy_simplenet::RequestSignal);
 
 impl PendingRequest

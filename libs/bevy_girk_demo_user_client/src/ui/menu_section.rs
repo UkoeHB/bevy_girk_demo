@@ -95,8 +95,8 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
         .with_default_widget(default_button)
         .with_selected_widget(selected_button)
         .select_on_click()
-        .select_callback(select_callback)
-        .deselect_callback(deselect_callback)
+        .on_select(select_callback)
+        .on_deselect(deselect_callback)
         .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
         .unwrap();
 

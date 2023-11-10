@@ -15,7 +15,7 @@ use bevy_kot::prelude::*;
 pub(crate) fn HostClientPlugin(app: &mut App)
 {
     app
-        .insert_resource(ReactRes::new(ConnectionStatus::Connecting))
+        .insert_react_resource(ConnectionStatus::Connecting)
         .add_systems(First,
             (
                 handle_connection_changes,

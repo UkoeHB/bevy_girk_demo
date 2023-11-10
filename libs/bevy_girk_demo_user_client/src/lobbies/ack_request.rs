@@ -14,7 +14,7 @@ use std::time::Duration;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn focus_window_on_ack_request(
-    ack_request : Res<ReactRes<AckRequest>>,
+    ack_request : ReactRes<AckRequest>,
     mut window  : Query<&mut Window, With<PrimaryWindow>>,
 ){
     // only focus the window when a new ack request is set
@@ -29,9 +29,7 @@ fn focus_window_on_ack_request(
 
 fn setup_ack_request(mut rcommands: ReactCommands)
 {
-    rcommands.on_resource_mutation::<ReactRes<AckRequest>>(
-            |world| syscall(world, (), focus_window_on_ack_request)
-        );
+    rcommands.on(resource_mutation::<AckRequest>(), focus_window_on_ack_request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,7 +38,7 @@ fn setup_ack_request(mut rcommands: ReactCommands)
 fn try_timeout_ack_request(
     mut rcommands   : ReactCommands,
     time            : Res<Time>,
-    mut ack_request : ResMut<ReactRes<AckRequest>>,
+    mut ack_request : ReactResMut<AckRequest>,
 ){
     // check if there is a pending ack request
     if !ack_request.is_set() { return; }
@@ -71,7 +69,7 @@ fn try_timeout_ack_request(
 /// Caches the current pending ack request (if there is one).
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 pub(crate) struct AckRequest
 {
     /// Lobby id of the current ack request.
@@ -122,7 +120,7 @@ pub(crate) fn AckRequestPlugin(app: &mut App)
     let ack_request_timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
 
     app
-        .insert_resource(ReactRes::new(AckRequest::new(ack_request_timeout)))
+        .insert_react_resource(AckRequest::new(ack_request_timeout))
         .add_systems(Startup,
             (
                 setup_ack_request,

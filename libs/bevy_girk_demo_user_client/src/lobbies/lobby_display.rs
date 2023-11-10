@@ -25,7 +25,7 @@ pub(crate) enum LobbyType
 /// Caches the currently-displayed lobby that the user is a member of.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 pub(crate) struct LobbyDisplay
 {
     current    : Option<ClickLobbyContents>,
@@ -100,7 +100,7 @@ impl Default for LobbyDisplay { fn default() -> Self { Self{ current: None, lobb
 pub(crate) fn LobbyDisplayPlugin(app: &mut App)
 {
     app
-        .insert_resource(ReactRes::new(LobbyDisplay::default()))
+        .insert_react_resource(LobbyDisplay::default())
         ;
 }
 

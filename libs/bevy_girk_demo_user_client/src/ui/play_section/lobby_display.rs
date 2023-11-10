@@ -17,7 +17,7 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-trait ListPageTrait: Send + Sync + 'static
+trait ListPageTrait: ReactResource + Send + Sync + 'static
 {
     fn set(&mut self, page: usize);
     fn get(&self) -> usize;
@@ -27,7 +27,7 @@ trait ListPageTrait: Send + Sync + 'static
 /// Tracks the current player list page. Starts at 0.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 struct PlayerListPage(usize);
 
 impl ListPageTrait for PlayerListPage
@@ -40,7 +40,7 @@ impl ListPageTrait for PlayerListPage
 /// Tracks the current watcher list page. Starts at 0.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 struct WatcherListPage(usize);
 
 impl ListPageTrait for WatcherListPage
@@ -77,7 +77,7 @@ fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &List
 
 fn leave_current_lobby(
     client     : Res<HostUserClient>,
-    lobby      : Res<ReactRes<LobbyDisplay>>,
+    lobby      : ReactRes<LobbyDisplay>,
     //join_lobby : Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
 ){
     //todo: need request/response pattern for LeaveLobby
@@ -111,7 +111,7 @@ fn leave_current_lobby(
 
 fn start_current_lobby(
     client : Res<HostUserClient>,
-    lobby  : Res<ReactRes<LobbyDisplay>>,
+    lobby  : ReactRes<LobbyDisplay>,
 ){
     let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to start lobby but we aren't in a lobby"); return; };
@@ -145,8 +145,8 @@ fn update_list_contents<ListPage: ListPageTrait>(
     ))                   : In<(Arc<Vec<Entity>>, usize)>,
     mut rcommands        : ReactCommands,
     mut text_query       : Query<&mut Text>,
-    lobby                : Res<ReactRes<LobbyDisplay>>,
-    mut member_list_page : ResMut<ReactRes<ListPage>>,
+    lobby                : ReactRes<LobbyDisplay>,
+    mut member_list_page : ReactResMut<ListPage>,
 ){
     // get list index for first element
     let first_idx = new_page * NUM_LOBBY_CONTENT_ENTRIES;
@@ -216,8 +216,8 @@ fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
     In(content_entities) : In<Arc<Vec<Entity>>>,
     mut last_lobby_id    : Local<Option<u64>>,
     mut commands         : Commands,
-    lobby                : Res<ReactRes<LobbyDisplay>>,
-    member_list_page     : Res<ReactRes<ListPage>>,
+    lobby                : ReactRes<LobbyDisplay>,
+    member_list_page     : ReactRes<ListPage>,
 ){
     // get next list page
     // - we reset to 0 when the lobby changes
@@ -265,11 +265,11 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let text_entity = spawn_basic_text(ui, text, TextParams::center().with_width(Some(90.)), default_text);
 
     // update the text when the lobby display changes
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             {
                 // update the text
-                match world.resource::<ReactRes<LobbyDisplay>>().get()
+                match world.react_resource::<LobbyDisplay>().get()
                 {
                     Some(lobby_contents) =>
                     {
@@ -310,11 +310,11 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
     let text_entity = spawn_basic_text(ui, text, TextParams::center().with_width(Some(90.)), default_text);
 
     // update the text when the lobby display changes
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             {
                 // update the text
-                match world.resource::<ReactRes<LobbyDisplay>>().get()
+                match world.react_resource::<LobbyDisplay>().get()
                 {
                     Some(lobby_contents) =>
                     {
@@ -348,7 +348,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
                         world,
                         (
                             content_entities.clone(),
-                            world.resource::<ReactRes<ListPage>>().get().saturating_sub(1),
+                            world.react_resource::<ListPage>().get().saturating_sub(1),
                         ),
                         update_list_contents::<ListPage>
                     );
@@ -359,10 +359,10 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
+    ui.rcommands.on(resource_mutation::<ListPage>(),
             move |world: &mut World|
             {
-                let enable = world.resource::<ReactRes<ListPage>>().get() != 0;
+                let enable = world.react_resource::<ListPage>().get() != 0;
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -386,7 +386,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
                         world,
                         (
                             content_entities.clone(),
-                            world.resource::<ReactRes<ListPage>>().get().saturating_add(1),
+                            world.react_resource::<ListPage>().get().saturating_add(1),
                         ),
                         update_list_contents::<ListPage>
                     );
@@ -397,12 +397,12 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<ListPage>>(
+    ui.rcommands.on(resource_mutation::<ListPage>(),
             move |world: &mut World|
             {
                 let enable = !page_is_maxed::<ListPage>(
-                        &world.resource::<ReactRes<LobbyDisplay>>(),
-                        &world.resource::<ReactRes<ListPage>>()
+                        &world.react_resource::<LobbyDisplay>(),
+                        &world.react_resource::<ListPage>()
                     );
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
@@ -443,7 +443,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
 
     // update the contents when the lobby display changes
     let content_entities_clone = content_entities.clone();
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             syscall(world, content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
@@ -509,10 +509,10 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             {
-                let enable = world.resource::<ReactRes<LobbyDisplay>>().is_set();
+                let enable = world.react_resource::<LobbyDisplay>().is_set();
                 syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
             }
         );
@@ -530,10 +530,10 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
-    ui.rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
+    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |world: &mut World|
             {
-                let enable = match world.resource::<ReactRes<LobbyDisplay>>().get()
+                let enable = match world.react_resource::<LobbyDisplay>().get()
                 {
                     Some(data) => data.owner_id == world.resource::<HostUserClient>().id(),
                     None       => false,
@@ -584,9 +584,9 @@ pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.div(|ui| add_lobby_buttons(ui, &lobby_leave_button));
 
     // initialize UI listening to lobby display
-    ui.rcommands.trigger_resource_mutation::<ReactRes<LobbyDisplay>>();
-    ui.rcommands.trigger_resource_mutation::<ReactRes<PlayerListPage>>();
-    ui.rcommands.trigger_resource_mutation::<ReactRes<WatcherListPage>>();
+    ui.rcommands.trigger_resource_mutation::<LobbyDisplay>();
+    ui.rcommands.trigger_resource_mutation::<PlayerListPage>();
+    ui.rcommands.trigger_resource_mutation::<WatcherListPage>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -594,8 +594,8 @@ pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUI>, area: &Widget)
 #[bevy_plugin]
 pub(crate) fn UiLobbyDisplayPlugin(app: &mut App)
 {
-    app.insert_resource(ReactRes::new(PlayerListPage(0)))
-        .insert_resource(ReactRes::new(WatcherListPage(0)))
+    app.insert_react_resource(PlayerListPage(0))
+        .insert_react_resource(WatcherListPage(0))
         ;
 }
 

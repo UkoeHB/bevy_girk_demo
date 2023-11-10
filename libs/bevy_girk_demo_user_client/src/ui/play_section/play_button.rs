@@ -15,7 +15,7 @@ use bevy_lunex::prelude::*;
 
 fn set_play_button_state(
     mut commands : Commands,
-    display      : Res<ReactRes<LobbyDisplay>>,
+    display      : ReactRes<LobbyDisplay>,
     callback     : Query<&CallbackWith<Toggle, MainPlayButton>>,
 ){
     let cb = callback.single();
@@ -32,9 +32,7 @@ fn set_play_button_state(
 
 fn setup(mut rcommands: ReactCommands)
 {
-    rcommands.on_resource_mutation::<ReactRes<LobbyDisplay>>(
-            |world: &mut World| { syscall(world, (), set_play_button_state); }
-        );
+    rcommands.on(resource_mutation::<LobbyDisplay>(), set_play_button_state);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -224,8 +222,8 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
         .with_default_widget(default_button_overlay)
         .with_selected_widget(selected_button_overlay)
         .select_on_click()
-        .select_callback(select_callback)
-        .deselect_callback(deselect_callback)
+        .on_select(select_callback)
+        .on_deselect(deselect_callback)
         .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
         .unwrap();
 

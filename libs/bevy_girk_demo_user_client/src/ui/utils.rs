@@ -2,6 +2,7 @@
 use crate::*;
 
 //third-party shortcuts
+use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
@@ -59,6 +60,38 @@ pub fn write_ui_text(world: &mut World, text_entity: Entity, writer: impl FnOnce
     let text_section = &mut text.into_inner().sections[0].value;
     text_section.clear();
     (writer)(text_section);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Helper system param for accessing text components.
+#[derive(SystemParam)]
+pub struct TextHandle<'w, 's>
+{
+    text: Query<'w, 's, &'static mut Text>,
+}
+
+impl<'w, 's> TextHandle<'w, 's>
+{
+    /// Get the text on a text section on an entity.
+    ///
+    /// Returns `Err` if the text section could not be found or the text is empty.
+    pub fn text(&mut self, text_entity: Entity, section: usize) -> Result<&mut String, ()>
+    {
+        let Ok(text) = self.text.get_mut(text_entity) else { return Err(()); };
+        let Some(section) = text.into_inner().sections.get_mut(section) else { return Err(()); };
+        Ok(&mut section.value)
+    }
+
+    /// Get the style on a text section on an entity.
+    ///
+    /// Returns `Err` if the text section could not be found or the text is empty.
+    pub fn style(&mut self, text_entity: Entity, section: usize) -> Result<&mut TextStyle, ()>
+    {
+        let Ok(text) = self.text.get_mut(text_entity) else { return Err(()); };
+        let Some(section) = text.into_inner().sections.get_mut(section) else { return Err(()); };
+        Ok(&mut section.style)
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

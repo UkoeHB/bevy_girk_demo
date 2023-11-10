@@ -15,7 +15,7 @@ use std::vec::Vec;
 /// Caches the currently-displayed lobby page.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 pub(crate) struct LobbyPage
 {
     /// Current lobby contents.
@@ -77,7 +77,7 @@ impl Default for LobbyPage { fn default() -> Self { Self{ current: Vec::default(
 /// On startup this is initialized with the top-most lobby page.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 pub(crate) struct LobbyPageRequest
 {
     last: LobbySearchRequest,
@@ -125,11 +125,11 @@ impl LobbyPageRequest
 pub(crate) fn LobbyPagePlugin(app: &mut App)
 {
     app
-        .insert_resource(ReactRes::new(LobbyPage::default()))
-        .insert_resource(ReactRes::new(LobbyPageRequest::new(LobbySearchRequest::PageOlder{
+        .insert_react_resource(LobbyPage::default())
+        .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder{
             youngest_id : u64::MAX,
             num         : LOBBY_LIST_SIZE as u16,
-        })))
+        }))
         ;
 }
 

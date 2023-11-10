@@ -42,11 +42,11 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let text_entity = spawn_basic_text(ui, text, TextParams::topright(), "Connecting...");
 
     // update text when connection status changes
-    ui.rcommands.on_resource_mutation::<ReactRes<ConnectionStatus>>(
+    ui.rcommands.on(resource_mutation::<ConnectionStatus>(),
             move |world: &mut World|
             {
                 // update the text
-                let status_str = world.resource::<ReactRes<ConnectionStatus>>().to_str();
+                let status_str = world.react_resource::<ConnectionStatus>().to_str();
                 write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", status_str); });
             }
         );

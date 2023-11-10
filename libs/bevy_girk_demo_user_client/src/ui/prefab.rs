@@ -134,7 +134,7 @@ pub fn spawn_basic_button(
         .press_on_click()
         .unpress_on_unclick_home_and_abort_on_unclick_away()
         .abort_press_if_obstructed()
-        .unpress_callback(move |world, _| (unpress_callback)(world))
+        .on_unpress(unpress_callback)
         .build::<MouseLButtonMain>(&mut entity_commands, button_overlay.clone())
         .unwrap();
 

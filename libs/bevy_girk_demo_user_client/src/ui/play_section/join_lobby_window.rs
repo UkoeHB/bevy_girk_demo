@@ -18,7 +18,7 @@ use std::fmt::Write;
 /// Cached state of the join lobby window.
 ///
 /// This is a reactive resource.
-#[derive(Debug)]
+#[derive(ReactResource, Debug)]
 struct JoinLobbyWindow
 {
     /// Lobby contents.
@@ -52,8 +52,8 @@ impl Default for JoinLobbyWindow
 fn update_join_lobby_window(
     In(event)     : In<ReactEvent<ActivateJoinLobbyWindow>>,
     mut rcommands : ReactCommands,
-    lobby_page    : Res<ReactRes<LobbyPage>>,
-    mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
+    lobby_page    : ReactRes<LobbyPage>,
+    mut window    : ReactResMut<JoinLobbyWindow>,
 ){
     // get lobby id of lobby to join
     let lobby_index = event.get().lobby_list_index;
@@ -72,7 +72,7 @@ fn send_join_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
     join_lobby    : Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
-    mut window    : ResMut<ReactRes<JoinLobbyWindow>>,
+    mut window    : ReactResMut<JoinLobbyWindow>,
 ){
     // get request entity
     // - do nothing if there is already a pending request
@@ -111,8 +111,7 @@ fn setup_window_reactors(
 
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
-    ui.rcommands.on_entity_insertion::<React<PendingRequest>>(
-            join_lobby_entity,
+    ui.rcommands.on(entity_insertion::<PendingRequest>(join_lobby_entity),
             move |world: &mut World|
             {
                 // modify accept button text
@@ -122,12 +121,11 @@ fn setup_window_reactors(
 
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
-    ui.rcommands.on_entity_removal::<React<PendingRequest>>(
-            join_lobby_entity,
+    ui.rcommands.on(entity_removal::<PendingRequest>(join_lobby_entity),
             move |world: &mut World|
             {
                 // access the window state
-                let window = world.resource::<ReactRes<JoinLobbyWindow>>();
+                let window = world.react_resource::<JoinLobbyWindow>();
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
@@ -143,7 +141,7 @@ fn setup_window_reactors(
                 }
 
                 // remove cached request
-                world.resource_mut::<ReactRes<JoinLobbyWindow>>().get_mut_noreact().last_req = None;
+                world.react_resource_mut_noreact::<JoinLobbyWindow>().last_req = None;
 
                 // reset accept button text
                 write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "Join"); });
@@ -187,11 +185,11 @@ fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
         );
 
     // update the text when the window changes
-    ui.rcommands.on_resource_mutation::<ReactRes<JoinLobbyWindow>>(
+    ui.rcommands.on(resource_mutation::<JoinLobbyWindow>(),
             move |world: &mut World|
             {
                 // update the text
-                match &world.resource::<ReactRes<JoinLobbyWindow>>().contents
+                match &world.react_resource::<JoinLobbyWindow>().contents
                 {
                     Some(lobby_contents) =>
                     {
@@ -294,8 +292,8 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
 
     // update window state and open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ui.rcommands.on_event(
-            move |world: &mut World, event: ReactEvent<ActivateJoinLobbyWindow>|
+    ui.rcommands.on(event::<ActivateJoinLobbyWindow>(),
+            move |In(event): In<ReactEvent<ActivateJoinLobbyWindow>>, world: &mut World|
             {
                 syscall(world, event, update_join_lobby_window);
                 syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
@@ -306,7 +304,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<ReactRes<JoinLobbyWindow>>();
+    ui.rcommands.trigger_resource_mutation::<JoinLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -314,7 +312,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
 #[bevy_plugin]
 pub(crate) fn UiJoinLobbyWindowPlugin(app: &mut App)
 {
-    app.insert_resource(ReactRes::new(JoinLobbyWindow::default()));
+    app.insert_react_resource(JoinLobbyWindow::default());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
