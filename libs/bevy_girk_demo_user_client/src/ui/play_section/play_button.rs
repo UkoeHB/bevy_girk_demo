@@ -201,29 +201,20 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
     let play_pack = ui.div(|ui| make_play_button(ui, button, &default_button_overlay, &selected_button_overlay));
     let inlobby_pack = ui.div(|ui| make_in_lobby_button(ui, button, &default_button_overlay, &selected_button_overlay));
 
-    // select/deselect callbacks
+    // build the button
     let mut entity_commands = ui.commands().spawn_empty();
     let button_entity = entity_commands.id();
-    let area_overlay_clone = area_overlay.clone();
-    let select_callback =
-        move |world: &mut World|
-        {
-            syscall(world, (MainUI, [area_overlay_clone.clone()], []), toggle_ui_visibility);
-        };
-    let area_overlay_clone = area_overlay.clone();
-    let deselect_callback =
-        move |world: &mut World|
-        {
-            syscall(world, (MainUI, [], [area_overlay_clone.clone()]), toggle_ui_visibility);
-        };
 
-    // build the button
     InteractiveElementBuilder::new()
         .with_default_widget(default_button_overlay)
         .with_selected_widget(selected_button_overlay)
         .select_on_click()
-        .on_select(select_callback)
-        .on_deselect(deselect_callback)
+        .on_select(
+            syscall_with((MainUI, [area_overlay.clone()], []), toggle_ui_visibility)
+        )
+        .on_deselect(
+            syscall_with((MainUI, [], [area_overlay.clone()]), toggle_ui_visibility)
+        )
         .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
         .unwrap();
 

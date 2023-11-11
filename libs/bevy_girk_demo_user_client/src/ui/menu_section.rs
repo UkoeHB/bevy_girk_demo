@@ -14,32 +14,19 @@ use bevy_lunex::prelude::*;
 
 fn activate_new_selection<U: LunexUI>(
     In((newly_selected_button, overlay)) : In<(Entity, Widget)>,
-    mut commands                         : Commands,
-    mut uis                              : Query<&mut UiTree, With<U>>,
+    mut ui                               : UiUtils<U>,
     selected_main_menu_button            : Query<(Entity, &Callback<Deselect>), (With<MainMenuButton>, With<Selected>)>,
 ){
     // activate the selected button's overlay
-    let mut ui = uis.get_single_mut().unwrap();  //todo: use overlay widget's embedded entity
-    if let Ok(overlay_branch) = overlay.fetch_mut(&mut ui) { overlay_branch.set_visibility(true); }
+    //todo: use overlay widget's embedded entity
+    ui.toggle_single(true, &overlay);
 
     // deselect any selected main menu buttons other than the newly selected button
     for (entity, deselect_callback) in selected_main_menu_button.iter()
     {
         if entity == newly_selected_button { continue; }
-        commands.add(deselect_callback.clone());
+        ui.builder.rcommands.commands().add(deselect_callback.clone());
     }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn deactivate_selection<U: LunexUI>(
-    In(overlay) : In<Widget>,
-    mut uis     : Query<&mut UiTree, With<U>>,
-){
-    // deactivate the overlay of a deselected menu button
-    let mut ui = uis.get_single_mut().unwrap();  //todo: use overlay widget embedded entity
-    if let Ok(overlay_branch) = overlay.fetch_mut(&mut ui) { overlay_branch.set_visibility(false); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -74,29 +61,21 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
         );
     ui.commands().spawn(selected_image);
 
-    // select callback
+    // build the button
     let mut entity_commands = ui.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let overlay_clone = overlay.clone();
-    let select_callback =
-        move |world: &mut World|
-        {
-            syscall(world, (button_entity, overlay_clone.clone()), activate_new_selection::<MainUI>);
-        };
-    let overlay_clone = overlay.clone();
-    let deselect_callback =
-        move |world: &mut World|
-        {
-            syscall(world, overlay_clone.clone(), deactivate_selection::<MainUI>);
-        };
 
-    // build the button
     InteractiveElementBuilder::new()
         .with_default_widget(default_button)
         .with_selected_widget(selected_button)
         .select_on_click()
-        .on_select(select_callback)
-        .on_deselect(deselect_callback)
+        .on_select(
+            syscall_with((button_entity, overlay.clone()), activate_new_selection::<MainUI>)
+        )
+        .on_deselect(
+            move |mut ui: UiUtils<MainUI>| ui.toggle_single(false, &overlay_clone)
+        )
         .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
         .unwrap();
 

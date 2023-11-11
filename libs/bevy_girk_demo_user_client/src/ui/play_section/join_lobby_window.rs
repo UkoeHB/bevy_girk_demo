@@ -101,7 +101,7 @@ fn setup_window_reactors(
         );
 
     // when a join-lobby request completes
-    let window_widgets = [popup_pack.window_overlay];
+    let window_overlay = popup_pack.window_overlay;
     ui.rcommands.on(entity_removal::<PendingRequest>(join_lobby_entity),
             move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<JoinLobbyWindow>|
             {
@@ -117,7 +117,7 @@ fn setup_window_reactors(
                 // close window if request succeeded
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
-                    ui.toggle(&[], &window_widgets);
+                    ui.toggle_single(false, &window_overlay);
                 }
 
                 // remove cached request
@@ -168,7 +168,6 @@ fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.rcommands.on(resource_mutation::<JoinLobbyWindow>(),
             move |mut text: TextHandle, window: ReactRes<JoinLobbyWindow>|
             {
-                // update the text
                 if let Some(lobby_contents) = &window.contents
                 {
                     let id       = lobby_contents.id % 1_000_000u64;
@@ -267,16 +266,14 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // update window state and open window when activation event is detected
-    let window_widgets = [popup_pack.window_overlay.clone()];
+    let window_overlay = popup_pack.window_overlay.clone();
     ui.rcommands.on(event::<ActivateJoinLobbyWindow>(),
-            move
-            |
+            move|
                 In(event)  : In<ReactEvent<ActivateJoinLobbyWindow>>,
                 mut ui     : UiUtils<MainUI>,
                 lobby_page : ReactRes<LobbyPage>,
                 mut window : ReactResMut<JoinLobbyWindow>
-            |
-            {
+            |{
                 // get lobby id of lobby to join
                 let lobby_index = event.get().lobby_list_index;
 
@@ -290,7 +287,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
                     };
 
                 // open the window
-                ui.toggle(&window_widgets, &[]);
+                ui.toggle_single(true, &window_overlay);
             }
         );
 

@@ -144,7 +144,7 @@ fn update_list_contents<ListPage: ListPageTrait>(
         new_page,
     ))                   : In<(Arc<Vec<Entity>>, usize)>,
     mut rcommands        : ReactCommands,
-    mut text_query       : Query<&mut Text>,
+    mut text_handle      : TextHandle,
     lobby                : ReactRes<LobbyDisplay>,
     mut member_list_page : ReactResMut<ListPage>,
 ){
@@ -166,10 +166,9 @@ fn update_list_contents<ListPage: ListPageTrait>(
         let member_number = first_idx + idx + 1;
 
         // clear entry
-        let Ok(mut text) = text_query.get_mut(*content_entity)
+        let Ok(text) = text_handle.text(*content_entity, 0)
         else { tracing::error!("text entity is missing for list contents"); return; };
-        let text_section = &mut text.sections[0].value;
-        text_section.clear();
+        text.clear();
 
         // check if the entry corresponds to a member slot
         let Some(lobby_contents) = lobby.get() else { continue; };
@@ -180,11 +179,11 @@ fn update_list_contents<ListPage: ListPageTrait>(
         {
             None =>
             {
-                let _ = write!(text_section, "{} {}:", tag, member_number);
+                let _ = write!(text, "{} {}:", tag, member_number);
             }
             Some(member_id) =>
             {
-                let _ = write!(text_section, "{} {}: {}", tag, member_number, member_id % 1_000_000u128);
+                let _ = write!(text, "{} {}: {}", tag, member_number, member_id % 1_000_000u128);
             }
         }
     }
@@ -266,21 +265,18 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // update the text when the lobby display changes
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
+            move |mut text: TextHandle, display: ReactRes<LobbyDisplay>|
             {
-                // update the text
-                match world.react_resource::<LobbyDisplay>().get()
+                if let Some(lobby_contents) = display.get()
                 {
-                    Some(lobby_contents) =>
-                    {
-                        let id       = lobby_contents.id % 1_000_000u64;
-                        let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                        write_ui_text(world, text_entity, |text| {
-                            let _ = write!(text, "Lobby: {} -- Owner: {}", id, owner_id);
-                        });
-                    }
-                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
-                };
+                    let id       = lobby_contents.id % 1_000_000u64;
+                    let owner_id = lobby_contents.owner_id % 1_000_000u128;
+                    text.write(text_entity, 0, |text| write!(text, "Lobby: {} -- Owner: {}", id, owner_id)).unwrap();
+                }
+                else
+                {
+                    text.write(text_entity, 0, |text| write!(text, "{}", default_text)).unwrap();
+                }
             }
         );
 }
@@ -311,21 +307,18 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
 
     // update the text when the lobby display changes
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
+            move |mut text: TextHandle, display: ReactRes<LobbyDisplay>|
             {
-                // update the text
-                match world.react_resource::<LobbyDisplay>().get()
+                if let Some(lobby_contents) = display.get()
                 {
-                    Some(lobby_contents) =>
-                    {
-                        let num_members = lobby_contents.num(member_type);
-                        let max_members = lobby_contents.max(member_type);
-                        write_ui_text(world, text_entity, |text| {
-                            let _ = write!(text, "{}: {}/{}", tag, num_members, max_members);
-                        });
-                    }
-                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
-                };
+                    let num_members = lobby_contents.num(member_type);
+                    let max_members = lobby_contents.max(member_type);
+                    text.write(text_entity, 0, |text| write!(text, "{}: {}/{}", tag, num_members, max_members)).unwrap();
+                }
+                else
+                {
+                    text.write(text_entity, 0, |text| write!(text, "{}", default_text)).unwrap();
+                }
             }
         );
 }
@@ -360,10 +353,10 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page: ReactRes<ListPage>|
             {
-                let enable = world.react_resource::<ListPage>().get() != 0;
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = page.get() != 0;
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -398,13 +391,10 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>, page: ReactRes<ListPage>|
             {
-                let enable = !page_is_maxed::<ListPage>(
-                        &world.react_resource::<LobbyDisplay>(),
-                        &world.react_resource::<ListPage>()
-                    );
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = !page_is_maxed(&display, &*page);
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -444,8 +434,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
     // update the contents when the lobby display changes
     let content_entities_clone = content_entities.clone();
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
-            syscall(world, content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
+            syscall_with(content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
 
     // paginate left button (bottom left corner)
@@ -510,10 +499,10 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>|
             {
-                let enable = world.react_resource::<LobbyDisplay>().is_set();
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = display.is_set();
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -531,14 +520,14 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>|
             {
-                let enable = match world.react_resource::<LobbyDisplay>().get()
+                let enable = match display.get()
                 {
-                    Some(data) => data.owner_id == world.resource::<HostUserClient>().id(),
+                    Some(data) => data.owner_id == client.id(),
                     None       => false,
                 };
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }

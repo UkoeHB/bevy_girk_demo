@@ -96,7 +96,7 @@ fn send_make_lobby_request(
 
 fn setup_window_reactors(
     In(popup_pack) : In<BasicPopupPack>,
-    mut ui        : UiBuilder<MainUI>,
+    mut ui         : UiBuilder<MainUI>,
     make_lobby     : Query<Entity, With<MakeLobby>>,
 ){
     let make_lobby_entity = make_lobby.single();
@@ -112,7 +112,7 @@ fn setup_window_reactors(
         );
 
     // when a request completes
-    let window_widgets = [popup_pack.window_overlay];
+    let window_overlay = popup_pack.window_overlay;
     ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
             move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<MakeLobbyWindow>|
             {
@@ -129,7 +129,7 @@ fn setup_window_reactors(
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
                     // close window
-                    ui.toggle(&[], &window_widgets);
+                    ui.toggle_single(false, &window_overlay);
 
                     // reset window state
                     *window.get_mut(&mut ui.builder.rcommands) = MakeLobbyWindow::default();
@@ -323,11 +323,11 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // open window when activation event is detected
-    let window_widgets = [popup_pack.window_overlay.clone()];
+    let window_overlay = popup_pack.window_overlay.clone();
     ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
             move |_: In<ReactEvent<ActivateMakeLobbyWindow>>, mut ui: UiUtils<MainUI>|
             {
-                ui.toggle(&window_widgets, &[]);
+                ui.toggle_single(true, &window_overlay);
             }
         );
 

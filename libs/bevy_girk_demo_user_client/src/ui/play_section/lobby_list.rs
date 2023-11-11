@@ -199,12 +199,12 @@ fn setup_refresh_indicator_reactors(
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
     rcommands.on(entity_insertion::<PendingRequest>(lobby_search_entity),
-            move |world: &mut World| syscall(world, (MainUI, [text_widget_clone.clone()], []), toggle_ui_visibility)
+            move |mut ui: UiUtils<MainUI>| ui.toggle_single(true, &text_widget_clone)
         );
 
     // deactivate text when there is not a pending request
     rcommands.on(entity_removal::<PendingRequest>(lobby_search_entity),
-            move |world: &mut World| syscall(world, (MainUI, [], [text_widget.clone()]), toggle_ui_visibility)
+            move |mut ui: UiUtils<MainUI>| ui.toggle_single(false, &text_widget)
         );
 }
 
@@ -212,45 +212,38 @@ fn setup_refresh_indicator_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn update_lobby_list_contents(
-    In(contents)   : In<Arc<Vec<(Entity, Widget)>>>,
-    mut ui         : Query<&mut UiTree, With<MainUI>>,
-    mut text_query : Query<&mut Text>,
-    lobby_page     : ReactRes<LobbyPage>,
+    In(contents) : In<Arc<Vec<(Entity, Widget)>>>,
+    mut ui       : UiUtils<MainUI>,
+    lobby_page   : ReactRes<LobbyPage>,
 ){
-    // ui tree
-    let mut ui = ui.single_mut();
-
     // lobby list entries
     let entries = lobby_page.get();
 
     // update contents
     for (idx, (content_entity, content_widget)) in contents.iter().enumerate()
     {
-        // get entry text
-        let Ok(mut text) = text_query.get_mut(*content_entity)
-        else { tracing::error!("text entity is missing for lobby list contents"); return; };
-        let text_section = &mut text.sections[0].value;
-
         // get lobby list entry
         let entry = entries.get(idx);
 
         // update entry visibility
-        let Ok(widget_branch) = content_widget.fetch_mut(&mut ui) else { continue; };
-        widget_branch.set_visibility(entry.is_some());
+        ui.toggle_single(entry.is_some(), &content_widget);
 
         // update entry text
         let Some(entry) = entry else { continue; };
-
-        text_section.clear();
-        let _ = write!(
-                text_section,
-                "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
-                entry.id % 1_000_000u64,
-                entry.owner_id % 1_000_000u128,
-                entry.num(ClickLobbyMemberType::Player),
-                entry.max(ClickLobbyMemberType::Player),
-                entry.num(ClickLobbyMemberType::Watcher),
-                entry.max(ClickLobbyMemberType::Watcher),
+        let _ = ui.text.write(*content_entity, 0,
+                |text|
+                {
+                    write!(
+                            text,
+                            "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
+                            entry.id % 1_000_000u64,
+                            entry.owner_id % 1_000_000u128,
+                            entry.num(ClickLobbyMemberType::Player),
+                            entry.max(ClickLobbyMemberType::Player),
+                            entry.num(ClickLobbyMemberType::Watcher),
+                            entry.max(ClickLobbyMemberType::Watcher),
+                        )
+                }
             );
     }
 }
@@ -348,7 +341,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
         // button
         let join_button_area = relative_widget(ui.tree(), content_widget.end(""), (80., 98.), (y_start + 0.5, y_end - 0.5));
-        spawn_basic_button(ui, &join_button_area, "Join", move |world: &mut World| syscall(world, i, open_join_lobby_window));
+        spawn_basic_button(ui, &join_button_area, "Join", syscall_with(i, open_join_lobby_window));
 
         // save this entry
         contents.push((content_entity, content_widget));
@@ -357,9 +350,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |world: &mut World| syscall(world, contents.clone(), update_lobby_list_contents)
-        );
+    ui.rcommands.on(resource_mutation::<LobbyPage>(), syscall_with(contents, update_lobby_list_contents));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -372,15 +363,10 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // update stats when lobby page updates
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
             {
-                // define updated text
-                let (first, last, total) = world.react_resource::<LobbyPage>().stats();
-
-                // update UI text
-                write_ui_text(world, text_entity, |text| {
-                    let _ = write!(text, "({}-{} / {})", first, last, total);
-                });
+                let (first, last, total) = page.stats();
+                ui.text.write(text_entity, 0, |text| write!(text, "({}-{} / {})", first, last, total)).unwrap();
             }
         );
 }
@@ -399,10 +385,10 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page_req: ReactRes<LobbyPageRequest>|
             {
-                let enable = !world.react_resource::<LobbyPageRequest>().is_now();
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = !page_req.is_now();
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -421,11 +407,11 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
             {
-                let (first, _, _) = world.react_resource::<LobbyPage>().stats();
+                let (first, _, _) = page.stats();
                 let enable = first != 1;
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -444,11 +430,11 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
             {
-                let (_, last, total) = world.react_resource::<LobbyPage>().stats();
+                let (_, last, total) = page.stats();
                 let enable = last != total;
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -467,10 +453,10 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, page_req: ReactRes<LobbyPageRequest>|
             {
-                let enable = !world.react_resource::<LobbyPageRequest>().is_oldest();
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = !page_req.is_oldest();
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }
@@ -518,10 +504,10 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>|
             {
-                let enable = !world.react_resource::<LobbyDisplay>().is_set();
-                syscall(world, (enable, disable_overlay.clone(), button_entity), toggle_button_availability);
+                let enable = !display.is_set();
+                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
 }

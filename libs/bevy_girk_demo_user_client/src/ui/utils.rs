@@ -12,6 +12,23 @@ use bevy_lunex::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Wrap a system in a system that consumes the system input.
+///
+/// This is intended to wrap `FnMut` systems. Do not use it if you have a `FnOnce` callback, for example when
+/// adding a one-off callback via `Command::add()`, because the input value and system will be unnecessarily cloned.
+pub fn syscall_with<I, O, Marker>(
+    input  : I,
+    system : impl IntoSystem<I, O, Marker> + Send + Sync + 'static + Clone
+) -> impl Fn(&mut World) -> O + Send + Sync + 'static
+where
+    I: Send + Sync + 'static + Clone,
+    O: Send + Sync + 'static,
+{
+    move |world: &mut World| syscall(world, input.clone(), system.clone())
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Toggle a button's availability by showing/hiding a widget that blocks the button, and toggling the button label's
 /// font color.
 pub fn toggle_button_availability(
@@ -144,6 +161,19 @@ impl<'w, 's, U: LunexUI> UiUtils<'w, 's, U>
             let Ok(off_widget_branch) = off_widget.fetch_mut(ui) else { continue; };
             off_widget_branch.set_visibility(false);
         }
+    }
+
+    /// Toggle visibility of a single widget.
+    ///
+    /// Does nothing if the widget is invalid.
+    pub fn toggle_single(&mut self, enable: bool, widget: &Widget)
+    {
+        // get ui
+        let ui = self.builder.tree();
+
+        // set widget visibility: on
+        let Ok(widget_branch) = widget.fetch_mut(ui) else { return; };
+        widget_branch.set_visibility(enable);
     }
 
     /// Toggle a button's availability.
