@@ -342,7 +342,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
     // - decrement page number and update display contents
     let content_entities = entities.clone();
     let button_entity = spawn_basic_button(ui, &area, "<",
-            move |world|
+            move |world: &mut World|
             {
                 syscall(
                         world,
@@ -380,7 +380,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
     // - increment page number and update display contents
     let content_entities = entities.clone();
     let button_entity = spawn_basic_button(ui, &area, ">",
-            move |world|
+            move |world: &mut World|
             {
                 syscall(
                         world,
@@ -503,7 +503,7 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = spawn_basic_button(ui, &area, "Leave", |world| syscall(world, (), leave_current_lobby));
+    let button_entity = spawn_basic_button(ui, &area, "Leave", leave_current_lobby);
 
     // disable button when there is no lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -524,7 +524,7 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = spawn_basic_button(ui, &area, "Start", |world| syscall(world, (), start_current_lobby));
+    let button_entity = spawn_basic_button(ui, &area, "Start", start_current_lobby);
 
     // disable button when we don't own the lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);

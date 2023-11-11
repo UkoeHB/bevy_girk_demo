@@ -261,9 +261,7 @@ pub(crate) struct ActivateJoinLobbyWindow
 pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Join", |_| (),
-            |world| syscall(world, (), send_join_lobby_request),
-        );
+    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Join", ||(), send_join_lobby_request);
 
     // add window contents
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));

@@ -317,9 +317,7 @@ pub(crate) struct ActivateMakeLobbyWindow;
 pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Make", |_| (),
-            |world| syscall(world, (), send_make_lobby_request),
-        );
+    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Make", ||(), send_make_lobby_request);
 
     // add window contents
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));

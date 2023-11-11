@@ -312,7 +312,7 @@ fn add_lobby_list_refresh_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
     let button_overlay = relative_widget(ui.tree(), area.end(""), (5., 98.), (10., 90.));
-    spawn_basic_button(ui, &button_overlay, "Refresh", |world| syscall(world, (), refresh_lobby_list));
+    spawn_basic_button(ui, &button_overlay, "Refresh", refresh_lobby_list);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
         // button
         let join_button_area = relative_widget(ui.tree(), content_widget.end(""), (80., 98.), (y_start + 0.5, y_end - 0.5));
-        spawn_basic_button(ui, &join_button_area, "Join", move |world| syscall(world, i, open_join_lobby_window));
+        spawn_basic_button(ui, &join_button_area, "Join", move |world: &mut World| syscall(world, i, open_join_lobby_window));
 
         // save this entry
         contents.push((content_entity, content_widget));
@@ -392,7 +392,7 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
     // - request the most recent possible lobby
-    let button_entity = spawn_basic_button(ui, &area, "Now", |world| syscall(world, (), request_lobby_list_now));
+    let button_entity = spawn_basic_button(ui, &area, "Now", request_lobby_list_now);
 
     // disable button when displaying 'now'
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -414,7 +414,7 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
     // - request the next most recent lobby
-    let button_entity = spawn_basic_button(ui, &area, "<", |world| syscall(world, (), request_lobby_list_next_newer));
+    let button_entity = spawn_basic_button(ui, &area, "<", request_lobby_list_next_newer);
 
     // disable button when no newer lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -437,7 +437,7 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
     // - request the next older lobby
-    let button_entity = spawn_basic_button(ui, &area, ">", |world| syscall(world, (), request_lobby_list_next_older));
+    let button_entity = spawn_basic_button(ui, &area, ">", request_lobby_list_next_older);
 
     // disable button when no older lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -460,7 +460,7 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
     // - request the oldest lobbies
-    let button_entity = spawn_basic_button(ui, &area, "Oldest", |world| syscall(world, (), request_lobby_list_oldest));
+    let button_entity = spawn_basic_button(ui, &area, "Oldest", request_lobby_list_oldest);
 
     // disable button when last requested the oldest lobbies
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -511,9 +511,7 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // button ui
     let button_overlay = make_overlay(ui.tree(), &button_area, "", true);
-    let button_entity  = spawn_basic_button(ui, &button_overlay, "New Lobby",
-            |world| syscall(world, (), open_make_lobby_window)
-        );
+    let button_entity  = spawn_basic_button(ui, &button_overlay, "New Lobby", open_make_lobby_window);
 
     // disable button when we are in a lobby already
     let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);

@@ -71,11 +71,11 @@ pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Op
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_basic_button(
+pub fn spawn_basic_button<Marker>(
     ui               : &mut UiBuilder<MainUI>,
     button_overlay   : &Widget,
     button_text      : &'static str,
-    unpress_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
+    unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
 ) -> Entity
 {
     let style = ui.get::<BasicButton>().unwrap();
@@ -165,13 +165,13 @@ pub struct BasicPopupPack
 ///
 /// The popup is arbitrarily set at a depth of `500.0` in order to supercede the normal UI tree. Multiple concurrent
 /// popups will NOT stack on each other properly.
-pub fn spawn_basic_popup(
+pub fn spawn_basic_popup<Marker1, Marker2>(
     ui              : &mut UiBuilder<MainUI>,
     window_scaling  : (f32, f32),  // (% of screen width, % of screen height)
     cancel_text     : &'static str,
     accept_text     : &'static str,
-    cancel_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
-    accept_callback : impl Fn(&mut World) -> () + Send + Sync + 'static,
+    cancel_callback : impl IntoSystem<(), (), Marker1> + Send + Sync + 'static,
+    accept_callback : impl IntoSystem<(), (), Marker2> + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
     let style = ui.get::<BasicPopup>().unwrap();
@@ -222,17 +222,18 @@ pub fn spawn_basic_popup(
 
         // cancel button
         let cancel_button = relative_widget(ui.tree(), buttons_section.end(""), (15., 27.), (22., 67.));
+        let mut cancel_callback = CallbackSystem::new(cancel_callback);
         let cancel_entity = spawn_basic_button(ui, &cancel_button, cancel_text,
-                move |world|
+                move |world: &mut World|
                 {
                     syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
-                    (cancel_callback)(world);
+                    cancel_callback.run(world, ());
                 }
             );
 
         // accept button
         let accept_button = relative_widget(ui.tree(), buttons_section.end(""), (73., 85.), (22., 67.));
-        let accept_entity = spawn_basic_button(ui, &accept_button, accept_text, move |world| (accept_callback)(world));
+        let accept_entity = spawn_basic_button(ui, &accept_button, accept_text, accept_callback);
 
         (cancel_button, cancel_entity, accept_button, accept_entity)
     });
