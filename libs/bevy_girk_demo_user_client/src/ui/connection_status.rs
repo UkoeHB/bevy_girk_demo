@@ -46,8 +46,7 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
             move |mut text: TextHandle, status: ReactRes<ConnectionStatus>|
             {
                 // update the text
-                let Ok(text) = text.text(text_entity, 0) else { return; };
-                let _ = write!(text, "{}", status.to_str());
+                text.write(text_entity, 0, |text| write!(text, "{}", status.to_str())).expect("failed updating status");
             }
         );
 }

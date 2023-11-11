@@ -83,6 +83,21 @@ impl<'w, 's> TextHandle<'w, 's>
         Ok(&mut section.value)
     }
 
+    /// Overwrite the text on a text section on an entity.
+    ///
+    /// Returns `Err` if the text section could not be accessed or if the writer fails.
+    pub fn write<E>(
+        &mut self,
+        text_entity: Entity,
+        section: usize,
+        writer: impl FnOnce(&mut String) -> Result<(), E>
+    ) -> Result<(), ()>
+    {
+        let text = self.text(text_entity, section)?;
+        text.clear();
+        (writer)(text).map_err(|_| ())
+    }
+
     /// Get the style on a text section on an entity.
     ///
     /// Returns `Err` if the text section could not be found or the text is empty.
@@ -91,6 +106,70 @@ impl<'w, 's> TextHandle<'w, 's>
         let Ok(text) = self.text.get_mut(text_entity) else { return Err(()); };
         let Some(section) = text.into_inner().sections.get_mut(section) else { return Err(()); };
         Ok(&mut section.style)
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Helper system param for interacting with a `UiTree`.
+//todo: handle multiple uis (pass in UI entity)?
+#[derive(SystemParam)]
+pub struct UiUtils<'w, 's, U: LunexUI>
+{
+    pub builder: UiBuilder<'w, 's, U>,
+    pub text: TextHandle<'w, 's>,
+}
+
+impl<'w, 's, U: LunexUI> UiUtils<'w, 's, U>
+{
+    /// Toggle between two sets of widgets.
+    pub fn toggle<const ON: usize, const OFF: usize>(
+        &mut self,
+        on_widgets  : &[Widget; ON],
+        off_widgets : &[Widget; OFF],
+    ){
+        // get ui
+        let ui = self.builder.tree();
+
+        // set widget visibility: on
+        for on_widget in on_widgets
+        {
+            let Ok(on_widget_branch) = on_widget.fetch_mut(ui) else { continue; };
+            on_widget_branch.set_visibility(true);
+        }
+
+        // set widget visibility: off
+        for off_widget in off_widgets
+        {
+            let Ok(off_widget_branch) = off_widget.fetch_mut(ui) else { continue; };
+            off_widget_branch.set_visibility(false);
+        }
+    }
+
+    /// Toggle a button's availability.
+    /// - Shows/hides a widget that blocks the button.
+    /// - Toggles the button label's font color.
+    pub fn toggle_basic_button(&mut self, enable: bool, button_blocker: Widget, text_entity: Entity)
+    {
+        // toggle visibility of button blocker
+        let ui = self.builder.tree();
+        let Ok(branch) = button_blocker.fetch_mut(ui)
+        else { tracing::error!("button blocker widget is missing"); return; };
+        branch.set_visibility(!enable);
+
+        // get text
+        let Ok(text_style) = self.text.style(text_entity, 0)
+        else { tracing::error!("text entity is missing in toggle button availability"); return; };
+
+        // get style for the text based on availability
+        let availability_style = self.builder.get::<BasicButtonAvailability>().unwrap();
+
+        // update text color
+        match enable
+        {
+            true => text_style.color = availability_style.active,
+            false => text_style.color = availability_style.inactive,
+        }
     }
 }
 

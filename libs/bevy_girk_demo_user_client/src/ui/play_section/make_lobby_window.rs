@@ -57,14 +57,6 @@ impl Default for MakeLobbyWindow
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn reset_window_state(mut rcommands: ReactCommands, mut window: ReactResMut<MakeLobbyWindow>)
-{
-    *window.get_mut(&mut rcommands) = MakeLobbyWindow::default();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
 fn send_make_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
@@ -112,20 +104,19 @@ fn setup_window_reactors(
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
     ui.rcommands.on(entity_insertion::<PendingRequest>(make_lobby_entity),
-            move |world: &mut World|
+            move |mut text: TextHandle|
             {
                 // modify accept button text
-                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "..."); });
+                text.write(accept_entity, 0, |text| write!(text, "{}", "...")).unwrap();
             }
         );
 
     // when a request completes
-    let window_overlay = popup_pack.window_overlay;
+    let window_overlay = [popup_pack.window_overlay];
     ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<MakeLobbyWindow>|
             {
                 // access the window state
-                let window = world.react_resource::<MakeLobbyWindow>();
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
@@ -138,19 +129,19 @@ fn setup_window_reactors(
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
                     // close window
-                    syscall(world, (MainUI, [], [window_overlay.clone()]), toggle_ui_visibility);
+                    ui.toggle(&[], &window_overlay);
 
                     // reset window state
-                    syscall(world, (), reset_window_state);
+                    *window.get_mut(&mut ui.builder.rcommands) = MakeLobbyWindow::default();
                 }
                 else
                 {
                     // remove cached request
-                    world.react_resource_mut_noreact::<MakeLobbyWindow>().last_req = None;                    
+                    window.get_mut_noreact().last_req = None;                    
                 }
 
                 // reset accept button text
-                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "Make"); });
+                ui.text.write(accept_entity, 0, |text| write!(text, "{}", "Make")).unwrap();
             }
         );
 
