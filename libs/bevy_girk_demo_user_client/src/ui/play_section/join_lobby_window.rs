@@ -277,7 +277,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
             |
             {
                 // get lobby id of lobby to join
-                let Some(event) = events.iter().next() else { return; };
+                let Some(event) = events.next() else { return; };
                 let lobby_index = event.lobby_list_index;
 
                 let Some(lobby_contents) = lobby_page.get().get(lobby_index)
