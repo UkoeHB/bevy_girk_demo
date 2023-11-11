@@ -16,7 +16,7 @@ use bevy_lunex::prelude::*;
 ///
 /// This is intended to wrap `FnMut` systems. Do not use it if you have a `FnOnce` callback, for example when
 /// adding a one-off callback via `Command::add()`, because the input value and system will be unnecessarily cloned.
-pub fn syscall_with<I, O, Marker>(
+pub fn prep_syscall<I, O, Marker>(
     input  : I,
     system : impl IntoSystem<I, O, Marker> + Send + Sync + 'static + Clone
 ) -> impl Fn(&mut World) -> O + Send + Sync + 'static
