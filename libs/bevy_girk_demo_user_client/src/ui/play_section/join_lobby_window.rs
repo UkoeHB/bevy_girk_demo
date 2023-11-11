@@ -49,25 +49,6 @@ impl Default for JoinLobbyWindow
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn update_join_lobby_window(
-    In(event)     : In<ReactEvent<ActivateJoinLobbyWindow>>,
-    mut rcommands : ReactCommands,
-    lobby_page    : ReactRes<LobbyPage>,
-    mut window    : ReactResMut<JoinLobbyWindow>,
-){
-    // get lobby id of lobby to join
-    let lobby_index = event.get().lobby_list_index;
-
-    let Some(lobby_contents) = lobby_page.get().get(lobby_index)
-    else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window"); return; };
-
-    // update the window state
-    *window.get_mut(&mut rcommands) = JoinLobbyWindow{ contents: Some(lobby_contents.clone()), ..Default::default() };
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
 fn send_join_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
@@ -112,20 +93,19 @@ fn setup_window_reactors(
     // when a request starts
     let accept_entity = popup_pack.accept_entity;
     ui.rcommands.on(entity_insertion::<PendingRequest>(join_lobby_entity),
-            move |world: &mut World|
+            move |mut text: TextHandle|
             {
                 // modify accept button text
-                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "..."); });
+                text.write(accept_entity, 0, |text| write!(text, "{}", "...")).unwrap();
             }
         );
 
     // when a join-lobby request completes
-    let window_overlay = popup_pack.window_overlay;
+    let window_widgets = [popup_pack.window_overlay];
     ui.rcommands.on(entity_removal::<PendingRequest>(join_lobby_entity),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<JoinLobbyWindow>|
             {
                 // access the window state
-                let window = world.react_resource::<JoinLobbyWindow>();
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
@@ -137,14 +117,14 @@ fn setup_window_reactors(
                 // close window if request succeeded
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
-                    syscall(world, (MainUI, [], [window_overlay.clone()]), toggle_ui_visibility);
+                    ui.toggle(&[], &window_widgets);
                 }
 
                 // remove cached request
-                world.react_resource_mut_noreact::<JoinLobbyWindow>().last_req = None;
+                window.get_mut_noreact().last_req = None;
 
                 // reset accept button text
-                write_ui_text(world, accept_entity, |text| { let _ = write!(text, "{}", "Join"); });
+                ui.text.write(accept_entity, 0, |text| write!(text, "{}", "Join")).unwrap();
             }
         );
 }
@@ -186,21 +166,19 @@ fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // update the text when the window changes
     ui.rcommands.on(resource_mutation::<JoinLobbyWindow>(),
-            move |world: &mut World|
+            move |mut text: TextHandle, window: ReactRes<JoinLobbyWindow>|
             {
                 // update the text
-                match &world.react_resource::<JoinLobbyWindow>().contents
+                if let Some(lobby_contents) = &window.contents
                 {
-                    Some(lobby_contents) =>
-                    {
-                        let id       = lobby_contents.id % 1_000_000u64;
-                        let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                        write_ui_text(world, text_entity, |text| {
-                            let _ = write!(text, "Lobby: {} -- Owner: {}", id, owner_id);
-                        });
-                    }
-                    None => write_ui_text(world, text_entity, |text| { let _ = write!(text, "{}", default_text); })
-                };
+                    let id       = lobby_contents.id % 1_000_000u64;
+                    let owner_id = lobby_contents.owner_id % 1_000_000u128;
+                    text.write(text_entity, 0, |text| write!(text, "Lobby: {} -- Owner: {}", id, owner_id)).unwrap();
+                }
+                else
+                {
+                    text.write(text_entity, 0, |text| write!(text, "{}", default_text)).unwrap();
+                }
             }
         );
 }
@@ -291,12 +269,30 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // update window state and open window when activation event is detected
-    let window_overlay = popup_pack.window_overlay.clone();
+    let window_widgets = [popup_pack.window_overlay.clone()];
     ui.rcommands.on(event::<ActivateJoinLobbyWindow>(),
-            move |In(event): In<ReactEvent<ActivateJoinLobbyWindow>>, world: &mut World|
+            move
+            |
+                In(event)  : In<ReactEvent<ActivateJoinLobbyWindow>>,
+                mut ui     : UiUtils<MainUI>,
+                lobby_page : ReactRes<LobbyPage>,
+                mut window : ReactResMut<JoinLobbyWindow>
+            |
             {
-                syscall(world, event, update_join_lobby_window);
-                syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
+                // get lobby id of lobby to join
+                let lobby_index = event.get().lobby_list_index;
+
+                let Some(lobby_contents) = lobby_page.get().get(lobby_index)
+                else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window"); return; };
+
+                // update the window state
+                *window.get_mut(&mut ui.builder.rcommands) = JoinLobbyWindow{
+                        contents: Some(lobby_contents.clone()),
+                        ..Default::default()
+                    };
+
+                // open the window
+                ui.toggle(&window_widgets, &[]);
             }
         );
 

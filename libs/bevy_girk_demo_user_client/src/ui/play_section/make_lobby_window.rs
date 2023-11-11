@@ -112,7 +112,7 @@ fn setup_window_reactors(
         );
 
     // when a request completes
-    let window_overlay = [popup_pack.window_overlay];
+    let window_widgets = [popup_pack.window_overlay];
     ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
             move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<MakeLobbyWindow>|
             {
@@ -129,7 +129,7 @@ fn setup_window_reactors(
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
                     // close window
-                    ui.toggle(&[], &window_overlay);
+                    ui.toggle(&[], &window_widgets);
 
                     // reset window state
                     *window.get_mut(&mut ui.builder.rcommands) = MakeLobbyWindow::default();
@@ -152,11 +152,10 @@ fn setup_window_reactors(
 
     // disable 'make' button when disconnected and configs are non-local
     let make_button_disabler =
-        move |world: &mut World|
+        move |mut ui: UiUtils<MainUI>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
         {
-            let enable = *world.react_resource::<ConnectionStatus>() == ConnectionStatus::Connected ||
-                world.react_resource::<MakeLobbyWindow>().is_single_player();
-            syscall(world, (enable, accept_disable.clone(), accept_entity), toggle_button_availability);
+            let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
+            ui.toggle_basic_button(enable, &accept_disable, accept_entity);
         };
 
     ui.rcommands.on(resource_mutation::<ConnectionStatus>(), make_button_disabler.clone());
@@ -262,17 +261,19 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(80.)),
-            "Muliplayer lobby: requires a server connection."
+            "Multiplayer lobby: requires a server connection."
         );
 
     // adjust text depending on the lobby type
+    let sp_widgets = [sp_text];
+    let mp_widgets = [mp_text];
     ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(),
-            move |world: &mut World|
+            move |mut ui: UiUtils<MainUI>, window: ReactRes<MakeLobbyWindow>|
             {
-                match world.react_resource::<MakeLobbyWindow>().is_single_player()
+                match window.is_single_player()
                 {
-                    true => syscall(world, (MainUI, [sp_text.clone()], [mp_text.clone()]), toggle_ui_visibility),
-                    false => syscall(world, (MainUI, [mp_text.clone()], [sp_text.clone()]), toggle_ui_visibility),
+                    true => ui.toggle(&sp_widgets, &mp_widgets),
+                    false => ui.toggle(&mp_widgets, &sp_widgets),
                 }
             }
         );
@@ -324,11 +325,11 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // open window when activation event is detected
-    let window_overlay = popup_pack.window_overlay.clone();
+    let window_widgets = [popup_pack.window_overlay.clone()];
     ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
-            move |_, world: &mut World|
+            move |_: In<ReactEvent<ActivateMakeLobbyWindow>>, mut ui: UiUtils<MainUI>|
             {
-                syscall(world, (MainUI, [window_overlay.clone()], []), toggle_ui_visibility);
+                ui.toggle(&window_widgets, &[]);
             }
         );
 

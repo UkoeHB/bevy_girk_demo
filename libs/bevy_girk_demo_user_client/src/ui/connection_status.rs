@@ -45,8 +45,7 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
     ui.rcommands.on(resource_mutation::<ConnectionStatus>(),
             move |mut text: TextHandle, status: ReactRes<ConnectionStatus>|
             {
-                // update the text
-                text.write(text_entity, 0, |text| write!(text, "{}", status.to_str())).expect("failed updating status");
+                text.write(text_entity, 0, |text| write!(text, "{}", status.to_str())).unwrap();
             }
         );
 }
