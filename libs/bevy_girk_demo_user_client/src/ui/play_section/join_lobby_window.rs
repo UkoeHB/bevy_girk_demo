@@ -268,14 +268,17 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
     // update window state and open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
     ui.rcommands.on(event::<ActivateJoinLobbyWindow>(),
-            move|
-                In(event)  : In<ReactEvent<ActivateJoinLobbyWindow>>,
+            move
+            |
+                mut events : ReactEvents<ActivateJoinLobbyWindow>,
                 mut ui     : UiUtils<MainUI>,
                 lobby_page : ReactRes<LobbyPage>,
                 mut window : ReactResMut<JoinLobbyWindow>
-            |{
+            |
+            {
                 // get lobby id of lobby to join
-                let lobby_index = event.get().lobby_list_index;
+                let Some(event) = events.iter().next() else { return; };
+                let lobby_index = event.lobby_list_index;
 
                 let Some(lobby_contents) = lobby_page.get().get(lobby_index)
                 else { tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window"); return; };
@@ -303,7 +306,8 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
 #[bevy_plugin]
 pub(crate) fn UiJoinLobbyWindowPlugin(app: &mut App)
 {
-    app.insert_react_resource(JoinLobbyWindow::default());
+    app.insert_react_resource(JoinLobbyWindow::default())
+        .add_react_event::<ActivateJoinLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

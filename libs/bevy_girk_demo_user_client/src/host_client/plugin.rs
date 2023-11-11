@@ -16,6 +16,7 @@ pub(crate) fn HostClientPlugin(app: &mut App)
 {
     app
         .insert_react_resource(ConnectionStatus::Connecting)
+        .add_react_event::<bevy_girk_game_fw::GameOverReport>()
         .add_systems(First,
             (
                 handle_connection_changes,

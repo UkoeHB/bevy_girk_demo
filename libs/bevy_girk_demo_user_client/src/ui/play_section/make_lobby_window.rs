@@ -325,7 +325,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
     ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
-            move |_: In<ReactEvent<ActivateMakeLobbyWindow>>, mut ui: UiUtils<MainUI>|
+            move |mut ui: UiUtils<MainUI>|
             {
                 ui.toggle_single(true, &window_overlay);
             }
@@ -343,7 +343,8 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 #[bevy_plugin]
 pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
 {
-    app.insert_react_resource(MakeLobbyWindow::default());
+    app.insert_react_resource(MakeLobbyWindow::default())
+        .add_react_event::<ActivateMakeLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
