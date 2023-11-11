@@ -131,16 +131,29 @@ impl<'w, 's> TextHandle<'w, 's>
 /// Helper system param for interacting with a `UiTree`.
 //todo: handle multiple uis (pass in UI entity)?
 #[derive(SystemParam)]
-pub struct UiUtils<'w, 's, U: LunexUI>
+pub struct UiUtils<'w, 's, Ui: LunexUI>
 {
-    pub builder: UiBuilder<'w, 's, U>,
+    pub builder: UiBuilder<'w, 's, Ui>,
     pub text: TextHandle<'w, 's>,
 }
 
-impl<'w, 's, U: LunexUI> UiUtils<'w, 's, U>
+impl<'w, 's, Ui: LunexUI> UiUtils<'w, 's, Ui>
 {
+    /// Toggle visibility of a single widget.
+    ///
+    /// Does nothing if the widget is invalid.
+    pub fn toggle(&mut self, enable: bool, widget: &Widget)
+    {
+        // get ui
+        let ui = self.builder.tree();
+
+        // set widget visibility: on
+        let Ok(widget_branch) = widget.fetch_mut(ui) else { return; };
+        widget_branch.set_visibility(enable);
+    }
+
     /// Toggle between two sets of widgets.
-    pub fn toggle<const ON: usize, const OFF: usize>(
+    pub fn toggle_many<const ON: usize, const OFF: usize>(
         &mut self,
         on_widgets  : &[Widget; ON],
         off_widgets : &[Widget; OFF],
@@ -161,19 +174,6 @@ impl<'w, 's, U: LunexUI> UiUtils<'w, 's, U>
             let Ok(off_widget_branch) = off_widget.fetch_mut(ui) else { continue; };
             off_widget_branch.set_visibility(false);
         }
-    }
-
-    /// Toggle visibility of a single widget.
-    ///
-    /// Does nothing if the widget is invalid.
-    pub fn toggle_single(&mut self, enable: bool, widget: &Widget)
-    {
-        // get ui
-        let ui = self.builder.tree();
-
-        // set widget visibility: on
-        let Ok(widget_branch) = widget.fetch_mut(ui) else { return; };
-        widget_branch.set_visibility(enable);
     }
 
     /// Toggle a button's availability.

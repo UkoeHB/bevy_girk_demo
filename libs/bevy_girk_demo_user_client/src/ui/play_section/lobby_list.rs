@@ -199,12 +199,12 @@ fn setup_refresh_indicator_reactors(
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
     rcommands.on(entity_insertion::<PendingRequest>(lobby_search_entity),
-            move |mut ui: UiUtils<MainUI>| ui.toggle_single(true, &text_widget_clone)
+            move |mut ui: UiUtils<MainUI>| ui.toggle(true, &text_widget_clone)
         );
 
     // deactivate text when there is not a pending request
     rcommands.on(entity_removal::<PendingRequest>(lobby_search_entity),
-            move |mut ui: UiUtils<MainUI>| ui.toggle_single(false, &text_widget)
+            move |mut ui: UiUtils<MainUI>| ui.toggle(false, &text_widget)
         );
 }
 
@@ -226,7 +226,7 @@ fn update_lobby_list_contents(
         let entry = entries.get(idx);
 
         // update entry visibility
-        ui.toggle_single(entry.is_some(), &content_widget);
+        ui.toggle(entry.is_some(), &content_widget);
 
         // update entry text
         let Some(entry) = entry else { continue; };

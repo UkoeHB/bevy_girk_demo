@@ -117,7 +117,7 @@ fn setup_window_reactors(
                 // close window if request succeeded
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
-                    ui.toggle_single(false, &window_overlay);
+                    ui.toggle(false, &window_overlay);
                 }
 
                 // remove cached request
@@ -290,7 +290,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
                     };
 
                 // open the window
-                ui.toggle_single(true, &window_overlay);
+                ui.toggle(true, &window_overlay);
             }
         );
 

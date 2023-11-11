@@ -19,7 +19,7 @@ fn activate_new_selection<U: LunexUI>(
 ){
     // activate the selected button's overlay
     //todo: use overlay widget's embedded entity
-    ui.toggle_single(true, &overlay);
+    ui.toggle(true, &overlay);
 
     // deselect any selected main menu buttons other than the newly selected button
     for (entity, deselect_callback) in selected_main_menu_button.iter()
@@ -74,7 +74,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
             prep_syscall((button_entity, overlay.clone()), activate_new_selection::<MainUI>)
         )
         .on_deselect(
-            move |mut ui: UiUtils<MainUI>| ui.toggle_single(false, &overlay_clone)
+            move |mut ui: UiUtils<MainUI>| ui.toggle(false, &overlay_clone)
         )
         .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
         .unwrap();

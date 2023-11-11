@@ -129,7 +129,7 @@ fn setup_window_reactors(
                 if req_status == bevy_simplenet::RequestStatus::Responded
                 {
                     // close window
-                    ui.toggle_single(false, &window_overlay);
+                    ui.toggle(false, &window_overlay);
 
                     // reset window state
                     *window.get_mut(&mut ui.builder.rcommands) = MakeLobbyWindow::default();
@@ -272,8 +272,8 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
             {
                 match window.is_single_player()
                 {
-                    true => ui.toggle(&sp_widgets, &mp_widgets),
-                    false => ui.toggle(&mp_widgets, &sp_widgets),
+                    true => ui.toggle_many(&sp_widgets, &mp_widgets),
+                    false => ui.toggle_many(&mp_widgets, &sp_widgets),
                 }
             }
         );
@@ -327,7 +327,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
             move |mut ui: UiUtils<MainUI>|
             {
-                ui.toggle_single(true, &window_overlay);
+                ui.toggle(true, &window_overlay);
             }
         );
 
