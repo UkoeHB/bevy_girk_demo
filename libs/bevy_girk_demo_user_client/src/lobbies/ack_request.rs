@@ -13,23 +13,33 @@ use std::time::Duration;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn focus_window_on_ack_request(
-    ack_request : ReactRes<AckRequest>,
-    mut window  : Query<&mut Window, With<PrimaryWindow>>,
-){
-    // only focus the window when a new ack request is set
-    if !ack_request.is_set() { return; }
-
-    // focus the window
+fn focus_window(mut window: Query<&mut Window, With<PrimaryWindow>>)
+{
     window.single_mut().focused = true;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ack_request(mut rcommands: ReactCommands)
+fn set_ack_request_data(
+    mut rcommands   : ReactCommands,
+    time            : Res<Time>,
+    mut events      : ReactEvents<AckRequest>,
+    mut ack_request : ReactResMut<AckRequestData>,
+){
+    let ack_req = events.next().unwrap();
+    ack_request
+        .get_mut(&mut rcommands)
+        .set(ack_req.lobby_id, time.elapsed());
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup_ack_request_handlers(mut rcommands: ReactCommands)
 {
-    rcommands.on(resource_mutation::<AckRequest>(), focus_window_on_ack_request);
+    rcommands.on(event::<AckRequest>(), focus_window);
+    rcommands.on(event::<AckRequest>(), set_ack_request_data);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -38,19 +48,19 @@ fn setup_ack_request(mut rcommands: ReactCommands)
 fn try_timeout_ack_request(
     mut rcommands   : ReactCommands,
     time            : Res<Time>,
-    mut ack_request : ReactResMut<AckRequest>,
+    mut ack_request : ReactResMut<AckRequestData>,
 ){
     // check if there is a pending ack request
     if !ack_request.is_set() { return; }
 
     // update the request timer
-    let ack_request_mut = ack_request.get_mut_noreact();
+    // - we don't tick the timer on the first tick after an ack request was received
+    // - we trigger reactions here in case listeners care about the timer
+    let start_time = ack_request.ack_time;
+    let ack_request_mut = ack_request.get_mut(&mut rcommands);
     let timer = &mut ack_request_mut.timer;
-    if ack_request_mut.just_reset
-    {
-        ack_request_mut.just_reset = false;
-    }
-    else
+
+    if start_time != time.elapsed()
     {
         timer.tick(time.delta());
     }
@@ -59,45 +69,71 @@ fn try_timeout_ack_request(
     if !timer.finished() { return; }
 
     // clear the ack request
-    tracing::trace!("reseting ack request after timeout");
-    ack_request.get_mut(&mut rcommands).clear();
+    tracing::trace!("resetting ack request after timeout");
+    ack_request_mut.clear();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Caches the current pending ack request (if there is one).
-///
-/// This is a reactive resource.
 #[derive(ReactResource, Debug)]
-pub(crate) struct AckRequest
+pub(crate) struct AckRequestData
 {
     /// Lobby id of the current ack request.
     current: Option<u64>,
 
     /// Timer for the current request. When the timer expires, the request will be reset.
     timer: Timer,
-    /// Flag indicating the timer has just been reset. We don't want to tick the timer in the tick where it was reset.
-    just_reset: bool,
+    /// Amount of time to 'shave off' the timer displayed to users.
+    timer_buffer: Duration,
+    /// Current time when the ack request was last set. Used by the timer to avoid ticking in the first tick.
+    ack_time: Duration,
+
+    /// Indicates if a nack was sent since the request was last set.
+    nacked: bool,
+    /// Indicates if an ack was sent since the request was last set.
+    acked: bool,
 }
 
-impl AckRequest
+impl AckRequestData
 {
-    pub(crate) fn new(timeout_duration: Duration) -> Self
+    pub(crate) fn new(timeout_duration: Duration, timer_buffer: Duration) -> Self
     {
-        Self{ current: None, timer: Timer::new(timeout_duration, TimerMode::Once), just_reset: false }
+        Self{
+            current: None,
+            timer: Timer::new(timeout_duration, TimerMode::Once),
+            timer_buffer,
+            ack_time: Duration::default(),
+            nacked: false,
+            acked: false,
+        }
     }
 
-    pub(crate) fn set(&mut self, new_ack_request: u64)
+    pub(crate) fn set(&mut self, new_ack_request: u64, ack_time: Duration)
     {
         self.current = Some(new_ack_request);
         self.timer.reset();
-        self.just_reset = true;
+        self.ack_time = ack_time;
+        self.nacked = false;
+        self.acked = false;
+    }
+
+    pub(crate) fn set_nacked(&mut self)
+    {
+        self.nacked = true;
+    }
+
+    pub(crate) fn set_acked(&mut self)
+    {
+        self.acked = true;
     }
 
     pub(crate) fn clear(&mut self)
     {
         self.current = None;
+        self.nacked  = false;
+        self.acked   = false;
     }
 
     pub(crate) fn get(&self) -> Option<u64>
@@ -109,6 +145,30 @@ impl AckRequest
     {
         self.current.is_some()
     }
+
+    pub(crate) fn time_remaining_for_display(&self) -> Duration
+    {
+        self.timer.remaining().saturating_sub(self.timer_buffer)
+    }
+
+    pub(crate) fn is_nacked(&self) -> bool
+    {
+        self.nacked
+    }
+
+    pub(crate) fn is_acked(&self) -> bool
+    {
+        self.acked
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// This is a reactive data event used to transmit new ack requests.
+#[derive(Debug, Clone)]
+pub(crate) struct AckRequest
+{
+    pub(crate) lobby_id: u64,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -117,13 +177,15 @@ impl AckRequest
 pub(crate) fn AckRequestPlugin(app: &mut App)
 {
     let timer_configs = app.world.resource::<TimerConfigs>();
-    let ack_request_timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
+    let timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
+    let timer_buffer = Duration::from_millis(timer_configs.ack_request_timer_buffer_ms);
 
     app
-        .insert_react_resource(AckRequest::new(ack_request_timeout))
+        .insert_react_resource(AckRequestData::new(timeout, timer_buffer))
+        .add_react_event::<AckRequest>()
         .add_systems(Startup,
             (
-                setup_ack_request,
+                setup_ack_request_handlers,
             )
         )
         .add_systems(PreUpdate,

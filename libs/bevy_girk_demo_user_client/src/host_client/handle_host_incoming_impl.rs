@@ -18,7 +18,7 @@ fn handle_lobby_reset(
     mut rcommands     : ReactCommands,
     client            : Res<HostUserClient>,
     mut lobby_display : ReactResMut<LobbyDisplay>,
-    mut ack_request   : ReactResMut<AckRequest>,
+    mut ack_request   : ReactResMut<AckRequestData>,
     mut pending_reset : ResMut<PendingLobbyReset>,
     lobby_search      : Query<Entity, With<LobbySearch>>,
     lobby_page_req    : ReactRes<LobbyPageRequest>,
@@ -87,14 +87,13 @@ pub(crate) fn handle_lobby_leave(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_pending_lobby_ack_request(
-    In(lobby_id)    : In<u64>,
-    mut rcommands   : ReactCommands,
-    mut ack_request : ReactResMut<AckRequest>,
+    In(lobby_id)  : In<u64>,
+    mut rcommands : ReactCommands,
 ){
     tracing::info!(lobby_id, "pending lobby ack request received");
 
-    // update ack request
-    ack_request.get_mut(&mut rcommands).set(lobby_id);
+    // send ack request event
+    rcommands.send(AckRequest{ lobby_id });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -102,7 +101,7 @@ pub(crate) fn handle_pending_lobby_ack_request(
 pub(crate) fn handle_pending_lobby_ack_fail(
     In(lobby_id)    : In<u64>,
     mut rcommands   : ReactCommands,
-    mut ack_request : ReactResMut<AckRequest>,
+    mut ack_request : ReactResMut<AckRequestData>,
 ){
     tracing::info!(lobby_id, "pending lobby ack fail received");
 
@@ -123,7 +122,7 @@ pub(crate) fn handle_game_start(
     In((lobby_id, _game_connect)) : In<(u64, GameConnectInfo)>,
     mut rcommands                 : ReactCommands,
     mut lobby_display             : ReactResMut<LobbyDisplay>,
-    mut ack_request               : ReactResMut<AckRequest>,
+    mut ack_request               : ReactResMut<AckRequestData>,
 ){
     tracing::info!(lobby_id, "game start info received");
 

@@ -48,8 +48,9 @@ fn main()
 
     // define configs (TEMPORARY: use asset instead ?)
     let timer_configs = TimerConfigs{
-            ack_request_timeout_ms : ACK_TIMEOUT_MILLIS + 5_000,
-            lobby_list_refresh_ms  : 10_000,
+            ack_request_timeout_ms      : ACK_TIMEOUT_MILLIS + 1_000,
+            ack_request_timer_buffer_ms : 4_000,
+            lobby_list_refresh_ms       : 10_000,
         };
 
     // build and launch the bevy app

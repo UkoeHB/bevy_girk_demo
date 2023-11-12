@@ -48,6 +48,7 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
     ui.div(|ui| add_play_section(ui, &play_button, &menu_overlay));
     ui.div(|ui| add_menu_bar_section(ui, &menu_bar, &menu_overlay));
     ui.div(|ui| add_status_section(ui, &status));
+    ui.div(|ui| add_ack_lobby_window(ui));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -83,6 +84,7 @@ pub(crate) fn UIPlugin(app: &mut App)
         // ui plugins
         .add_plugins(UiConnectionStatusPlugin)
         .add_plugins(UiPlaySectionPlugin)
+        .add_plugins(UiAckLobbyWindowPlugin)
 
         //.add_plugins(UIDebugOverlayPlugin)  //DEBUG ONLY
         ;

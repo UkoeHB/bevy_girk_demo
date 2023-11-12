@@ -158,7 +158,7 @@ pub struct BasicPopupPack
 ///
 /// The popup is a square with cancel and accept buttons. The button text and behavior can be customized. Pressing the
 /// cancel button will set the popup overlay visibility to `false`. You should set it to `true` manually in order to
-/// activate the popup.
+/// activate the popup. Note that the popup starts with visiblity `false`.
 ///
 /// The popup is attached to the `"root"` widget. This function will panic if the root of your main ui tree does not
 /// contain a widget with that name.

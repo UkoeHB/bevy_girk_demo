@@ -23,8 +23,6 @@ pub(crate) enum LobbyType
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Caches the currently-displayed lobby that the user is a member of.
-///
-/// This is a reactive resource.
 #[derive(ReactResource, Debug)]
 pub(crate) struct LobbyDisplay
 {
