@@ -38,6 +38,12 @@ impl ClickLobbyChecker
 
         Ok((num_players, num_watchers))
     }
+
+    pub fn can_launch_hosted(num_players: usize, min_players_to_launch: usize) -> bool
+    {
+        if num_players < min_players_to_launch { return false; }
+        true
+    }
 }
 
 impl LobbyChecker for ClickLobbyChecker
@@ -114,10 +120,7 @@ impl LobbyChecker for ClickLobbyChecker
         // count players
         let Ok((num_players, _)) = Self::count_members(&lobby.data) else { return false; };
 
-        // check config
-        if num_players < self.min_players_to_launch as usize { return false; }
-
-        true
+        Self::can_launch_hosted(num_players, self.min_players_to_launch as usize)
     }
 }
 

@@ -1,4 +1,5 @@
 //local shortcuts
+use crate::*;
 
 //third-party shortcuts
 use bevy_girk_backend_public::*;
@@ -110,6 +111,12 @@ impl ClickLobbyContents
             ClickLobbyMemberType::Player  => self.config.max_players,
             ClickLobbyMemberType::Watcher => self.config.max_watchers,
         }
+    }
+
+    /// Check if the game can be launched while hosted.
+    pub fn can_launch_hosted(&self) -> bool
+    {
+        ClickLobbyChecker::can_launch_hosted(self.players.len(), MIN_PLAYERS_TO_LAUNCH)
     }
 }
 

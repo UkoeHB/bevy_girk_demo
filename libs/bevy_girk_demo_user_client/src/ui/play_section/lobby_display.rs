@@ -563,7 +563,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let default_text = "Start";
     let button_entity = spawn_basic_button(ui, &area, default_text, start_current_lobby);
 
-    // disable button when we don't own the lobby
+    // disable button when we don't own the lobby or when the lobby is not ready to start
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
     ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
 
@@ -572,8 +572,15 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
             {
                 let enable = match display.get()
                 {
-                    Some(data) => data.owner_id == client.id(),
-                    None       => false,
+                    Some(data) =>
+                    {
+                        let owns = data.owner_id == client.id();
+                        let single_player = display.is_local();
+                        let can_launch_hosted = data.can_launch_hosted();
+
+                        owns && (single_player || can_launch_hosted)
+                    },
+                    None => false,
                 };
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }

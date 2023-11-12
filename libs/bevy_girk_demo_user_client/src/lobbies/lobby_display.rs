@@ -73,7 +73,7 @@ impl LobbyDisplay
         self.current.is_some()
     }
 
-    pub(crate) fn _is_local(&self) -> bool
+    pub(crate) fn is_local(&self) -> bool
     {
         match self.lobby_type
         {
