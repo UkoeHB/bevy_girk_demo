@@ -72,7 +72,7 @@ fn send_join_lobby_request(
     let Ok(new_req) = client.request(
             UserToHostRequest::JoinLobby{ id: lobby_id, mcolor: window.member_type.into(), pwd: window.pwd.clone() }
         )
-    else { return; };
+    else { tracing::warn!("failed sending join lobby request to host server"); return; };
 
     // save request
     let request = PendingRequest::new(new_req);
@@ -85,7 +85,7 @@ fn send_join_lobby_request(
 
 fn setup_window_reactors(
     In(popup_pack) : In<BasicPopupPack>,
-    mut ui        : UiBuilder<MainUI>,
+    mut ui         : UiBuilder<MainUI>,
     join_lobby     : Query<Entity, With<JoinLobby>>,
 ){
     let join_lobby_entity = join_lobby.single();
@@ -109,10 +109,10 @@ fn setup_window_reactors(
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
-                // do nothing if still sending
+                // log error if still sending
                 if  (req_status == bevy_simplenet::RequestStatus::Sending) ||
                     (req_status == bevy_simplenet::RequestStatus::Waiting)
-                { return; }
+                { tracing::error!("join lobby request terminated but window's cached request is still sending"); }
 
                 // close window if request succeeded
                 if req_status == bevy_simplenet::RequestStatus::Responded

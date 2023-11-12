@@ -83,7 +83,7 @@ fn send_make_lobby_request(
                     data   : ser_msg(&window.config)
                 }
         )
-    else { return; };
+    else { tracing::warn!("failed sending make lobby request to host server");  return; };
 
     // save request
     let request = PendingRequest::new(new_req);
@@ -120,10 +120,10 @@ fn setup_window_reactors(
                 let Some(req) = &window.last_req else { return; };
                 let req_status = req.status();
 
-                // do nothing if still sending
+                // log error if still sending
                 if  (req_status == bevy_simplenet::RequestStatus::Sending) ||
                     (req_status == bevy_simplenet::RequestStatus::Waiting)
-                { return; }
+                { tracing::error!("make lobby request terminated but window's cached request is still sending"); }
 
                 // handle request result
                 if req_status == bevy_simplenet::RequestStatus::Responded
@@ -136,7 +136,7 @@ fn setup_window_reactors(
                 }
                 else
                 {
-                    // remove cached request
+                    // remove cached request, we must have failed
                     window.get_mut_noreact().last_req = None;                    
                 }
 

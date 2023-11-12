@@ -76,14 +76,14 @@ fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &List
 //-------------------------------------------------------------------------------------------------------------------
 
 fn leave_current_lobby(
-    client     : Res<HostUserClient>,
-    lobby      : ReactRes<LobbyDisplay>,
-    //join_lobby : Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
+    mut rcommands : ReactCommands,
+    client        : Res<HostUserClient>,
+    lobby         : ReactRes<LobbyDisplay>,
+    leave_lobby   : Query<Entity, (With<LeaveLobby>, Without<React<PendingRequest>>)>,
 ){
-    //todo: need request/response pattern for LeaveLobby
     // check for existing request
-    //if !join_lobby.is_empty()
-    //{ tracing::warn!("ignoring leave lobby request because a request is already pending"); return }
+    let Ok(target_entity) = leave_lobby.get_single()
+    else { tracing::warn!("ignoring leave lobby request because a request is already pending"); return };
 
     // check if we are in a lobby
     let Some(lobby_id) = lobby.lobby_id()
@@ -100,8 +100,12 @@ fn leave_current_lobby(
         }
         Some(LobbyType::Hosted) =>
         {
-            if let Err(err) = client.send(UserToHostMsg::LeaveLobby{ id: lobby_id })
-            { tracing::warn!(?err, lobby_id, "failed sending leave lobby message to host server"); }
+            // send leave request
+            let Ok(new_req) = client.request(UserToHostRequest::LeaveLobby{ id: lobby_id })
+            else { tracing::warn!(lobby_id, "failed sending leave lobby request to host server"); return; };
+
+            // save request
+            rcommands.insert(target_entity, PendingRequest::new(new_req));
         }
     }
 }
@@ -110,12 +114,20 @@ fn leave_current_lobby(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn start_current_lobby(
-    client : Res<HostUserClient>,
-    lobby  : ReactRes<LobbyDisplay>,
+    mut rcommands : ReactCommands,
+    client        : Res<HostUserClient>,
+    lobby         : ReactRes<LobbyDisplay>,
+    launch_lobby  : Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
 ){
+    // check for existing request
+    let Ok(target_entity) = launch_lobby.get_single()
+    else { tracing::warn!("ignoring start lobby request because a request is pending"); return };
+
+    // check if we are in a lobby
     let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to start lobby but we aren't in a lobby"); return; };
 
+    // launch the lobby
     match lobby.lobby_type()
     {
         None => { tracing::error!("tried to start lobby but there is no lobby type"); return; }
@@ -127,10 +139,12 @@ fn start_current_lobby(
         }
         Some(LobbyType::Hosted) =>
         {
-            if let Err(err) = client.send(UserToHostMsg::LaunchLobbyGame{ id: lobby_id })
-            { tracing::warn!(?err, lobby_id, "failed sending launch lobby message to host server"); }
+            // send launch reqeust
+            let Ok(new_req) = client.request(UserToHostRequest::LaunchLobbyGame{ id: lobby_id })
+            else { tracing::warn!(lobby_id, "failed sending launch lobby request to host server"); return; };
 
-            //todo: request/response pattern? and make the start lobby button do nothing when waiting
+            // save request
+            rcommands.insert(target_entity, PendingRequest::new(new_req));
         }
     }
 }
@@ -236,6 +250,30 @@ fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
     // note: it would be more efficient to use world access directly here, but you can't have Locals in exclusive systems
     commands.add(
             move |world: &mut World| syscall(world, (content_entities, next_list_page), update_list_contents::<ListPage>)
+        );
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup_simple_button_reactors<Tag: Component>(
+    In((
+        button_entity,
+        default_text
+    ))            : In<(Entity, &'static str)>,
+    mut rcommands : ReactCommands,
+    marker        : Query<Entity, With<Tag>>,
+){
+    let marker_entity = marker.single();
+
+    // when a request starts
+    rcommands.on(entity_insertion::<PendingRequest>(marker_entity),
+            move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", "...")).unwrap()
+        );
+
+    // when a request completes
+    rcommands.on(entity_removal::<PendingRequest>(marker_entity),
+            move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", default_text)).unwrap()
         );
 }
 
@@ -492,7 +530,8 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = spawn_basic_button(ui, &area, "Leave", leave_current_lobby);
+    let default_text = "Leave";
+    let button_entity = spawn_basic_button(ui, &area, default_text, leave_current_lobby);
 
     // disable button when there is no lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
@@ -505,6 +544,14 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );
+
+    // setup button reactors
+    ui.commands().add(
+            move |world: &mut World|
+            {
+                syscall(world, (button_entity, default_text), setup_simple_button_reactors::<LeaveLobby>);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -513,7 +560,8 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // button ui
-    let button_entity = spawn_basic_button(ui, &area, "Start", start_current_lobby);
+    let default_text = "Start";
+    let button_entity = spawn_basic_button(ui, &area, default_text, start_current_lobby);
 
     // disable button when we don't own the lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
@@ -528,6 +576,14 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
                     None       => false,
                 };
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+            }
+        );
+
+    // setup button reactors
+    ui.commands().add(
+            move |world: &mut World|
+            {
+                syscall(world, (button_entity, default_text), setup_simple_button_reactors::<LaunchLobby>);
             }
         );
 }

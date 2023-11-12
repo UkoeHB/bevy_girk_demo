@@ -219,20 +219,31 @@ pub(crate) fn handle_lobby_join(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: branch on the request id if more ack-style requests are added
 pub(crate) fn handle_request_ack(
-    In(request_id) : In<u64>,
-    world          : &mut World,
+    In(request_id)   : In<u64>,
+    mut commands     : Commands,
+    pending_reset    : Res<PendingLobbyReset>,
+    pending_requests : Query<(Entity, &React<PendingRequest>)>
 ){
     tracing::info!(request_id, "request ack received");
 
-    if world.resource::<PendingLobbyReset>().matches_request(request_id)
+    // handle pending reset
+    if pending_reset.matches_request(request_id)
     {
-        syscall(world, (), handle_lobby_reset);
+        commands.add(prep_syscall((), handle_lobby_reset));
         return;
     }
 
-    tracing::warn!(request_id, "ignoring ack for unknown request");
+    // find pending request and remove it
+    //todo: consider allowing a custom callback for acks
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -259,7 +270,7 @@ pub(crate) fn handle_request_rejected(
     // handle rejected lobby reset (rejection means we are in-game)
     if pending_reset.matches_request(request_id)
     {
-        commands.add(|world: &mut World| syscall(world, (), handle_lobby_reset));
+        commands.add(prep_syscall((), handle_lobby_reset));
     }
 }
 
