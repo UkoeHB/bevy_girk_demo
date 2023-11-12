@@ -572,13 +572,17 @@ pub(crate) fn UiLobbyListPlugin(app: &mut App)
                 // - in play section
                 // - connected to host
                 //todo: not in game
-                // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
-                //   is saturated) OR the lobby display was just changed
+                // - on timer
+                //   OR just connected to host (note: test timer first to avoid double-refresh when timer
+                //      is saturated)
+                //   OR the lobby display was just changed
+                //   OR the user just toggled to the play section
                 .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
                 .run_if(|status: ReactRes<ConnectionStatus>| *status == ConnectionStatus::Connected)
                 .run_if(on_timer(lobby_list_refresh)
                     .or_else(|status: ReactRes<ConnectionStatus>| status.is_changed())
                     .or_else(|display: ReactRes<LobbyDisplay>| display.is_changed())
+                    .or_else(|play_section: Query<(), (Added<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
                 )
         )
         ;
