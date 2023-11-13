@@ -167,7 +167,6 @@ pub struct BasicPopupPack
 /// popups will NOT stack on each other properly.
 pub fn spawn_basic_popup<Marker1, Marker2>(
     ui              : &mut UiBuilder<MainUI>,
-    window_scaling  : (f32, f32),  // (% of screen width, % of screen height)
     cancel_text     : &'static str,
     accept_text     : &'static str,
     cancel_callback : impl IntoSystem<(), (), Marker1> + Send + Sync + 'static,
@@ -193,8 +192,8 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     ui.commands().spawn((barrier, UIInteractionBarrier::<MainUI>::default()));
 
     // window box
-    let xmod = window_scaling.0.max(0.).min(100.) / 2.;
-    let ymod = window_scaling.1.max(0.).min(100.) / 2.;
+    let xmod = style.proportions.x.max(0.).min(100.) / 2.;
+    let ymod = style.proportions.y.max(0.).min(100.) / 2.;
     let window = relative_widget(ui.tree(), window_overlay.end(""), (50. - xmod, 50. + xmod), (50. - ymod, 50. + ymod));
     let window_img = ImageElementBundle::new(
             &window,
@@ -209,19 +208,32 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     ui.commands().spawn((window_img, UIInteractionBarrier::<MainUI>::default()));
 
     // region for caller's content
-    let content_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (0., 82.));
+    let content_percent = style.content_percent.max(0.).min(100.);
+    let content_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (0., content_percent));
 
     // region for buttons
-    let buttons_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (82., 100.));
+    let buttons_section = relative_widget(ui.tree(), window.end(""), (0., 100.), (content_percent, 100.));
     let window_overlay_clone = window_overlay.clone();
 
+    let button_spacing = style.button_spacing;
+    let button_gap = style.button_gap;
+    let button_width = (100. - (button_spacing * 3. + button_gap)) / 2.;
+    let button_height = style.button_ratio * button_width
+        * ((100. - style.button_dead_space) / 100.)
+        / ((100. - content_percent) / 100.);
+    let button_vertical_spacing = (100. - (button_height + style.button_dead_space)) / 2.;
     let (cancel_button, cancel_entity, accept_button, accept_entity) =
     ui.div(move |ui| {
         // add button style
         ui.add(style.button.clone());
 
         // cancel button
-        let cancel_button = relative_widget(ui.tree(), buttons_section.end(""), (15., 27.), (22., 67.));
+        let cancel_button = relative_widget(
+                ui.tree(),
+                buttons_section.end(""),
+                (button_spacing, button_spacing + button_width),
+                (button_vertical_spacing, button_vertical_spacing + button_height)
+            );
         let mut cancel_callback = CallbackSystem::new(cancel_callback);
         let cancel_entity = spawn_basic_button(ui, &cancel_button, cancel_text,
                 move |world: &mut World|
@@ -232,7 +244,12 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             );
 
         // accept button
-        let accept_button = relative_widget(ui.tree(), buttons_section.end(""), (73., 85.), (22., 67.));
+        let accept_button = relative_widget(
+                ui.tree(),
+                buttons_section.end(""),
+                (100. - (button_spacing + button_width), 100. - button_spacing),
+                (button_vertical_spacing, button_vertical_spacing + button_height)
+            );
         let accept_entity = spawn_basic_button(ui, &accept_button, accept_text, accept_callback);
 
         (cancel_button, cancel_entity, accept_button, accept_entity)

@@ -95,9 +95,12 @@ fn send_make_lobby_request(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn setup_window_reactors(
-    In(popup_pack) : In<BasicPopupPack>,
-    mut ui         : UiBuilder<MainUI>,
-    make_lobby     : Query<Entity, With<MakeLobby>>,
+    In((
+        popup_pack,
+        accept_text,
+    ))         : In<(BasicPopupPack, &'static str)>,
+    mut ui     : UiBuilder<MainUI>,
+    make_lobby : Query<Entity, With<MakeLobby>>,
 ){
     let make_lobby_entity = make_lobby.single();
 
@@ -141,7 +144,7 @@ fn setup_window_reactors(
                 }
 
                 // reset accept button text
-                ui.text.write(accept_entity, 0, |text| write!(text, "{}", "Make")).unwrap();
+                ui.text.write(accept_entity, 0, |text| write!(text, "{}", accept_text)).unwrap();
             }
         );
 
@@ -317,7 +320,8 @@ pub(crate) struct ActivateMakeLobbyWindow;
 pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ui, (80., 80.), "Close", "Make", ||(), send_make_lobby_request);
+    let accept_text = "Make";
+    let popup_pack = spawn_basic_popup(ui, "Close", accept_text, ||(), send_make_lobby_request);
 
     // add window contents
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
@@ -332,7 +336,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
         );
 
     // setup window reactors
-    ui.commands().add(move |world: &mut World| syscall(world, popup_pack, setup_window_reactors));
+    ui.commands().add(move |world: &mut World| syscall(world, (popup_pack, accept_text), setup_window_reactors));
 
     // initialize ui
     ui.rcommands.trigger_resource_mutation::<MakeLobbyWindow>();

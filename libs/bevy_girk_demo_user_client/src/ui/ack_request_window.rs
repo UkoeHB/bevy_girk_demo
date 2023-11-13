@@ -106,11 +106,11 @@ fn add_timer(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // title
-    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (15., 35.));
+    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (20., 40.));
     ui.div(|ui| add_window_title(ui, &title_area));
 
     // timer
-    let timer_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (50., 80.));
+    let timer_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (57., 87.));
     ui.div(|ui| add_timer(ui, &timer_area));
 }
 
@@ -120,7 +120,15 @@ fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let popup_pack = spawn_basic_popup(ui, (70., 50.), "Reject", "Accept", send_lobby_nack, send_lobby_ack);
+    let mut popup_style = ui.get_clone::<BasicPopup>().unwrap();
+    popup_style.proportions = Vec2{ x: 70., y: 50. };
+    popup_style.content_percent = 65.;
+    popup_style.button_ratio = 0.85;
+    popup_style.button_gap = 5.;
+    popup_style.button_dead_space = popup_style.button_dead_space + 5.;
+    ui.add(popup_style);
+
+    let popup_pack = spawn_basic_popup(ui, "Reject", "Accept", send_lobby_nack, send_lobby_ack);
 
     // add window contents
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
