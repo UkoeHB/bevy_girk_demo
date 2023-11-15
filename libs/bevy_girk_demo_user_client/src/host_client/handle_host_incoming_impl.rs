@@ -14,31 +14,36 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_lobby_reset(
+fn remove_failed_pending_request(
+    commands         : &mut Commands,
+    request_id       : u64,
+    pending_requests : &Query<(Entity, &React<PendingRequest>)>
+){
+    for (entity, pending_req) in pending_requests.iter()
+    {
+        if pending_req.id() != request_id { continue; }
+        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
+
+        entity_commands.remove::<React<PendingRequest>>();
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn handle_connection_lost(
     mut rcommands     : ReactCommands,
-    client            : Res<HostUserClient>,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
-    mut pending_reset : ResMut<PendingLobbyReset>,
-    lobby_search      : Query<Entity, With<LobbySearch>>,
-    lobby_page_req    : ReactRes<LobbyPageRequest>,
 ){
-    // clear pending reset
-    pending_reset.clear();
-
     // clear lobby display if hosted
     if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear() };
 
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
-
-    // re-request the last-requested lobby page
-    // - do this even if there is a pending lobby page request in case it failed
-    let entity = lobby_search.single();
-    rerequest_latest_lobby_page(&mut rcommands, &client, entity, &lobby_page_req);
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_state_update(
@@ -221,28 +226,13 @@ pub(crate) fn handle_lobby_join(
 pub(crate) fn handle_request_ack(
     In(request_id)   : In<u64>,
     mut commands     : Commands,
-    pending_reset    : Res<PendingLobbyReset>,
     pending_requests : Query<(Entity, &React<PendingRequest>)>
 ){
     tracing::info!(request_id, "request ack received");
 
-    // handle pending reset
-    if pending_reset.matches_request(request_id)
-    {
-        commands.add(prep_syscall((), handle_lobby_reset));
-        return;
-    }
-
     // find pending request and remove it
     //todo: consider allowing a custom callback for acks
-    for (entity, pending_req) in pending_requests.iter()
-    {
-        if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
-
-        entity_commands.remove::<React<PendingRequest>>();
-        break;
-    }
+    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -250,27 +240,13 @@ pub(crate) fn handle_request_ack(
 pub(crate) fn handle_request_rejected(
     In(request_id)   : In<u64>,
     mut commands     : Commands,
-    pending_reset    : Res<PendingLobbyReset>,
     pending_requests : Query<(Entity, &React<PendingRequest>)>
 ){
     tracing::info!(request_id, "request rejection received");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for rejections
-    for (entity, pending_req) in pending_requests.iter()
-    {
-        if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
-
-        entity_commands.remove::<React<PendingRequest>>();
-        break;
-    }
-
-    // handle rejected lobby reset (rejection means we are in-game)
-    if pending_reset.matches_request(request_id)
-    {
-        commands.add(prep_syscall((), handle_lobby_reset));
-    }
+    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -284,14 +260,7 @@ pub(crate) fn handle_send_failed(
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for failed sends
-    for (entity, pending_req) in pending_requests.iter()
-    {
-        if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
-
-        entity_commands.remove::<React<PendingRequest>>();
-        break;
-    }
+    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -305,14 +274,7 @@ pub(crate) fn handle_response_lost(
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for lost responses
-    for (entity, pending_req) in pending_requests.iter()
-    {
-        if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
-
-        entity_commands.remove::<React<PendingRequest>>();
-        break;
-    }
+    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -326,14 +288,7 @@ pub(crate) fn handle_request_aborted(
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for lost responses
-    for (entity, pending_req) in pending_requests.iter()
-    {
-        if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = commands.get_entity(entity) else { continue; };
-
-        entity_commands.remove::<React<PendingRequest>>();
-        break;
-    }
+    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

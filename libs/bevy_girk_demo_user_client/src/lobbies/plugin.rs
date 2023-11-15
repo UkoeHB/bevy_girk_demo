@@ -17,7 +17,6 @@ pub(crate) fn LobbiesPlugin(app: &mut App)
         .add_plugins(AckRequestPlugin)
         .add_plugins(LobbyDisplayPlugin)
         .add_plugins(LobbyPagePlugin)
-        .add_plugins(PendingLobbyResetPlugin)
         ;
 }
 

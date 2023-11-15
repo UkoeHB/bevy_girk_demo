@@ -13,23 +13,20 @@ use bevy_simplenet::ClientReport;
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_connection_change(
-    In(report)        : In<ClientReport>,
-    mut rcommands     : ReactCommands,
-    client            : Res<HostUserClient>,
-    mut status        : ReactResMut<ConnectionStatus>,
-    mut pending_reset : ResMut<PendingLobbyReset>,
+    In(report)    : In<ClientReport>,
+    mut rcommands : ReactCommands,
+    mut status    : ReactResMut<ConnectionStatus>,
 ){
     match report
     {
-        ClientReport::Connected         =>
-        {
-            *status.get_mut(&mut rcommands) = ConnectionStatus::Connected;
-            let Ok(signal) = client.request(UserToHostRequest::ResetLobby) else { return; };
-            pending_reset.set(signal.id());
-        },
+        ClientReport::Connected => *status.get_mut(&mut rcommands) = ConnectionStatus::Connected,
         ClientReport::Disconnected      |
         ClientReport::ClosedByServer(_) |
-        ClientReport::ClosedBySelf      => *status.get_mut(&mut rcommands) = ConnectionStatus::Connecting,
+        ClientReport::ClosedBySelf      =>
+        {
+            *status.get_mut(&mut rcommands) = ConnectionStatus::Connecting;
+            rcommands.commands().add(prep_syscall((), handle_connection_lost));
+        }
         ClientReport::IsDead(aborted_reqs) =>
         {
             *status.get_mut(&mut rcommands) = ConnectionStatus::Dead;
@@ -37,6 +34,7 @@ pub(crate) fn handle_connection_change(
             {
                 rcommands.commands().add(prep_syscall(aborted_req, handle_request_aborted));
             }
+            rcommands.commands().add(prep_syscall((), handle_connection_lost));
         }
     }
 }
