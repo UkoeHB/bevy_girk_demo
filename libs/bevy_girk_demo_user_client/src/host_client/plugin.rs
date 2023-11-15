@@ -19,7 +19,6 @@ pub(crate) fn HostClientPlugin(app: &mut App)
         .add_react_event::<bevy_girk_game_fw::GameOverReport>()
         .add_systems(First,
             (
-                handle_connection_changes,
                 handle_host_incoming,
                 react_to_all_removals_and_despawns,
             ).chain()

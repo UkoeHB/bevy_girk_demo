@@ -5,47 +5,73 @@ use crate::*;
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_kot::prelude::*;
+use bevy_simplenet::ClientReport;
 
 //standard shortcuts
 
 
 //-------------------------------------------------------------------------------------------------------------------
 
+pub(crate) fn handle_connection_change(
+    In(report)        : In<ClientReport>,
+    mut rcommands     : ReactCommands,
+    client            : Res<HostUserClient>,
+    mut status        : ReactResMut<ConnectionStatus>,
+    mut pending_reset : ResMut<PendingLobbyReset>,
+){
+    match report
+    {
+        ClientReport::Connected         =>
+        {
+            *status.get_mut(&mut rcommands) = ConnectionStatus::Connected;
+            let Ok(signal) = client.request(UserToHostRequest::ResetLobby) else { return; };
+            pending_reset.set(signal.id());
+        },
+        ClientReport::Disconnected      |
+        ClientReport::ClosedByServer(_) |
+        ClientReport::ClosedBySelf      => *status.get_mut(&mut rcommands) = ConnectionStatus::Connecting,
+        ClientReport::IsDead(aborted_reqs) =>
+        {
+            *status.get_mut(&mut rcommands) = ConnectionStatus::Dead;
+            for aborted_req in aborted_reqs
+            {
+                rcommands.commands().add(prep_syscall(aborted_req, handle_request_aborted));
+            }
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 pub(crate) fn handle_host_incoming(world: &mut World)
 {
-    while let Some(server_val) = world.resource::<HostUserClient>().next_val()
+    while let Some(client_event) = world.resource::<HostUserClient>().next()
     {
-        match server_val
+        match client_event
         {
-            HostUserServerVal::Msg(msg) =>
+            HostUserClientEvent::Report(report) => syscall(world, report, handle_connection_change),
+            HostUserClientEvent::Msg(msg) => match msg
             {
-                match msg
-                {
-                    HostToUserMsg::LobbyState{ lobby }          => syscall(world, lobby, handle_lobby_state_update),
-                    HostToUserMsg::LobbyLeave{ id }             => syscall(world, id, handle_lobby_leave),
-                    HostToUserMsg::PendingLobbyAckRequest{ id } => syscall(world, id, handle_pending_lobby_ack_request),
-                    HostToUserMsg::PendingLobbyAckFail{ id }    => syscall(world, id, handle_pending_lobby_ack_fail),
-                    HostToUserMsg::GameStart{ id, connect }     => syscall(world, (id, connect), handle_game_start),
-                    HostToUserMsg::GameAborted{ id }            => syscall(world, id, handle_game_aborted),
-                    HostToUserMsg::GameOver{ id, report }       => syscall(world, (id, report), handle_game_over),
-                }
+                HostToUserMsg::LobbyState{ lobby }          => syscall(world, lobby, handle_lobby_state_update),
+                HostToUserMsg::LobbyLeave{ id }             => syscall(world, id, handle_lobby_leave),
+                HostToUserMsg::PendingLobbyAckRequest{ id } => syscall(world, id, handle_pending_lobby_ack_request),
+                HostToUserMsg::PendingLobbyAckFail{ id }    => syscall(world, id, handle_pending_lobby_ack_fail),
+                HostToUserMsg::GameStart{ id, connect }     => syscall(world, (id, connect), handle_game_start),
+                HostToUserMsg::GameAborted{ id }            => syscall(world, id, handle_game_aborted),
+                HostToUserMsg::GameOver{ id, report }       => syscall(world, (id, report), handle_game_over),
             }
-            HostUserServerVal::Response(resp, request_id) =>
+            HostUserClientEvent::Response(resp, request_id) => match resp
             {
-                match resp
+                HostToUserResponse::LobbySearchResult(result) =>
                 {
-                    HostToUserResponse::LobbySearchResult(result) =>
-                    {
-                        syscall(world, (request_id, result), handle_lobby_search_result);
-                    }
-                    HostToUserResponse::LobbyJoin{ lobby } => syscall(world, (request_id, lobby), handle_lobby_join),
+                    syscall(world, (request_id, result), handle_lobby_search_result);
                 }
+                HostToUserResponse::LobbyJoin{ lobby } => syscall(world, (request_id, lobby), handle_lobby_join),
             }
-            HostUserServerVal::Ack(request_id)          => syscall(world, request_id, handle_request_ack),
-            HostUserServerVal::Reject(request_id)       => syscall(world, request_id, handle_request_rejected),
-            HostUserServerVal::SendFailed(request_id)   => syscall(world, request_id, handle_send_failed),
-            HostUserServerVal::ResponseLost(request_id) => syscall(world, request_id, handle_response_lost),
-            HostUserServerVal::Aborted(request_id)      => syscall(world, request_id, handle_request_aborted),
+            HostUserClientEvent::Ack(request_id)          => syscall(world, request_id, handle_request_ack),
+            HostUserClientEvent::Reject(request_id)       => syscall(world, request_id, handle_request_rejected),
+            HostUserClientEvent::SendFailed(request_id)   => syscall(world, request_id, handle_send_failed),
+            HostUserClientEvent::ResponseLost(request_id) => syscall(world, request_id, handle_response_lost),
         }
     }
 }
