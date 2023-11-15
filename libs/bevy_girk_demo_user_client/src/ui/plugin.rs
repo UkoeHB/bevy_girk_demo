@@ -16,7 +16,7 @@ use bevy_lunex::prelude::*;
 fn build_ui(mut ui: UiBuilder<MainUI>)
 {
     // set base styles
-    ui.add(PrefabStyles::default());
+    ui.add_style(PrefabStyles::default());
 
     // root widget
     let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));

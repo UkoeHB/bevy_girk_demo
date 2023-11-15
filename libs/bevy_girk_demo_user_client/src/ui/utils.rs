@@ -192,7 +192,7 @@ impl<'w, 's, Ui: LunexUI> UiUtils<'w, 's, Ui>
         else { tracing::error!("text entity is missing in toggle button availability"); return; };
 
         // get style for the text based on availability
-        let availability_style = self.builder.get::<BasicButtonAvailability>().unwrap();
+        let availability_style = self.builder.get_style::<BasicButtonAvailability>().unwrap();
 
         // update text color
         match enable

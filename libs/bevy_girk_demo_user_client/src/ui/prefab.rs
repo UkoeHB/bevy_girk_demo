@@ -19,7 +19,7 @@ pub fn spawn_basic_text(
     initial_text : &str,
 ) -> Entity
 {
-    let style = ui.get::<BasicText>().unwrap();
+    let style = ui.get_style::<BasicText>().unwrap();
 
     let text_style = TextStyle {
             font      : ui.asset_server.load(style.font),
@@ -78,7 +78,7 @@ pub fn spawn_basic_button<Marker>(
     unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
 ) -> Entity
 {
-    let style = ui.get::<BasicButton>().unwrap();
+    let style = ui.get_style::<BasicButton>().unwrap();
 
     // add default button image
     let default_button = make_overlay(ui.tree(), &button_overlay, "", true);
@@ -173,7 +173,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     accept_callback : impl IntoSystem<(), (), Marker2> + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
-    let style = ui.get::<BasicPopup>().unwrap();
+    let style = ui.get_style::<BasicPopup>().unwrap();
 
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);
@@ -225,7 +225,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     let (cancel_button, cancel_entity, accept_button, accept_entity) =
     ui.div(move |ui| {
         // add button style
-        ui.add(style.button.clone());
+        ui.add_style(style.button.clone());
 
         // cancel button
         let cancel_button = relative_widget(

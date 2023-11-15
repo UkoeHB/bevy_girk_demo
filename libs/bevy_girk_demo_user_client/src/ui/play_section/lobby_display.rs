@@ -283,7 +283,7 @@ fn setup_simple_button_reactors<Tag: Component>(
 fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // spawn text
     let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));

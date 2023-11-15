@@ -272,7 +272,7 @@ fn open_make_lobby_window(mut rcommands: ReactCommands)
 fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (20., 80.), (40., 70.));
@@ -288,7 +288,7 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let overlay = make_overlay(ui.tree(), &area, "", false);
 
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // indicator text
     let text = relative_widget(ui.tree(), overlay.end(""), (5., 98.), (15., 95.));

@@ -83,7 +83,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
     entity_commands.insert(MainMenuButton);
 
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // add button text
     let text = make_overlay(ui.tree(), button, "", true);
@@ -105,7 +105,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
 fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // spawn text
     let text = relative_widget(ui.tree(), area.end(""), (40., 60.), (40., 60.));
@@ -118,7 +118,7 @@ fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 {
     // set text style
-    ui.add(basic_text_default_light_style());
+    ui.add_style(basic_text_default_light_style());
 
     // spawn text
     let text = relative_widget(ui.tree(), area.end(""), (40., 60.), (40., 60.));

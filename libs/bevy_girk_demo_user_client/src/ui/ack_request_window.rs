@@ -120,13 +120,16 @@ fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUI>)
 {
     // spawn window
-    let mut popup_style = ui.get_clone::<BasicPopup>().unwrap();
-    popup_style.proportions = Vec2{ x: 70., y: 50. };
-    popup_style.content_percent = 65.;
-    popup_style.button_ratio = 0.85;
-    popup_style.button_gap = 5.;
-    popup_style.button_dead_space = popup_style.button_dead_space + 5.;
-    ui.add(popup_style);
+    ui.edit_style::<BasicPopup>(
+            |popup_style|
+            {
+                popup_style.proportions       = Vec2{ x: 70., y: 50. };
+                popup_style.content_percent   = 65.;
+                popup_style.button_ratio      = 0.85;
+                popup_style.button_gap        = 5.;
+                popup_style.button_dead_space = popup_style.button_dead_space + 5.;
+            }
+        ).unwrap();
 
     let popup_pack = spawn_basic_popup(ui, "Reject", "Accept", send_lobby_nack, send_lobby_ack);
 
