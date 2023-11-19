@@ -341,7 +341,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
         // button
         let join_button_area = relative_widget(ui.tree(), content_widget.end(""), (80., 98.), (y_start + 0.5, y_end - 0.5));
-        spawn_basic_button(ui, &join_button_area, "Join", prep_syscall(i, open_join_lobby_window));
+        spawn_basic_button(ui, &join_button_area, "Join", prep_fncall(i, open_join_lobby_window));
 
         // save this entry
         contents.push((content_entity, content_widget));
@@ -350,7 +350,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    ui.rcommands.on(resource_mutation::<LobbyPage>(), prep_syscall(contents, update_lobby_list_contents));
+    ui.rcommands.on(resource_mutation::<LobbyPage>(), prep_fncall(contents, update_lobby_list_contents));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

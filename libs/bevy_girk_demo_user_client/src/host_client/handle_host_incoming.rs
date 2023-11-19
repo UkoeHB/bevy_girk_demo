@@ -25,16 +25,16 @@ pub(crate) fn handle_connection_change(
         ClientReport::ClosedBySelf      =>
         {
             *status.get_mut(&mut rcommands) = ConnectionStatus::Connecting;
-            rcommands.commands().add(prep_syscall((), handle_connection_lost));
+            rcommands.commands().add(prep_fncall((), handle_connection_lost));
         }
         ClientReport::IsDead(aborted_reqs) =>
         {
             *status.get_mut(&mut rcommands) = ConnectionStatus::Dead;
             for aborted_req in aborted_reqs
             {
-                rcommands.commands().add(prep_syscall(aborted_req, handle_request_aborted));
+                rcommands.commands().add(prep_fncall(aborted_req, handle_request_aborted));
             }
-            rcommands.commands().add(prep_syscall((), handle_connection_lost));
+            rcommands.commands().add(prep_fncall((), handle_connection_lost));
         }
     }
 }

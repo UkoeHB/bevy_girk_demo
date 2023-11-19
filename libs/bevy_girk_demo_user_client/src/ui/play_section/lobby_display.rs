@@ -472,7 +472,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>
     // update the contents when the lobby display changes
     let content_entities_clone = content_entities.clone();
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            prep_syscall(content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
+            prep_fncall(content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
 
     // paginate left button (bottom left corner)

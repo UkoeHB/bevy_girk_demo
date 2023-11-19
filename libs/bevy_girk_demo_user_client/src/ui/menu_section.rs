@@ -72,7 +72,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Wi
         .with_selected_widget(selected_button)
         .select_on_click()
         .on_select(
-            prep_syscall((button_entity, overlay.clone()), activate_new_selection::<MainUi>)
+            prep_fncall((button_entity, overlay.clone()), activate_new_selection::<MainUi>)
         )
         .on_deselect(
             move |mut ui: UiUtils<MainUi>| ui.toggle(false, &overlay_clone)

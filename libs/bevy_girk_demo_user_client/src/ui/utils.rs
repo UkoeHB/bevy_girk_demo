@@ -12,23 +12,6 @@ use bevy_lunex::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Wrap a system in a system that consumes the system input.
-///
-/// This is intended to wrap `FnMut` systems. Do not use it if you have a `FnOnce` callback, for example when
-/// adding a one-off callback via `Command::add()`, because the input value and system will be unnecessarily cloned.
-pub fn prep_syscall<I, O, Marker>(
-    input  : I,
-    system : impl IntoSystem<I, O, Marker> + Send + Sync + 'static + Clone
-) -> impl Fn(&mut World) -> O + Send + Sync + 'static
-where
-    I: Send + Sync + 'static + Clone,
-    O: Send + Sync + 'static,
-{
-    move |world: &mut World| syscall(world, input.clone(), system.clone())
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Toggle a button's availability by showing/hiding a widget that blocks the button, and toggling the button label's
 /// font color.
 pub fn toggle_button_availability(

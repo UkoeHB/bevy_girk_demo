@@ -211,10 +211,10 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUi>, button: &Widget, area_
         .with_selected_widget(selected_button_overlay)
         .select_on_click()
         .on_select(
-            prep_syscall((MainUi, [area_overlay.clone()], []), toggle_ui_visibility)
+            prep_fncall((MainUi, [area_overlay.clone()], []), toggle_ui_visibility)
         )
         .on_deselect(
-            prep_syscall((MainUi, [], [area_overlay.clone()]), toggle_ui_visibility)
+            prep_fncall((MainUi, [], [area_overlay.clone()]), toggle_ui_visibility)
         )
         .build::<MouseLButtonMain>(&despawner, &mut entity_commands, button.clone())
         .unwrap();
