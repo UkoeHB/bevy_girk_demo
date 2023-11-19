@@ -280,7 +280,7 @@ fn setup_simple_button_reactors<Tag: Component>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_display_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());
@@ -293,7 +293,7 @@ fn add_lobby_display_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // add text to summary box (center)
     let text = relative_widget(ui.tree(), area.end(""), (5., 95.), (15., 97.5));
@@ -322,7 +322,7 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // outline for header
     spawn_plain_outline(ui, area.clone(), None);
@@ -365,7 +365,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_display_list_page_left_button<ListPage: ListPageTrait>(
-    ui       : &mut UiBuilder<MainUI>,
+    ui       : &mut UiBuilder<MainUi>,
     area     : &Widget,
     entities : &Arc<Vec<Entity>>,
 ){
@@ -388,10 +388,10 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 
     // disable button when the page number is zero
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
-            move |mut ui: UiUtils<MainUI>, page: ReactRes<ListPage>|
+            move |mut ui: UiUtils<MainUi>, page: ReactRes<ListPage>|
             {
                 let enable = page.get() != 0;
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -403,7 +403,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_display_list_page_right_button<ListPage: ListPageTrait>(
-    ui       : &mut UiBuilder<MainUI>,
+    ui       : &mut UiBuilder<MainUi>,
     area     : &Widget,
     entities : &Arc<Vec<Entity>>,
 ){
@@ -426,10 +426,10 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 
     // disable button when the page number is maxed
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
-            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>, page: ReactRes<ListPage>|
+            move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, page: ReactRes<ListPage>|
             {
                 let enable = !page_is_maxed(&display, &*page);
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -440,7 +440,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // prepare content widgets
     let mut content_entities = Vec::with_capacity(NUM_LOBBY_CONTENT_ENTRIES);
@@ -487,7 +487,7 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // box for entire area
     spawn_plain_box(ui, area.clone(), None);
@@ -504,7 +504,7 @@ fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUI>, a
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_display_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // box for entire display
     //todo: it's better to place a box for the summary box area, but the box image gets too stretched
@@ -527,7 +527,7 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_leave_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     let default_text = "Leave";
@@ -535,10 +535,10 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when there is no lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>|
+            move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
             {
                 let enable = display.is_set();
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -557,7 +557,7 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     let default_text = "Start";
@@ -565,10 +565,10 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when we don't own the lobby or when the lobby is not ready to start
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>|
+            move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>|
             {
                 let enable = match display.get()
                 {
@@ -598,7 +598,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_buttons(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_buttons(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // overlay
     let buttons_overlay = relative_widget(ui.tree(), area.end(""), (10., 90.), (10., 90.));
@@ -621,7 +621,7 @@ fn add_lobby_buttons(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUI>, area: &Widget)
+pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title
     let lobby_display_title = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 15.));

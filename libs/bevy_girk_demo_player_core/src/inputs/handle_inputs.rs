@@ -5,7 +5,6 @@ use bevy_girk_demo_game_core::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_girk_utils::*;
 use bevy_kot::prelude::*;
 
 //standard shortcuts
@@ -17,9 +16,9 @@ fn process_player_client_inputs<F>(world: &mut World, handler: F)
 where
     F: Fn(&mut World, &PlayerClientInput)
 {
-    let Some(player_inputs) = world.remove_resource::<MessageReceiver<PlayerClientInput>>() else { return; };
+    let Some(player_inputs) = world.remove_resource::<Receiver<PlayerClientInput>>() else { return; };
 
-    while let Some(input) = player_inputs.try_get_next()
+    while let Some(input) = player_inputs.try_recv()
     {
         handler(world, &input);
     }

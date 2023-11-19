@@ -13,7 +13,7 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn build_ui(mut ui: UiBuilder<MainUI>)
+fn build_ui(mut ui: UiBuilder<MainUi>)
 {
     // set base styles
     ui.add_style(PrefabStyles::default());
@@ -24,11 +24,11 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
     // root zones
     // - play button (top left)
     let play_button = relative_widget(ui.tree(), root.end("play_button"), (0., 20.), (0., 10.));
-    ui.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // - menu bar (center top)
     let menu_bar = relative_widget(ui.tree(), root.end("menu_bar"), (20., 90.), (0., 10.));
-    ui.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // - add separators
     //todo: this is very janky
@@ -39,7 +39,7 @@ fn build_ui(mut ui: UiBuilder<MainUI>)
 
     // - menu item overlay area (everything below the menu bar)
     let menu_overlay = relative_widget(ui.tree(), root.end("menu_overlay"), (0., 100.), (10., 100.));
-    ui.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // - connection status (upper right corner)
     let status = relative_widget(ui.tree(), root.end("status"), (90., 100.), (0., 10.));
@@ -65,8 +65,8 @@ fn setup_ui(mut commands: Commands)
     commands.spawn((bevy_lunex::prelude::Cursor::new(0.0), Transform::default(), MainMouseCursor));
 
     // add new ui tree to ecs
-    commands.insert_resource(StyleStackRes::<MainUI>::default());
-    commands.spawn((UiTree::new("ui"), MainUI));
+    commands.insert_resource(StyleStackRes::<MainUi>::default());
+    commands.spawn((UiTree::new("ui"), MainUi));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

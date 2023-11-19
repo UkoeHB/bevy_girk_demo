@@ -37,9 +37,9 @@ pub fn toggle_button_availability(
         button_blocker,
         text_entity,
     ))             : In<(bool, Widget, Entity)>,
-    mut uis        : Query<&mut UiTree, With<MainUI>>,
+    mut uis        : Query<&mut UiTree, With<MainUi>>,
     mut text_query : Query<&mut Text>,
-    style_stack    : Res<StyleStackRes<MainUI>>,
+    style_stack    : Res<StyleStackRes<MainUi>>,
 ){
     // toggle visibility of button blocker
     let Ok(mut ui) = uis.get_single_mut()
@@ -131,13 +131,13 @@ impl<'w, 's> TextHandle<'w, 's>
 /// Helper system param for interacting with a `UiTree`.
 //todo: handle multiple uis (pass in UI entity)?
 #[derive(SystemParam)]
-pub struct UiUtils<'w, 's, Ui: LunexUI>
+pub struct UiUtils<'w, 's, Ui: LunexUi>
 {
     pub builder: UiBuilder<'w, 's, Ui>,
     pub text: TextHandle<'w, 's>,
 }
 
-impl<'w, 's, Ui: LunexUI> UiUtils<'w, 's, Ui>
+impl<'w, 's, Ui: LunexUi> UiUtils<'w, 's, Ui>
 {
     /// Toggle visibility of a single widget.
     ///

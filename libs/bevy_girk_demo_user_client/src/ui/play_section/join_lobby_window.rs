@@ -88,7 +88,7 @@ fn setup_window_reactors(
         popup_pack,
         accept_text,
     ))         : In<(BasicPopupPack, &'static str)>,
-    mut ui     : UiBuilder<MainUI>,
+    mut ui     : UiBuilder<MainUi>,
     join_lobby : Query<Entity, With<JoinLobby>>,
 ){
     let join_lobby_entity = join_lobby.single();
@@ -106,7 +106,7 @@ fn setup_window_reactors(
     // when a join-lobby request completes
     let window_overlay = popup_pack.window_overlay;
     ui.rcommands.on(entity_removal::<PendingRequest>(join_lobby_entity),
-            move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<JoinLobbyWindow>|
+            move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<JoinLobbyWindow>|
             {
                 // access the window state
                 let Some(req) = &window.last_req else { return; };
@@ -135,7 +135,7 @@ fn setup_window_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -152,7 +152,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_subtitle(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // add text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -188,7 +188,7 @@ fn add_subtitle(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_member_type_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_member_type_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
@@ -207,7 +207,7 @@ fn add_member_type_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
@@ -226,7 +226,7 @@ fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title
     let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
@@ -260,7 +260,7 @@ pub(crate) struct ActivateJoinLobbyWindow
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
+pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUi>)
 {
     // spawn window
     let accept_text = "Join";
@@ -275,7 +275,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUI>)
             move
             |
                 mut events : ReactEvents<ActivateJoinLobbyWindow>,
-                mut ui     : UiUtils<MainUI>,
+                mut ui     : UiUtils<MainUi>,
                 lobby_page : ReactRes<LobbyPage>,
                 mut window : ReactResMut<JoinLobbyWindow>
             |

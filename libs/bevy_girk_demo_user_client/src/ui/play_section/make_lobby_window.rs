@@ -99,7 +99,7 @@ fn setup_window_reactors(
         popup_pack,
         accept_text,
     ))         : In<(BasicPopupPack, &'static str)>,
-    mut ui     : UiBuilder<MainUI>,
+    mut ui     : UiBuilder<MainUi>,
     make_lobby : Query<Entity, With<MakeLobby>>,
 ){
     let make_lobby_entity = make_lobby.single();
@@ -117,7 +117,7 @@ fn setup_window_reactors(
     // when a request completes
     let window_overlay = popup_pack.window_overlay;
     ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
-            move |mut ui: UiUtils<MainUI>, mut window: ReactResMut<MakeLobbyWindow>|
+            move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>|
             {
                 // access the window state
                 let Some(req) = &window.last_req else { return; };
@@ -151,11 +151,11 @@ fn setup_window_reactors(
     // prepare blocker for make button
     let accept_disable = make_overlay(ui.tree(), &popup_pack.accept_button, "", false);
     let accept_entity = popup_pack.accept_entity;
-    ui.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // disable 'make' button when disconnected and configs are non-local
     let make_button_disabler =
-        move |mut ui: UiUtils<MainUI>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
+        move |mut ui: UiUtils<MainUi>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
         {
             let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
             ui.toggle_basic_button(enable, &accept_disable, accept_entity);
@@ -168,7 +168,7 @@ fn setup_window_reactors(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -185,7 +185,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_join_as_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
@@ -204,7 +204,7 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
@@ -224,7 +224,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
@@ -243,7 +243,7 @@ fn add_password_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // single-player text
     let sp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -271,7 +271,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
     let sp_widgets = [sp_text];
     let mp_widgets = [mp_text];
     ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(),
-            move |mut ui: UiUtils<MainUI>, window: ReactRes<MakeLobbyWindow>|
+            move |mut ui: UiUtils<MainUi>, window: ReactRes<MakeLobbyWindow>|
             {
                 match window.is_single_player()
                 {
@@ -285,7 +285,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title
     let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
@@ -317,7 +317,7 @@ pub(crate) struct ActivateMakeLobbyWindow;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
+pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 {
     // spawn window
     let accept_text = "Make";
@@ -329,7 +329,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUI>)
     // open window when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
     ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
-            move |mut ui: UiUtils<MainUI>|
+            move |mut ui: UiUtils<MainUi>|
             {
                 ui.toggle(true, &window_overlay);
             }

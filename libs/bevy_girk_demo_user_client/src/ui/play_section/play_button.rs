@@ -39,7 +39,7 @@ fn setup(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_play_button(
-    ui                      : &mut UiBuilder<MainUI>,
+    ui                      : &mut UiBuilder<MainUi>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
@@ -94,7 +94,7 @@ fn make_play_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_in_lobby_button(
-    ui                      : &mut UiBuilder<MainUI>,
+    ui                      : &mut UiBuilder<MainUi>,
     button                  : &Widget,
     default_button_overlay  : &Widget,
     selected_button_overlay : &Widget,
@@ -191,7 +191,7 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_overlay: &Widget) -> Entity
+pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUi>, button: &Widget, area_overlay: &Widget) -> Entity
 {
     // prepare overlays for controlling visibility
     let default_button_overlay = make_overlay(ui.tree(), button, "default", true);
@@ -202,6 +202,7 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
     let inlobby_pack = ui.div(|ui| make_in_lobby_button(ui, button, &default_button_overlay, &selected_button_overlay));
 
     // build the button
+    let despawner = ui.despawner.clone();
     let mut entity_commands = ui.commands().spawn_empty();
     let button_entity = entity_commands.id();
 
@@ -210,12 +211,12 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
         .with_selected_widget(selected_button_overlay)
         .select_on_click()
         .on_select(
-            prep_syscall((MainUI, [area_overlay.clone()], []), toggle_ui_visibility)
+            prep_syscall((MainUi, [area_overlay.clone()], []), toggle_ui_visibility)
         )
         .on_deselect(
-            prep_syscall((MainUI, [], [area_overlay.clone()]), toggle_ui_visibility)
+            prep_syscall((MainUi, [], [area_overlay.clone()]), toggle_ui_visibility)
         )
-        .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
+        .build::<MouseLButtonMain>(&despawner, &mut entity_commands, button.clone())
         .unwrap();
 
     // toggle play callback
@@ -230,11 +231,11 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUI>, button: &Widget, area_
                 {
                     MainPlayButton::Play =>
                     {
-                        syscall(world, (MainUI, play_pack.clone(), inlobby_pack.clone()), toggle_ui_visibility);
+                        syscall(world, (MainUi, play_pack.clone(), inlobby_pack.clone()), toggle_ui_visibility);
                     }
                     MainPlayButton::InLobby =>
                     {
-                        syscall(world, (MainUI, inlobby_pack.clone(), play_pack.clone()), toggle_ui_visibility);
+                        syscall(world, (MainUi, inlobby_pack.clone(), play_pack.clone()), toggle_ui_visibility);
                     }
                 };
             }

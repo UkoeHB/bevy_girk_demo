@@ -16,7 +16,7 @@ use bevy_girk_demo_game_core::*;
 //third-party shortcuts
 use bevy::{prelude::*, app::PluginGroupBuilder};
 use bevy_girk_client_fw::*;
-use bevy_girk_utils::*;
+use bevy_kot::prelude::*;
 use bevy_fn_plugin::*;
 
 //standard shortcuts
@@ -41,7 +41,7 @@ fn prestartup_check(world: &World)
     // check for expected resources
     if !world.contains_resource::<ClickPlayerInitializer>()
     { panic!("ClickPlayerInitializer is missing on startup!"); }
-    if !world.contains_resource::<MessageReceiver<PlayerInput>>()
+    if !world.contains_resource::<Receiver<PlayerInput>>()
     { panic!("MessageReceiver<PlayerInput> is missing on startup!"); }
 
     check_client_framework_consistency(world.resource::<ClientFWConfig>(), world.resource::<ClickPlayerInitializer>());

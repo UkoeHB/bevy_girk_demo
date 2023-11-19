@@ -12,7 +12,7 @@ use std::fmt::Write;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUI>, area: &Widget)
+pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());

@@ -13,7 +13,7 @@ use bevy_lunex::prelude::*;
 
 /// The text style of `params` will be overwritten.
 pub fn spawn_basic_text(
-    ui           : &mut UiBuilder<MainUI>,
+    ui           : &mut UiBuilder<MainUi>,
     widget       : Widget,
     params       : TextParams,
     initial_text : &str,
@@ -35,7 +35,7 @@ pub fn spawn_basic_text(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
@@ -53,7 +53,7 @@ pub fn spawn_plain_box(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Option<f32>) -> Entity
 {
     let image = ImageElementBundle::new(
             &widget,
@@ -72,7 +72,7 @@ pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUI>, widget: Widget, depth: Op
 //-------------------------------------------------------------------------------------------------------------------
 
 pub fn spawn_basic_button<Marker>(
-    ui               : &mut UiBuilder<MainUI>,
+    ui               : &mut UiBuilder<MainUi>,
     button_overlay   : &Widget,
     button_text      : &'static str,
     unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
@@ -115,6 +115,7 @@ pub fn spawn_basic_button<Marker>(
             color     : style.text.color,
         };
 
+    let despawner = ui.despawner.clone();
     let mut entity_commands = ui.commands().spawn_empty();
     entity_commands.insert(
             TextElementBundle::new(
@@ -135,7 +136,7 @@ pub fn spawn_basic_button<Marker>(
         .unpress_on_unclick_home_and_abort_on_unclick_away()
         .abort_press_if_obstructed()
         .on_unpress(unpress_callback)
-        .build::<MouseLButtonMain>(&mut entity_commands, button_overlay.clone())
+        .build::<MouseLButtonMain>(&despawner, &mut entity_commands, button_overlay.clone())
         .unwrap();
 
     entity_commands.id()
@@ -166,7 +167,7 @@ pub struct BasicPopupPack
 /// The popup is arbitrarily set at a depth of `500.0` in order to supercede the normal UI tree. Multiple concurrent
 /// popups will NOT stack on each other properly.
 pub fn spawn_basic_popup<Marker1, Marker2>(
-    ui              : &mut UiBuilder<MainUI>,
+    ui              : &mut UiBuilder<MainUi>,
     cancel_text     : &'static str,
     accept_text     : &'static str,
     cancel_callback : impl IntoSystem<(), (), Marker1> + Send + Sync + 'static,
@@ -189,7 +190,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             style.background.1
         );
     ui.commands().spawn(barrier_img);
-    ui.commands().spawn((barrier, UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((barrier, UIInteractionBarrier::<MainUi>::default()));
 
     // window box
     let xmod = style.proportions.x.max(0.).min(100.) / 2.;
@@ -205,7 +206,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             ui.asset_server.load(style.window.0),
             style.window.1
         );
-    ui.commands().spawn((window_img, UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((window_img, UIInteractionBarrier::<MainUi>::default()));
 
     // region for caller's content
     let content_percent = style.content_percent.max(0.).min(100.);
@@ -238,7 +239,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
         let cancel_entity = spawn_basic_button(ui, &cancel_button, cancel_text,
                 move |world: &mut World|
                 {
-                    syscall(world, (MainUI, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
+                    syscall(world, (MainUi, [], [window_overlay_clone.clone()]), toggle_ui_visibility);
                     cancel_callback.run(world, ());
                 }
             );

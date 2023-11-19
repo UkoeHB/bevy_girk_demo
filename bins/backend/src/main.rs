@@ -12,6 +12,7 @@ use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
+use bevy_kot_utils::*;
 
 //standard shortcuts
 use std::net::Ipv6Addr;
@@ -168,10 +169,10 @@ fn make_test_game_hub_server(
     hub_server_url      : url::Url,
     startup_pack        : GameHubServerStartupPack,
     game_factory_config : ClickGameFactoryConfig,
-) -> (MessageSender<GameHubCommand>, App)
+) -> (Sender<GameHubCommand>, App)
 {
     // setup
-    let (command_sender, command_receiver) = new_message_channel::<GameHubCommand>();
+    let (command_sender, command_receiver) = new_channel::<GameHubCommand>();
     let host_hub_client         = make_test_host_hub_client_with_id(0u128, hub_server_url);
     let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(&game_factory_config));
     let game_factory            = GameFactory::new(ClickGameFactory);

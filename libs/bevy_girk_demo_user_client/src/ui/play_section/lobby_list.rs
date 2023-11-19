@@ -199,12 +199,12 @@ fn setup_refresh_indicator_reactors(
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
     rcommands.on(entity_insertion::<PendingRequest>(lobby_search_entity),
-            move |mut ui: UiUtils<MainUI>| ui.toggle(true, &text_widget_clone)
+            move |mut ui: UiUtils<MainUi>| ui.toggle(true, &text_widget_clone)
         );
 
     // deactivate text when there is not a pending request
     rcommands.on(entity_removal::<PendingRequest>(lobby_search_entity),
-            move |mut ui: UiUtils<MainUI>| ui.toggle(false, &text_widget)
+            move |mut ui: UiUtils<MainUi>| ui.toggle(false, &text_widget)
         );
 }
 
@@ -213,7 +213,7 @@ fn setup_refresh_indicator_reactors(
 
 fn update_lobby_list_contents(
     In(contents) : In<Arc<Vec<(Entity, Widget)>>>,
-    mut ui       : UiUtils<MainUI>,
+    mut ui       : UiUtils<MainUi>,
     lobby_page   : ReactRes<LobbyPage>,
 ){
     // lobby list entries
@@ -269,7 +269,7 @@ fn open_make_lobby_window(mut rcommands: ReactCommands)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_list_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());
@@ -282,7 +282,7 @@ fn add_lobby_list_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // make overlay so indicator visibility starts `false`
     let overlay = make_overlay(ui.tree(), &area, "", false);
@@ -301,7 +301,7 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_refresh_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_list_refresh_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     let button_overlay = relative_widget(ui.tree(), area.end(""), (5., 98.), (10., 90.));
@@ -311,7 +311,7 @@ fn add_lobby_list_refresh_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // list box
     spawn_plain_box(ui, area.clone(), None);
@@ -356,14 +356,14 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_lobby_list_stats(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // stats text
     let text_entity = spawn_basic_text(ui, area.clone(), TextParams::center().with_width(Some(100.)), "(????-???? / ????)");
 
     // update stats when lobby page updates
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
+            move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (first, last, total) = page.stats();
                 ui.text.write(text_entity, 0, |text| write!(text, "({}-{} / {})", first, last, total)).unwrap();
@@ -374,7 +374,7 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_clamp_now_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     // - request the most recent possible lobby
@@ -382,10 +382,10 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when displaying 'now'
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
-            move |mut ui: UiUtils<MainUI>, page_req: ReactRes<LobbyPageRequest>|
+            move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_now();
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -396,7 +396,7 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_paginate_left_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     // - request the next most recent lobby
@@ -404,10 +404,10 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when no newer lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
+            move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (first, _, _) = page.stats();
                 let enable = first != 1;
@@ -419,7 +419,7 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_paginate_right_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     // - request the next older lobby
@@ -427,10 +427,10 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when no older lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
-            move |mut ui: UiUtils<MainUI>, page: ReactRes<LobbyPage>|
+            move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (_, last, total) = page.stats();
                 let enable = last != total;
@@ -442,7 +442,7 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // button ui
     // - request the oldest lobbies
@@ -450,10 +450,10 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when last requested the oldest lobbies
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
-            move |mut ui: UiUtils<MainUI>, page_req: ReactRes<LobbyPageRequest>|
+            move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_oldest();
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -464,7 +464,7 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_navigation_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_navigation_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // text displaying lobby li (center)st position
     let lobby_list_stats_area = relative_widget(ui.tree(), area.end(""), (38., 62.), (20., 60.));
@@ -490,7 +490,7 @@ fn add_navigation_subsection(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // overlay
     let button_area = relative_widget(ui.tree(), area.end(""), (25., 75.), (10., 90.));
@@ -501,10 +501,10 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 
     // disable button when we are in a lobby already
     let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |mut ui: UiUtils<MainUI>, display: ReactRes<LobbyDisplay>|
+            move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
             {
                 let enable = !display.is_set();
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
@@ -515,7 +515,7 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUI>, area: &Widget)
+pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title
     let lobby_list_title = relative_widget(ui.tree(), area.end(""), (0., 100.), ( 0., 15.));

@@ -60,7 +60,7 @@ fn send_lobby_ack(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -77,7 +77,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_timer(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_timer(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // add text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
@@ -103,7 +103,7 @@ fn add_timer(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title
     let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (20., 40.));
@@ -117,7 +117,7 @@ fn add_window_contents(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUI>)
+pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
 {
     // spawn window
     ui.edit_style::<BasicPopup>(
@@ -138,18 +138,18 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUI>)
 
     // disabler for reject button
     let reject_disable_overlay = make_overlay(ui.tree(), &popup_pack.cancel_button, "", true);
-    ui.commands().spawn((reject_disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((reject_disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // disabler for accept button
     let enable_disable_overlay = make_overlay(ui.tree(), &popup_pack.accept_button, "", true);
-    ui.commands().spawn((enable_disable_overlay.clone(), UIInteractionBarrier::<MainUI>::default()));
+    ui.commands().spawn((enable_disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // setup window reactor
     let window_overlay = popup_pack.window_overlay.clone();
     let reject_button_entity = popup_pack.cancel_entity;
     let accept_button_entity = popup_pack.accept_entity;
     ui.rcommands.on(resource_mutation::<AckRequestData>(),
-            move |mut ui: UiUtils<MainUI>, ack_request: ReactRes<AckRequestData>|
+            move |mut ui: UiUtils<MainUi>, ack_request: ReactRes<AckRequestData>|
             {
                 // open/close window based on if the ack request is set
                 ui.toggle(ack_request.is_set(), &window_overlay);

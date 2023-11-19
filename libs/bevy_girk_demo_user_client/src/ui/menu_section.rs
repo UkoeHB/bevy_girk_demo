@@ -12,7 +12,7 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn activate_new_selection<U: LunexUI>(
+fn activate_new_selection<U: LunexUi>(
     In((newly_selected_button, overlay)) : In<(Entity, Widget)>,
     mut ui                               : UiUtils<U>,
     selected_main_menu_button            : Query<(Entity, &Callback<Deselect>), (With<MainMenuButton>, With<Selected>)>,
@@ -32,7 +32,7 @@ fn activate_new_selection<U: LunexUI>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Widget, display_name: &str) -> Entity
+fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Widget, display_name: &str) -> Entity
 {
     // add default button image
     let default_button = make_overlay(ui.tree(), button, "default", true);
@@ -62,6 +62,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
     ui.commands().spawn(selected_image);
 
     // build the button
+    let despawner = ui.despawner.clone();
     let mut entity_commands = ui.commands().spawn_empty();
     let button_entity = entity_commands.id();
     let overlay_clone = overlay.clone();
@@ -71,12 +72,12 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
         .with_selected_widget(selected_button)
         .select_on_click()
         .on_select(
-            prep_syscall((button_entity, overlay.clone()), activate_new_selection::<MainUI>)
+            prep_syscall((button_entity, overlay.clone()), activate_new_selection::<MainUi>)
         )
         .on_deselect(
-            move |mut ui: UiUtils<MainUI>| ui.toggle(false, &overlay_clone)
+            move |mut ui: UiUtils<MainUi>| ui.toggle(false, &overlay_clone)
         )
-        .build::<MouseLButtonMain>(&mut entity_commands, button.clone())
+        .build::<MouseLButtonMain>(&despawner, &mut entity_commands, button.clone())
         .unwrap();
 
     // add main menu button tag
@@ -102,7 +103,7 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUI>, button: &Widget, overlay: &Wi
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_home_overlay(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());
@@ -115,7 +116,7 @@ fn add_home_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
+fn add_settings_overlay(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());
@@ -131,7 +132,7 @@ fn add_settings_overlay(ui: &mut UiBuilder<MainUI>, area: &Widget)
 #[derive(Component, Default, Copy, Clone, Eq, PartialEq, Debug)]
 pub(crate) struct MainMenuButton;
 
-pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUI>, menu_bar: &Widget, menu_overlay: &Widget)
+pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUi>, menu_bar: &Widget, menu_overlay: &Widget)
 {
     // menu bar overlay
     let menu_bar_overlay = relative_widget(ui.tree(), menu_bar.end(""), (10., 90.), (10., 90.));
