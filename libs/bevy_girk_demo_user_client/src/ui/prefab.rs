@@ -71,14 +71,18 @@ pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Op
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_basic_button<Marker>(
-    ui               : &mut UiBuilder<MainUi>,
-    button_overlay   : &Widget,
-    button_text      : &'static str,
-    unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
-) -> Entity
-{
-    let style = ui.get_style::<BasicButton>().unwrap();
+pub fn spawn_basic_button_impl<Marker>(
+    ui                   : &mut UiBuilder<MainUi>,
+    button_overlay       : &Widget,
+    button_text          : &'static str,
+    unpress_callback     : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
+    button_entity        : Entity,
+    default_image_entity : Entity,
+    pressed_image_entity : Entity,
+){
+    // prep
+    if ui.commands().get_entity(button_entity).is_none() { return; }
+    let style = ui.style::<BasicButton>();
 
     // add default button image
     let default_button = make_overlay(ui.tree(), &button_overlay, "", true);
@@ -92,7 +96,7 @@ pub fn spawn_basic_button<Marker>(
             ui.asset_server.load(style.default_img.0),
             style.default_img.1
         );
-    ui.commands().spawn(default_image);
+    ui.commands().get_or_spawn(default_image_entity).insert(default_image);
 
     // add pressed button image
     let pressed_button = make_overlay(ui.tree(), &button_overlay, "", false);
@@ -106,7 +110,7 @@ pub fn spawn_basic_button<Marker>(
             ui.asset_server.load(style.pressed_img.0),
             style.pressed_img.1
         );
-    ui.commands().spawn(pressed_image);
+    ui.commands().get_or_spawn(pressed_image_entity).insert(pressed_image);
 
     // add button text
     let text_style = TextStyle {
@@ -116,7 +120,7 @@ pub fn spawn_basic_button<Marker>(
         };
 
     let despawner = ui.despawner.clone();
-    let mut entity_commands = ui.commands().spawn_empty();
+    let mut entity_commands = ui.commands().entity(button_entity);
     entity_commands.insert(
             TextElementBundle::new(
                     button_overlay,
@@ -138,8 +142,109 @@ pub fn spawn_basic_button<Marker>(
         .on_unpress(unpress_callback)
         .build::<MouseLButtonMain>(&despawner, &mut entity_commands, button_overlay.clone())
         .unwrap();
+}
 
-    entity_commands.id()
+//-------------------------------------------------------------------------------------------------------------------
+
+pub fn spawn_basic_button<Marker>(
+    ui               : &mut UiBuilder<MainUi>,
+    button_overlay   : &Widget,
+    button_text      : &'static str,
+    unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
+) -> Entity
+{
+    // shim widget
+    // - sits between widget origin and actual widget, is replaced when rebuilding
+    let shim = {
+        #[cfg(not(feature = "editor"))]
+        { button_overlay.clone() }
+
+        #[cfg(feature = "editor")]
+        { make_overlay(ui.tree(), button_overlay, "", true) }
+    };
+
+    // shim callback
+    let (unpress_callback, _sys_id) = {
+        #[cfg(not(feature = "editor"))]
+        { (unpress_callback, ()) }
+
+        #[cfg(feature = "editor")]
+        {
+            let sys_id = ui.commands().spawn_system(unpress_callback);
+            let shim_callback = move |world: &mut World| { spawned_syscall(world, sys_id, ()); };
+            (shim_callback, sys_id)
+        }
+    };
+
+    // prepare entities needed
+    let default_image_entity = ui.commands().spawn_empty();
+    let pressed_image_entity = ui.commands().spawn_empty();
+
+    let default_image_cleanup = ui.despawner.prepare(default_image_entity);
+    let pressed_image_cleanup = ui.despawner.prepare(pressed_image_entity);
+
+    let button_entity = ui.commands().spawn(AutoDespawners::new([default_image_cleanup, pressed_image_cleanup]));
+
+    // button builder
+    let button_builder = move |ui, area, unpress_callback| {
+        spawn_basic_button_impl(
+                ui,
+                area,
+                button_text,
+                unpress_callback,
+                button_entity,
+                default_image_entity,
+                pressed_image_entity,
+            );
+    };
+
+    // spawn the button
+    button_builder(ui, &shim, unpress_callback);
+
+    // prep editor
+    #[cfg(feature = "editor")]
+    {
+        let button_overlay = button_overlay.clone();
+
+        // rebuilder
+        let rebuilder = move |ui: &mut UiBuilder::<MainUi>, shim: &mut Widget, style: BasicButton| {
+            // setup
+            let button_builder = button_builder.clone();
+            let shim_callback = move |world: &mut World| { let _ = spawned_syscall(world, _sys_id, ()); };
+
+            // replace widget branch
+            erase_ui_branch(ui.tree(), &shim);
+            *shim = make_overlay(ui.tree(), &button_overlay, "", true);
+
+            // rebuild the node
+            ui.div(move |ui| {
+                ui.add_style::<BasicButton>(style);
+                button_builder(ui, &shim, shim_callback);
+            });
+        };
+
+        // current style
+        let current_style = ui.style_clone::<BasicButton>();
+
+        // editor node package
+        let node_entity = ui.commands().spawn(
+                (
+                    EditorTreeNode::<MainUi>::new(button_overlay),
+                    EditorTreeNodeStyle::<MainUi>::new(current_style, shim.clone(), rebuilder),
+                )
+            );
+
+        // despawn the user callback and editor node when the button entity is despawned
+        let callback_cleanup = ui.despawner.prepare(_sys_id.entity());
+        let node_cleanup = ui.despawner.prepare(node_entity);
+
+        ui.commands().add(
+                move |world: &mut World|
+                syscall(world, (button_entity, [node_cleanup, callback_cleanup]), insert_despawners)
+            );
+    }
+
+    button_entity
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -174,7 +279,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     accept_callback : impl IntoSystem<(), (), Marker2> + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
-    let style = ui.get_style::<BasicPopup>().unwrap();
+    let style = ui.style::<BasicPopup>();
 
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);
