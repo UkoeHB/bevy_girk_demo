@@ -164,6 +164,7 @@ pub(crate) fn handle_game_over(
     tracing::info!(lobby_id, "game over report received");
 
     // send game over report data event
+    //todo: do something with the report
     rcommands.send(game_over_report);
 }
 

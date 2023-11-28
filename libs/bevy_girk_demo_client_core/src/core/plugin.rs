@@ -3,10 +3,6 @@
 //! PRECONDITION: plugin dependencies
 //! - bevy_replicon::core::ReplicationCorePlugin
 //!
-//! PRECONDITION: the following must be initialized by the player client manager
-//! - Res<ClickPlayerInitializer>
-//! - Res<MessageReceiver<PlayerClientInput>>
-//!
 
 //local shortcuts
 use crate::*;

@@ -5,7 +5,7 @@
 //!
 //! PRECONDITION: the following must be initialized by the player client manager
 //! - Res<ClickPlayerInitializer>
-//! - Res<MessageReceiver<PlayerClientInput>>
+//! - Res<Receiver<PlayerClientInput>>
 //!
 
 //local shortcuts
@@ -42,7 +42,7 @@ fn prestartup_check(world: &World)
     if !world.contains_resource::<ClickPlayerInitializer>()
     { panic!("ClickPlayerInitializer is missing on startup!"); }
     if !world.contains_resource::<Receiver<PlayerInput>>()
-    { panic!("MessageReceiver<PlayerInput> is missing on startup!"); }
+    { panic!("Receiver<PlayerInput> is missing on startup!"); }
 
     check_client_framework_consistency(world.resource::<ClientFWConfig>(), world.resource::<ClickPlayerInitializer>());
 }
