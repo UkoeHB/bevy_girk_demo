@@ -216,7 +216,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
-            "Config: 1 player, 0 watchers\n(UI todo)"
+            "Config: 2 players, 1 watcher\n(UI todo)"
         );
     //disable non-singleplayer options when disconnected (don't reset selections, just disable new choices)
 }

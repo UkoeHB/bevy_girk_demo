@@ -41,13 +41,13 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
     let menu_overlay = relative_widget(ui.tree(), root.end("menu_overlay"), (0., 100.), (10., 100.));
     ui.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
 
-    // - connection status (upper right corner)
-    let status = relative_widget(ui.tree(), root.end("status"), (90., 100.), (0., 10.));
+    // - user info (upper right corner)
+    let info = relative_widget(ui.tree(), root.end("info"), (90., 100.), (0., 10.));
 
     // add content sections
     ui.div(|ui| add_play_section(ui, &play_button, &menu_overlay));
     ui.div(|ui| add_menu_bar_section(ui, &menu_bar, &menu_overlay));
-    ui.div(|ui| add_status_section(ui, &status));
+    ui.div(|ui| add_info_section(ui, &info));
     ui.div(|ui| add_ack_lobby_window(ui));
 }
 

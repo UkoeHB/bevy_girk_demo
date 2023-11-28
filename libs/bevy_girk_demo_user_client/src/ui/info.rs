@@ -3,6 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_backend_public::*;
 use bevy_kot::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_lunex::prelude::*;
@@ -11,8 +12,31 @@ use bevy_lunex::prelude::*;
 use std::fmt::Write;
 
 //-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
+fn setup_client_id_display(In(area): In<Widget>, mut ui: UiBuilder<MainUi>, client: Res<HostUserClient>)
+{
+    ui.div(|ui| {
+        // set text style
+        ui.add_style(basic_text_default_light_style());
+
+        // text
+        let text = Widget::create(
+                ui.tree(),
+                area.end(""),
+                SolidLayout::new()  //keep text in top right corner when window is resized
+                    .with_horizontal_anchor(1.0)
+                    .with_vertical_anchor(-1.0),
+            ).unwrap();
+
+        spawn_basic_text(ui, text, TextParams::topleft(), format!("ID: {}", client.id() % 1_000_000u128).as_str());
+    });
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
     ui.add_style(basic_text_default_light_style());
@@ -23,7 +47,7 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
             area.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
                 absolute_1: Vec2 { x: 5., y: 6. },
-                absolute_2: Vec2 { x: -9., y: 0. },
+                absolute_2: Vec2 { x: -5., y: 0. },
                 relative_1: Vec2 { x: 0., y: 0. },
                 relative_2: Vec2 { x: 100., y: 200. },
                 ..Default::default()
@@ -31,15 +55,19 @@ pub(crate) fn add_status_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
         ).unwrap();
 
     // text widget
-    let text = Widget::create(
+    let layout_helper_clone = layout_helper.clone();
+    ui.commands().add(move |world: &mut World| syscall(world, layout_helper, setup_client_id_display));
+
+    // attach status to bottom of client id
+    let offshoot = relative_widget(ui.tree(), layout_helper_clone.end(""), (0., 100.), (19., 119.));
+    let status_text = Widget::create(
             ui.tree(),
-            layout_helper.end(""),
+            offshoot.end(""),
             SolidLayout::new()  //keep text in top right corner when window is resized
                 .with_horizontal_anchor(1.0)
                 .with_vertical_anchor(-1.0),
         ).unwrap();
-
-    let text_entity = spawn_basic_text(ui, text, TextParams::topright(), "Connecting...");
+    let text_entity = spawn_basic_text(ui, status_text, TextParams::topleft(), "Connecting...");
 
     // update text when connection status changes
     ui.rcommands.on(resource_mutation::<ConnectionStatus>(),
