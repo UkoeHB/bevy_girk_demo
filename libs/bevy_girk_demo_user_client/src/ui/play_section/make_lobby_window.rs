@@ -48,7 +48,7 @@ impl Default for MakeLobbyWindow
         Self{
             member_type : ClickLobbyMemberType::Player,
             pwd         : String::default(),
-            config      : ClickLobbyConfig{ max_players: 2, max_watchers: 1 },
+            config      : ClickLobbyConfig{ max_players: 1, max_watchers: 0 },
             last_req    : None,
         }
     }
@@ -154,15 +154,14 @@ fn setup_window_reactors(
     ui.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUi>::default()));
 
     // disable 'make' button when disconnected and configs are non-local
-    let make_button_disabler =
-        move |mut ui: UiUtils<MainUi>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
-        {
-            let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
-            ui.toggle_basic_button(enable, &accept_disable, accept_entity);
-        };
-
-    ui.rcommands.on(resource_mutation::<ConnectionStatus>(), make_button_disabler.clone());
-    ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(), make_button_disabler);
+    ui.rcommands.on(
+            (resource_mutation::<ConnectionStatus>(), resource_mutation::<MakeLobbyWindow>()),
+            move |mut ui: UiUtils<MainUi>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
+            {
+                let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
+                ui.toggle_basic_button(enable, &accept_disable, accept_entity);
+            }
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -209,16 +208,55 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // field outline
     spawn_plain_outline(ui, area.clone(), Some(700.));
 
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
+    let singleplayer_overlay = make_overlay(ui.tree(), area, "", true);
     spawn_basic_text(
             ui,
-            text,
+            singleplayer_overlay.clone(),
+            TextParams::center()
+                .with_depth(700.)  //todo: remove when lunex is fixed
+                .with_width(Some(75.)),
+            "Config: 1 player, 0 watchers\n(UI todo)"
+        );
+
+    let multiplayer_overlay = make_overlay(ui.tree(), area, "", false);
+    spawn_basic_text(
+            ui,
+            multiplayer_overlay.clone(),
             TextParams::center()
                 .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
             "Config: 2 players, 1 watcher\n(UI todo)"
         );
-    //disable non-singleplayer options when disconnected (don't reset selections, just disable new choices)
+    //todo: disable non-singleplayer options when disconnected (don't reset selections, just disable new choices)
+
+    // basic toggle for single/multiplayer
+    //todo: replace with proper UI
+    let button = relative_widget(ui.tree(), area.end(""), (40., 60.), (75., 95.));
+    spawn_basic_button(ui, &button, "Toggle",
+            move |mut toggle: Local<bool>, mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>|
+            {
+                ui.toggle(*toggle, &singleplayer_overlay);
+                ui.toggle(!*toggle, &multiplayer_overlay);
+
+                match *toggle
+                {
+                    true =>
+                    {
+                        window.get_mut(&mut ui.builder.rcommands).config =
+                            ClickLobbyConfig{ max_players: 1, max_watchers: 0 };
+                    }
+                    false =>
+                    {
+                        window.get_mut(&mut ui.builder.rcommands).config =
+                            ClickLobbyConfig{ max_players: 2, max_watchers: 1 };
+                    }
+                }
+
+                *toggle = !*toggle;
+            }
+        );
+    let branch = button.fetch_mut(ui.tree()).unwrap();
+    branch.set_depth(600.);  //todo: remove when lunex is fixed
 }
 
 //-------------------------------------------------------------------------------------------------------------------
