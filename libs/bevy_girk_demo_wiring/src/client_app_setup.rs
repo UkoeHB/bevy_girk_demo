@@ -97,7 +97,7 @@ pub fn make_game_client_core(
     // set up client app
     let mut client_app = App::new();
     let mut player_input_sender : Option<Sender<PlayerClientInput>> = None;
-    let mut player_id           : Option<ClientIdType>                     = None;
+    let mut player_id           : Option<ClientIdType>              = None;
 
     let client_fw_command_sender = prepare_client_app_framework(&mut client_app, client_start_pack.client_fw_config);
     prepare_client_app_replication(&mut client_app, client_fw_command_sender);

@@ -9,13 +9,7 @@ use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 
 //standard shortcuts
-
-#[cfg(not(target_family = "wasm"))]
-use std::time::{SystemTime, UNIX_EPOCH};
-
-#[cfg(target_family = "wasm")]
 use wasm_timer::{SystemTime, UNIX_EPOCH};
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -29,9 +23,12 @@ fn main()
     }
 
     // set asset directory location
-    if let Err(err) = bevy_girk_utils::try_set_bevy_asset_root(2)
+    #[cfg(not(target_family = "wasm"))]
     {
-        panic!("Could not set bevy asset root: {}", err.to_string());
+        if let Err(err) = bevy_girk_utils::try_set_bevy_asset_root(2)
+        {
+            panic!("Could not set bevy asset root: {}", err.to_string());
+        }
     }
 
     // launch client

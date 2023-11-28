@@ -113,7 +113,9 @@ impl ClickLobbyContents
         }
     }
 
-    /// Check if the game can be launched while hosted.
+    /// Check if the game can be launched while hosted by a server.
+    ///
+    /// This can be used to indicate to a user if a lobby is ready to launch.
     pub fn can_launch_hosted(&self) -> bool
     {
         ClickLobbyChecker::can_launch_hosted(self.players.len(), MIN_PLAYERS_TO_LAUNCH)

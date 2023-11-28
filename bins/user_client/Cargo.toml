@@ -9,10 +9,11 @@ test    = false
 doctest = false
 
 [dependencies]
-bevy           = { workspace = true, features = [ "multi-threaded" ] }
+bevy           = { workspace = true, default-features = true }
 enfync         = { workspace = true }
 bevy_simplenet = { workspace = true }
 url            = { workspace = true }
+wasm-timer     = { workspace = true }
 
 bevy_girk_backend_public = { workspace = true }
 bevy_girk_utils          = { workspace = true }
@@ -23,4 +24,3 @@ bevy_girk_demo_wiring      = { path = "../../libs/bevy_girk_demo_wiring" }
 [target.'cfg(target_family = "wasm")'.dependencies]
 console_error_panic_hook = { version = "0.1" }
 tracing-wasm             = { version = "0.2" }
-wasm-timer               = { version = "0.2" }

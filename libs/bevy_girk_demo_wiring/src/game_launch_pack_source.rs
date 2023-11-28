@@ -68,6 +68,7 @@ fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id
 fn get_launch_pack(game_factory_config_ser: &Vec<u8>, start_request: &GameStartRequest) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby data
+    #[allow(unused_mut)]
     let Ok(mut lobby_contents) = ClickLobbyContents::try_from(start_request.lobby_data.clone())
     else { tracing::error!("unable to extract lobby contents from lobby data"); return Err(()); };
 
@@ -75,7 +76,11 @@ fn get_launch_pack(game_factory_config_ser: &Vec<u8>, start_request: &GameStartR
     let num_watchers = lobby_contents.watchers.len();
 
     // shuffle the game participants
-    //todo: assert there is only one player/watcher on WASM
+    #[cfg(target_family = "wasm")]
+    {
+        if num_players != 1 { panic!("only single-player game instances are allowed on WASM"); }
+        if num_watchers != 0 { panic!("only single-player game instances are allowed on WASM"); }
+    }
     #[cfg(not(target_family = "wasm"))]
     {
         lobby_contents.players.shuffle(&mut thread_rng());

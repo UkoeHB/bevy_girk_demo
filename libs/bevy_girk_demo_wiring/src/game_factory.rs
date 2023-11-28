@@ -10,14 +10,15 @@ use bevy_girk_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+#[allow(unused_imports)]
 use bevy_renet::renet::transport::{generate_random_bytes, ServerAuthentication, ServerConfig};
 use serde::{Deserialize, Serialize};
 
 //standard shortcuts
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
-use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec::Vec;
+use wasm_timer::{SystemTime, UNIX_EPOCH};
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -81,8 +82,21 @@ fn prepare_game_startup(
     }
 
     // finalize
+    let seed =
+        {
+            #[cfg(target_family = "wasm")]
+            {
+                // we assume WASM game instances are only created for local single-player
+                SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis()
+            }
+            #[cfg(not(target_family = "wasm"))]
+            {
+                gen_rand128()
+            }
+        };
+
     let game_fw_initializer = GameFWInitializer{ clients: client_states };
-    let game_context        = ClickGameContext::new(gen_rand128(), game_duration_config);
+    let game_context        = ClickGameContext::new(seed, game_duration_config);
     let game_initializer    = ClickGameInitializer{ game_context, players, watchers };
 
     Ok((game_fw_initializer, game_initializer, user_clients))
@@ -194,12 +208,13 @@ fn prepare_game_start_report(
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
 
-    for (_env, user_id, client_id) in user_clients.iter()
+    for (env, user_id, client_id) in user_clients.iter()
     {
         // get game start package for client
         let client_start_pack = prepare_client_start_pack(&*game_initializer, *client_id, ticks_per_sec)?;
 
         //todo: differentiate connect token based on client env type
+        if *env != bevy_simplenet::EnvType::Native { tracing::error!("WASM clients are unsupported"); continue; }
 
         // get connect token for client
         let client_connect_token = new_connect_token(
@@ -307,10 +322,19 @@ impl GameFactoryImpl for ClickGameFactory
         // - we use a unique auth key so clients can only interact with the server created here
         //todo: wasm single player, we don't need auth key, just use in-memory transport (need server config enum)
         //todo: set up renet server transports based on client types
-        #[cfg(target_family = "wasm")]
-        { panic!("todo: gen random bytes not supported on WASM"); }
+        let auth_key =
+            {
+                #[cfg(target_family = "wasm")]
+                {
+                    if user_clients.len() != 1 { panic!("only single-player game instances may be created on WASM targets"); }
+                    Default::default()
+                }
+                #[cfg(not(target_family = "wasm"))]
+                {
+                    generate_random_bytes::<32>()
+                }
+            };
 
-        let auth_key = generate_random_bytes::<32>();
         let server_config = new_server_config(launch_pack.client_init_data.len(), &config.server_setup_config, &auth_key);
         let server_addr = setup_native_renet_server(app, server_config);
 

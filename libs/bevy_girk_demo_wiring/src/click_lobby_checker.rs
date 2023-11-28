@@ -39,6 +39,7 @@ impl ClickLobbyChecker
         Ok((num_players, num_watchers))
     }
 
+    /// Check if the lobby may be hosted by a server.
     pub fn can_launch_hosted(num_players: usize, min_players_to_launch: usize) -> bool
     {
         if num_players < min_players_to_launch { return false; }
@@ -85,10 +86,6 @@ impl LobbyChecker for ClickLobbyChecker
 
         // check password
         if lobby.get_password() != password { return false; }
-
-        // validate env type
-        //todo: allow WASM env
-        if member_data.env != bevy_simplenet::EnvType::Native { panic!("only native clients currently supported"); }
 
         // get member type
         let Ok(member_type) = ClickLobbyMemberType::try_from(member_data.color) else { return false; };
