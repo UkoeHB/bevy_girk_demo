@@ -235,7 +235,7 @@ fn update_lobby_list_contents(
                 {
                     write!(
                             text,
-                            "Id: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
+                            "Lobby: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
                             entry.id % 1_000_000u64,
                             entry.owner_id % 1_000_000u128,
                             entry.num(ClickLobbyMemberType::Player),
@@ -336,7 +336,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 text,
                 TextParams::centerleft()
                     .with_width(Some(100.)),
-                "Id: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
+                "Lobby: ??????, Owner: ??????, Players: 00/00, Watchers: 00/00"
             );
 
         // button

@@ -78,7 +78,7 @@ fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &List
 fn leave_current_lobby(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
-    lobby         : ReactRes<LobbyDisplay>,
+    mut lobby     : ReactResMut<LobbyDisplay>,
     leave_lobby   : Query<Entity, (With<LeaveLobby>, Without<React<PendingRequest>>)>,
 ){
     // check for existing request
@@ -95,8 +95,8 @@ fn leave_current_lobby(
         None => { tracing::error!("tried to leave lobby but there is no lobby type"); return; }
         Some(LobbyType::Local) =>
         {
-            //todo: clear lobby contents
-            tracing::error!("leaving local lobby not yet supported");
+            // clear the lobby
+            if lobby.is_set() { lobby.get_mut(&mut rcommands).clear(); }
         }
         Some(LobbyType::Hosted) =>
         {

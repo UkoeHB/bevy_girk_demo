@@ -32,6 +32,12 @@ pub(crate) struct LobbyDisplay
 
 impl LobbyDisplay
 {
+    pub(crate) fn set(&mut self, contents: ClickLobbyContents, lobby_type: LobbyType)
+    {
+        self.current    = Some(contents);
+        self.lobby_type = Some(lobby_type);
+    }
+
     /// Returns `Err` if lobby contents cannot be extracted from the lobby data.
     pub(crate) fn try_set(&mut self, new_lobby: LobbyData, lobby_type: LobbyType) -> Result<(), ()>
     {

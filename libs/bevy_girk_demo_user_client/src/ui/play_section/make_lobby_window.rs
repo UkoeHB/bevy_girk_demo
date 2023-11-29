@@ -57,20 +57,64 @@ impl Default for MakeLobbyWindow
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Convert window state to lobby contents.
+///
+/// Panics if not single-player.
+fn single_player_lobby(owner_id: u128, window: &MakeLobbyWindow) -> ClickLobbyContents
+{
+    if !window.is_single_player() { panic!("cannot convert make lobby window to lobby contents for multiplayer lobbies"); }
+
+    ClickLobbyContents{
+        id: 0u64,
+        owner_id,
+        config   : window.config.clone(),
+        players  : vec![(bevy_simplenet::env_type(), owner_id)],
+        watchers : vec![],
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Debug, Copy, Clone)]
+struct MadeLocalLobby;
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn make_local_lobby(
+    mut rcommands     : ReactCommands,
+    client            : Res<HostUserClient>,
+    make_lobby        : Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
+    mut lobby_display : ReactResMut<LobbyDisplay>,
+    window            : ReactRes<MakeLobbyWindow>,
+){
+    // do nothing if there is a pending request
+    if !make_lobby.is_empty()
+    { tracing::warn!("ignoring make local lobby request because a multiplayer request is pending"); return; };
+
+    // make a local lobby
+    // - note: do not log the password
+    tracing::trace!(?window.member_type, ?window.config, "making a local lobby");
+    lobby_display.get_mut(&mut rcommands).set(single_player_lobby(client.id(), &window), LobbyType::Local);
+
+    // send event for UI updates
+    rcommands.send(MadeLocalLobby);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn send_make_lobby_request(
     mut rcommands : ReactCommands,
     client        : Res<HostUserClient>,
     make_lobby    : Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
-    mut window    : ReactResMut<MakeLobbyWindow>
+    mut window    : ReactResMut<MakeLobbyWindow>,
 ){
     // get request entity
     // - do nothing if there is already a pending request
     let Ok(target_entity) = make_lobby.get_single()
-    else { tracing::warn!("ignoring join lobby request because a request is already pending"); return; };
-
-    //todo: handle single player vs multiplayer
-    if window.is_single_player()
-    { tracing::warn!("making local single player not yet supported, making game on server instead"); }
+    else { tracing::warn!("ignoring make lobby request because a request is already pending"); return; };
 
     // request to make a lobby
     // - note: do not log the password
@@ -90,6 +134,17 @@ fn send_make_lobby_request(
     rcommands.insert(target_entity, request.clone());
     window.get_mut_noreact().last_req = Some(request);
 }
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn make_a_lobby(world: &mut World)
+{
+    match world.react_resource::<MakeLobbyWindow>().is_single_player()
+    {
+        true => syscall(world, (), make_local_lobby),
+        false => syscall(world, (), send_make_lobby_request),
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -104,7 +159,27 @@ fn setup_window_reactors(
 ){
     let make_lobby_entity = make_lobby.single();
 
-    // when a request starts
+    // when activation event is detected
+    let window_overlay = popup_pack.window_overlay.clone();
+    ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
+            move |mut ui: UiUtils<MainUi>|
+            {
+                // open window
+                ui.toggle(true, &window_overlay);
+            }
+        );
+
+    // when a local lobby is made
+    let window_overlay = popup_pack.window_overlay.clone();
+    ui.rcommands.on(event::<MadeLocalLobby>(),
+            move |mut ui: UiUtils<MainUi>|
+            {
+                // close window
+                ui.toggle(false, &window_overlay);
+            }
+        );
+
+    // when a make lobby request starts
     let accept_entity = popup_pack.accept_entity;
     ui.rcommands.on(entity_insertion::<PendingRequest>(make_lobby_entity),
             move |mut text: TextHandle|
@@ -114,7 +189,7 @@ fn setup_window_reactors(
             }
         );
 
-    // when a request completes
+    // when a make lobby request completes
     let window_overlay = popup_pack.window_overlay;
     ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
             move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>|
@@ -133,9 +208,6 @@ fn setup_window_reactors(
                 {
                     // close window
                     ui.toggle(false, &window_overlay);
-
-                    // reset window state
-                    *window.get_mut(&mut ui.builder.rcommands) = MakeLobbyWindow::default();
                 }
                 else
                 {
@@ -227,7 +299,6 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 .with_width(Some(75.)),
             "Config: 2 players, 1 watcher\n(UI todo)"
         );
-    //todo: disable non-singleplayer options when disconnected (don't reset selections, just disable new choices)
 
     // basic toggle for single/multiplayer
     //todo: replace with proper UI
@@ -359,19 +430,10 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 {
     // spawn window
     let accept_text = "Make";
-    let popup_pack = spawn_basic_popup(ui, "Close", accept_text, ||(), send_make_lobby_request);
+    let popup_pack = spawn_basic_popup(ui, "Close", accept_text, ||(), make_a_lobby);
 
     // add window contents
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
-
-    // open window when activation event is detected
-    let window_overlay = popup_pack.window_overlay.clone();
-    ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
-            move |mut ui: UiUtils<MainUi>|
-            {
-                ui.toggle(true, &window_overlay);
-            }
-        );
 
     // setup window reactors
     ui.commands().add(move |world: &mut World| syscall(world, (popup_pack, accept_text), setup_window_reactors));
