@@ -1,17 +1,17 @@
 //local shortcuts
 use crate::*;
-use bevy_girk_client_fw::*;
-use bevy_girk_demo_player_core::*;
+use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_game_core::*;
-use bevy_girk_game_fw::*;
-use bevy_girk_game_instance::*;
-use bevy_girk_utils::*;
-use bevy_girk_wiring::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
 #[allow(unused_imports)]
 use bevy_renet::renet::transport::{generate_random_bytes, ServerAuthentication, ServerConfig};
+use bevy_girk_client_fw::*;
+use bevy_girk_game_fw::*;
+use bevy_girk_game_instance::*;
+use bevy_girk_utils::*;
+use bevy_girk_wiring::*;
 use serde::{Deserialize, Serialize};
 
 //standard shortcuts
@@ -105,51 +105,26 @@ fn prepare_game_startup(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn try_get_player_initializer(
+fn client_initializer(
     game_initializer : &ClickGameInitializer,
     client_id        : ClientIdType,
-) -> Option<ClickPlayerInitializer>
+) -> Result<ClientInitializer, ()>
 {
-    if !game_initializer.players.contains_key(&client_id) { return None; };
-    Some(ClickPlayerInitializer{
-            player_context:
-                ClickPlayerContext::new(
-                        client_id,
-                        *game_initializer.game_context.duration_config(),
-                    )
+    let client_type =
+        'x : {
+            if game_initializer.players.contains_key(&client_id) { break 'x ClientType::Player }
+            if game_initializer.watchers.contains(&client_id)    { break 'x ClientType::Watcher }
+            tracing::error!(client_id, "client is not a participant in the game");
+            return Err(());
+        };
+
+    Ok(ClientInitializer{
+            context: ClientContext::new(
+                client_id,
+                client_type,
+                *game_initializer.game_context.duration_config(),
+            )
         })
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn try_get_watcher_initializer(
-    game_initializer : &ClickGameInitializer,
-    client_id        : ClientIdType,
-) -> Option<()>
-{
-    if !game_initializer.watchers.contains(&client_id) { return None; };
-    Some(())
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn click_client_initializer(
-    game_initializer : &ClickGameInitializer,
-    client_id        : ClientIdType,
-) -> Result<ClickClientInitializer, ()>
-{
-    // try to make player config
-    if let Some(player_init) = try_get_player_initializer(game_initializer, client_id)
-    { return Ok(ClickClientInitializer::Player(player_init)); }
-
-    // try to make watcher config
-    if let Some(()) = try_get_watcher_initializer(game_initializer, client_id)
-    { return Ok(ClickClientInitializer::Watcher); }
-
-    tracing::error!(client_id, "client is not a participant in the game");
-    Err(())
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -165,9 +140,9 @@ fn prepare_client_start_pack(
     let client_fw_config = ClientFWConfig::new(ticks_per_sec, client_id);
 
     // set up client config
-    let click_client_initializer = click_client_initializer(game_initializer, client_id)?;
+    let client_initializer = client_initializer(game_initializer, client_id)?;
 
-    Ok(ClickClientStartPack{ client_fw_config, click_client_initializer })
+    Ok(ClickClientStartPack{ client_fw_config, client_initializer })
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -273,16 +248,6 @@ pub enum ClickClientInitDataForGame
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Config used to initialize a client.
-#[derive(Serialize, Deserialize)]
-pub enum ClickClientInitializer
-{
-    Player(ClickPlayerInitializer),
-    Watcher
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Start-up pack for clients.
 #[derive(Serialize, Deserialize)]
 pub struct ClickClientStartPack
@@ -290,7 +255,7 @@ pub struct ClickClientStartPack
     /// Client framework config.
     pub client_fw_config: ClientFWConfig,
     /// Client initializer.
-    pub click_client_initializer: ClickClientInitializer,
+    pub client_initializer: ClientInitializer,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -300,7 +265,6 @@ pub struct ClickGameFactory;
 
 impl GameFactoryImpl for ClickGameFactory
 {
-    /// Make a new game.
     fn new_game(&self, app: &mut App, launch_pack: GameLaunchPack) -> Result<GameStartReport, ()>
     {
         // extract game factory config

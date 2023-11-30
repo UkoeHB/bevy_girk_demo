@@ -1,11 +1,11 @@
 //local shortcuts
 use crate::*;
+
+//third-party shortcuts
 use bevy_girk_backend_public::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-
-//third-party shortcuts
 
 //standard shortcuts
 #[cfg(not(target_family = "wasm"))]

@@ -1,0 +1,19 @@
+[package]
+name = "game_client"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "game_client"
+test    = false
+doctest = false
+
+[dependencies]
+bevy = { workspace = true, default-features = true }
+
+bevy_girk_backend_public = { workspace = true }
+bevy_girk_utils          = { workspace = true }
+
+bevy_girk_demo_client_core = { path = "../../libs/bevy_girk_demo_client_core" }
+bevy_girk_demo_client_skin = { path = "../../libs/bevy_girk_demo_client_skin" }
+bevy_girk_demo_wiring      = { path = "../../libs/bevy_girk_demo_wiring" }

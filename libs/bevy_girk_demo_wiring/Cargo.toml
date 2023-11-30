@@ -10,7 +10,7 @@ doctest = false
 [dependencies]
 bevy           = { version = "0.11", default-features = false }
 bevy_fn_plugin = { workspace = true }
-bevy_kot       = { workspace = true }
+bevy_kot_utils = { workspace = true }
 bevy_renet     = { workspace = true }
 bevy_replicon  = { workspace = true }
 bevy_simplenet = { workspace = true }
@@ -28,7 +28,6 @@ bevy_girk_wiring         = { workspace = true }
 
 bevy_girk_demo_client_core = { path = "../bevy_girk_demo_client_core" }
 bevy_girk_demo_game_core   = { path = "../bevy_girk_demo_game_core" }
-bevy_girk_demo_player_core = { path = "../bevy_girk_demo_player_core" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rand = { version = "0.8" }

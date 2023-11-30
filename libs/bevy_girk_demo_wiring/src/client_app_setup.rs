@@ -1,59 +1,37 @@
 //local shortcuts
 use crate::*;
-use bevy_girk_client_fw::*;
 use bevy_girk_demo_client_core::*;
-use bevy_girk_demo_player_core::*;
+use bevy_girk_demo_game_core::*;
+
+//third-party shortcuts
+use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use bevy_girk_wiring::*;
-
-//third-party shortcuts
-use bevy::prelude::*;
-use bevy_fn_plugin::*;
-use bevy_kot::prelude::*;
+use bevy_kot_utils::*;
 use bevy_renet::renet::transport::ClientAuthentication;
 
 //standard shortcuts
 
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-#[bevy_plugin]
-fn WatcherCorePlugin(app: &mut App)
-{
-    app.insert_resource(GameMessageHandler::new( | _: &mut World, _: Vec<u8>, _: Ticks | -> bool { false } ));
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 /// Prepare the core of a click game client.
 ///
 /// Depends on client framework.
-pub fn prepare_client_app_core(client_app: &mut App)
-{
-    client_app.add_plugins(ClientCorePlugins);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-/// Prepare the core of a click game player client.
-///
-/// Depends on client core.
-pub fn prepare_player_app_core(
-    client_app         : &mut App,
-    player_initializer : ClickPlayerInitializer
-) -> Sender<PlayerClientInput>
+pub fn prepare_client_core(
+    client_app  : &mut App,
+    initializer : ClientInitializer
+) -> Sender<PlayerInput>
 {
     // player input channel
-    let (player_input_sender, player_input_receiver) = new_channel::<PlayerClientInput>();
+    let (player_input_sender, player_input_receiver) = new_channel::<PlayerInput>();
 
     // app
     client_app
-        .add_plugins(PlayerCorePlugins)
-        .insert_resource(player_initializer)
+        .add_plugins(ClientCorePlugins)
+        .insert_resource(initializer)
         .insert_resource(player_input_receiver);
 
     player_input_sender
@@ -61,24 +39,14 @@ pub fn prepare_player_app_core(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Prepare the core of a click game watcher client.
-///
-/// Depends on client core.
-pub fn prepare_watcher_app_core(client_app: &mut App)
-{
-    client_app.add_plugins(WatcherCorePlugin);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Make the core of a click game client.
 ///
-/// Note: If the connection type is 'InMemory', then you must manually insert the in-memory client transport into the
+/// Note: If the connection type is `InMemory`, then you must manually insert the in-memory client transport into the
 ///       client app.
 pub fn make_game_client_core(
     expected_protocol_id : u64,
     connect_info         : GameConnectInfo
-) -> (App, Option<Sender<PlayerClientInput>>, Option<ClientIdType>)
+) -> (App, ClientIdType, Sender<PlayerInput>)
 {
     // extract connect token and validate protocol version
     let ServerConnectToken::Native{ bytes: serialized_connect_token } = connect_info.server_connect_token;
@@ -96,8 +64,6 @@ pub fn make_game_client_core(
 
     // set up client app
     let mut client_app = App::new();
-    let mut player_input_sender : Option<Sender<PlayerClientInput>> = None;
-    let mut player_id           : Option<ClientIdType>              = None;
 
     let client_fw_command_sender = prepare_client_app_framework(&mut client_app, client_start_pack.client_fw_config);
     prepare_client_app_replication(&mut client_app, client_fw_command_sender);
@@ -105,24 +71,10 @@ pub fn make_game_client_core(
             &mut client_app,
             RenetClientConnectPack::Native(ClientAuthentication::Secure{ connect_token }, client_address),
         );
-    prepare_client_app_core(&mut client_app);
+    let client_id = client_start_pack.client_initializer.context.id();
+    let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
 
-    match client_start_pack.click_client_initializer
-    {
-        // player
-        ClickClientInitializer::Player(player_initializer) =>
-        {
-            player_id           = Some(player_initializer.player_context.id());
-            player_input_sender = Some(prepare_player_app_core(&mut client_app, player_initializer));
-        }
-        // watcher
-        ClickClientInitializer::Watcher =>
-        {
-            prepare_watcher_app_core(&mut client_app);
-        }
-    }
-
-    (client_app, player_input_sender, player_id)
+    (client_app, client_id, player_input_sender)
 }
 
 //-------------------------------------------------------------------------------------------------------------------

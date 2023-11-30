@@ -11,28 +11,43 @@ use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Static information in a player app.
+/// Client types.
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Serialize, Deserialize)]
+pub enum ClientType
+{
+    Player,
+    Watcher,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Static information in a client app.
 #[derive(Resource, Debug, Serialize, Deserialize)]
-pub struct ClickPlayerContext
+pub struct ClientContext
 {
     /// This client's id
     client_id: ClientIdType,
-    /// Game duration config.
+    /// This client's type.
+    client_type: ClientType,
+
+    /// The game duration config.
     duration_config: GameDurationConfig,
 }
 
-impl ClickPlayerContext
+impl ClientContext
 {
     /// New context
     pub fn new(
         client_id       : ClientIdType,
+        client_type     : ClientType,
         duration_config : GameDurationConfig,
-    ) -> ClickPlayerContext 
+    ) -> ClientContext 
     {
-        ClickPlayerContext{ client_id, duration_config }
+        ClientContext{ client_id, client_type, duration_config }
     }
 
     pub fn id(&self) -> ClientIdType                     { self.client_id }
+    pub fn client_type(&self) -> ClientType                     { self.client_type }
     pub fn duration_config(&self) -> &GameDurationConfig { &self.duration_config }
 }
 

@@ -3,17 +3,21 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 //standard shortcuts
 
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Initialize the client state.
-pub(crate) fn setup_player_state(world: &mut World)
+/// Data used to initialize a client app on startup.
+///
+/// This resource is consumed during initialization.
+#[derive(Resource, Debug, Serialize, Deserialize)]
+pub struct ClientInitializer
 {
-    let player_initializer = world.remove_resource::<ClickPlayerInitializer>().expect("initializer missing");
-    world.insert_resource(player_initializer.player_context);
+    /// The client's context.
+    pub context: ClientContext,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

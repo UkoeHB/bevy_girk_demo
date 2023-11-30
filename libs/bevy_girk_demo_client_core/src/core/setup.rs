@@ -17,3 +17,12 @@ pub(crate) fn setup_game_output_handler(mut commands: Commands)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+
+/// Initialize the client state.
+pub(crate) fn setup_client_state(world: &mut World)
+{
+    let initializer = world.remove_resource::<ClientInitializer>().expect("initializer missing");
+    world.insert_resource(initializer.context);
+}
+
+//-------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,17 @@
+[package]
+name = "game_instance"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "game_instance"
+test    = false
+doctest = false
+
+[dependencies]
+bevy = { version = "0.11", default-features = false }
+
+bevy_girk_utils          = { workspace = true }
+
+bevy_girk_demo_game_core = { path = "../../libs/bevy_girk_demo_game_core" }
+bevy_girk_demo_wiring    = { path = "../../libs/bevy_girk_demo_wiring" }

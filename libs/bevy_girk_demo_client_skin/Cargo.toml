@@ -1,5 +1,5 @@
 [package]
-name = "bevy_girk_demo_player_skin"
+name = "bevy_girk_demo_client_skin"
 version.workspace = true
 edition.workspace = true
 
@@ -14,3 +14,6 @@ bevy_framepace = { workspace = true }
 bevy_kot       = { workspace = true }
 
 bevy_girk_utils = { workspace = true }
+
+bevy_girk_demo_client_core = { path = "../bevy_girk_demo_client_core" }
+bevy_girk_demo_game_core   = { path = "../bevy_girk_demo_game_core" }
