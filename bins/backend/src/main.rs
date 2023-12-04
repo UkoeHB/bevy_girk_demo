@@ -86,7 +86,7 @@ fn make_hub_server_configs() -> GameHubServerStartupPack
 fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> ClickGameFactoryConfig
 {
     // versioning
-    let test_protocol_id = 0u64;
+    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
     let max_init_ticks  = Ticks(200);
@@ -94,7 +94,7 @@ fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> 
 
     // server setup config
     let server_setup_config = GameServerSetupConfig{
-            protocol_id     : test_protocol_id,
+            protocol_id,
             expire_seconds  : 10u64,
             timeout_seconds : 5i32,
             server_ip       : Ipv6Addr::LOCALHOST,

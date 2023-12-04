@@ -59,7 +59,7 @@ pub fn make_game_client_core(
     let client_start_pack = deser_msg::<ClickClientStartPack>(&connect_info.serialized_start_data).unwrap();
 
     // get client address based on server address
-    let server_addr = connect_token.server_addresses[0].expect("only one server address is currently supported");
+    let server_addr = connect_token.server_addresses[0].expect("server address is missing");
     let client_address = client_address_from_server_address(&server_addr);
 
     // set up client app

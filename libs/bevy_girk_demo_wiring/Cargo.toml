@@ -16,6 +16,7 @@ bevy_replicon  = { workspace = true }
 bevy_simplenet = { workspace = true }
 iyes_progress  = { workspace = true }
 serde          = { workspace = true }
+serde_json     = { workspace = true }
 tracing        = { workspace = true }
 wasm-timer     = { workspace = true }
 
