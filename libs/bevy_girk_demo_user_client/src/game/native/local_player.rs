@@ -16,6 +16,13 @@ use std::net::Ipv6Addr;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+//todo: inject these
+const GAME_INSTANCE_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
+const GAME_CLIENT_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> ClickGameFactoryConfig
 {
     // versioning
@@ -78,6 +85,7 @@ impl GameMonitorImpl for GameMonitorLocalNative
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Launches a local single-player game.
+//todo: inject all configs
 pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents) -> GameMonitorLocalNative
 {
     // launch in task
@@ -87,29 +95,36 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
         {
             // prep game launch pack
             let game_ticks_per_sec = Ticks(20);
-            let game_num_ticks = Ticks(20 * 25);
+            let game_num_ticks = Ticks(20 * 5);
             let game_configs = make_click_game_configs(game_ticks_per_sec, game_num_ticks);
-            let Ok(launch_pack) = get_launch_pack(ser_msg(&game_configs), lobby_contents) else { return None; };
+            let Ok(launch_pack) = get_launch_pack(ser_msg(&game_configs), lobby_contents)
+            else { tracing::error!("failed getting launch pack for local player game"); return None; };
 
             // launch game
             //todo: inject game app binary path
+            tracing::trace!(?GAME_INSTANCE_PATH, "launching game instance for local player game");
             let (report_sender, mut report_receiver) = new_io_channel::<GameInstanceReport>();
-            let launcher = GameInstanceLauncherProcess::new(String::from("game_instance"));
+            let launcher = GameInstanceLauncherProcess::new(String::from(GAME_INSTANCE_PATH));
             let mut game_instance = launcher.launch(launch_pack, report_sender);
 
             // wait for game start report
-            let Some(GameInstanceReport::GameStart(_, report)) = report_receiver.recv().await else { return None; };
+            let Some(GameInstanceReport::GameStart(_, report)) = report_receiver.recv().await
+            else { tracing::error!("failed getting game start report for local player game"); return None; };
 
             // extract game connect info
-            let Some(connect_info) = report.connect_infos.get(0) else { return None; };
+            let Some(connect_info) = report.connect_infos.get(0)
+            else { tracing::error!("missing connect infos for local player game"); return None; };
 
             // launch game client
             //todo: inject game client binary path
-            let Ok(mut game_client_process) = launch_game_client(String::from("game_client"), connect_info) else { return None; };
+            tracing::trace!(?GAME_CLIENT_PATH, "launching game client for local player game");
+            let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), connect_info)
+            else { tracing::error!("failed launching game client for local player game"); return None; };
 
             // wait for client to close
-            // - it is mandatory to wait for client closure to avoid zombie process leak
+            // - we must wait for client closure to avoid zombie process leak
             let _ = game_client_process.wait().await;
+            tracing::debug!("local player game client closed");
 
             // command game instance to abort
             // - we assume if the client is closed then the game should die, since this is singleplayer
@@ -117,11 +132,14 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
             let _ = game_instance.send_command(GameInstanceCommand::AbortGame);
 
             // wait for game instance to close
-            let _ = game_instance.get().await;
+            if !game_instance.get().await
+            { tracing::warn!("local player game instance closed with error"); }
 
             // get game instance report
-            let Some(GameInstanceReport::GameOver(_, game_over_report)) = report_receiver.try_recv() else { return None; };
+            let Some(GameInstanceReport::GameOver(_, game_over_report)) = report_receiver.try_recv()
+            else { tracing::error!("did not receive game over report for local player game"); return None; };
 
+            tracing::info!("local player game ended");
             Some(game_over_report)
         }
     );

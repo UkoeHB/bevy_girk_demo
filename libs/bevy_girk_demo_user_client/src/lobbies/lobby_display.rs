@@ -47,10 +47,12 @@ impl LobbyDisplay
         Ok(())
     }
 
-    pub(crate) fn clear(&mut self)
+    pub(crate) fn clear(&mut self) -> Option<ClickLobbyContents>
     {
-        self.current    = None;
+        let current = self.current.take();
         self.lobby_type = None;
+
+        current
     }
 
     pub(crate) fn lobby_id(&self) -> Option<u64>

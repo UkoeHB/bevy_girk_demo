@@ -114,10 +114,11 @@ fn leave_current_lobby(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn start_current_lobby(
-    mut rcommands : ReactCommands,
-    client        : Res<HostUserClient>,
-    lobby         : ReactRes<LobbyDisplay>,
-    launch_lobby  : Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
+    mut rcommands    : ReactCommands,
+    client           : Res<HostUserClient>,
+    mut lobby        : ReactResMut<LobbyDisplay>,
+    mut game_monitor : ReactResMut<GameMonitor>,
+    launch_lobby     : Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
 ){
     // check for existing request
     let Ok(target_entity) = launch_lobby.get_single()
@@ -127,15 +128,21 @@ fn start_current_lobby(
     let Some(lobby_id) = lobby.lobby_id()
     else { tracing::error!("tried to start lobby but we aren't in a lobby"); return; };
 
+    // check if there is an existing game
+    if game_monitor.has_game() { tracing::error!("tried to start lobby but we are already in a game"); return; };
+
     // launch the lobby
     match lobby.lobby_type()
     {
         None => { tracing::error!("tried to start lobby but there is no lobby type"); return; }
         Some(LobbyType::Local) =>
         {
-            //todo: clear lobby contents
-            //todo: start game
-            tracing::error!("starting local lobby not yet supported");
+            // clear lobby display
+            let Some(lobby_contents) = lobby.get_mut(&mut rcommands).clear()
+            else { tracing::error!("lobby contents are missing in local lobby"); return; };
+
+            // launch the game
+            launch_local_player_game(game_monitor.get_mut(&mut rcommands), lobby_contents);
         }
         Some(LobbyType::Hosted) =>
         {
@@ -563,12 +570,21 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let default_text = "Start";
     let button_entity = spawn_basic_button(ui, &area, default_text, start_current_lobby);
 
-    // disable button when we don't own the lobby or when the lobby is not ready to start
+    // disable button
+    // - when we don't own the lobby
+    // - when the lobby is not ready to start
+    // - when we are currently in a game
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
     ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>|
+            move
+            |
+                mut ui  : UiUtils<MainUi>,
+                display : ReactRes<LobbyDisplay>,
+                client  : Res<HostUserClient>,
+                monitor : ReactRes<GameMonitor>
+            |
             {
                 let enable = match display.get()
                 {
@@ -582,6 +598,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     },
                     None => false,
                 };
+                let enable = enable && !monitor.has_game();
                 ui.toggle_basic_button(enable, &disable_overlay, button_entity);
             }
         );

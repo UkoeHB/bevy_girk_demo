@@ -38,7 +38,7 @@ pub(crate) fn handle_connection_lost(
     mut ack_request   : ReactResMut<AckRequestData>,
 ){
     // clear lobby display if hosted
-    if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear() };
+    if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear(); }
 
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }

@@ -11,6 +11,8 @@ use bevy_girk_demo_wiring::*;
 
 pub(crate) fn launch_local_player_game(monitor: &mut GameMonitor, lobby_contents: ClickLobbyContents)
 {
+    tracing::info!("launching local player game");
+
     let monitor_impl =
     {
         #[cfg(not(target_family = "wasm"))]

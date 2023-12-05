@@ -427,6 +427,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
 {
     app.insert_react_resource(MakeLobbyWindow::default())
+        .add_react_event::<MadeLocalLobby>()
         .add_react_event::<ActivateMakeLobbyWindow>();
 }
 
