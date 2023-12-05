@@ -15,6 +15,7 @@ bevy_kot_ui    = { workspace = true }
 bevy_fn_plugin = { workspace = true }
 bevy_framepace = { workspace = true }
 bevy_simplenet = { workspace = true, features = ["client", "bevy"] }
+enfync         = { workspace = true }
 serde          = { workspace = true }
 tracing        = { workspace = true }
 
@@ -26,4 +27,5 @@ bevy_girk_game_fw        = { workspace = true }
 bevy_girk_game_instance  = { workspace = true }
 bevy_girk_utils          = { workspace = true }
 
-bevy_girk_demo_wiring = { path = "../bevy_girk_demo_wiring" }
+bevy_girk_demo_game_core = { path = "../bevy_girk_demo_game_core" }
+bevy_girk_demo_wiring    = { path = "../bevy_girk_demo_wiring" }

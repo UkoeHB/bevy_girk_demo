@@ -67,6 +67,9 @@ impl Into<LobbyMemberColor> for ClickLobbyMemberType
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Contents of a lobby for the click demo game.
+///
+/// Lobby contents are extracted from a `LobbyData`.
 #[derive(Debug, Clone)]
 pub struct ClickLobbyContents
 {
@@ -148,7 +151,7 @@ impl TryFrom<LobbyData> for ClickLobbyContents
             owner_id : data.owner_id,
             config,
             players,
-            watchers
+            watchers,
         })   
     }
 }

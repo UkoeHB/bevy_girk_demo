@@ -32,3 +32,8 @@ bevy_girk_demo_game_core   = { path = "../bevy_girk_demo_game_core" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rand = { version = "0.8" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies.tokio]
+version = "1.34"
+default-features = false
+features = ["io-util", "process", "macros"]

@@ -65,13 +65,24 @@ fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn get_launch_pack(game_factory_config_ser: &Vec<u8>, start_request: &GameStartRequest) -> Result<GameLaunchPack, ()>
+fn launch_pack_from_req(game_factory_config_ser: &Vec<u8>, start_request: &GameStartRequest) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby data
-    #[allow(unused_mut)]
-    let Ok(mut lobby_contents) = ClickLobbyContents::try_from(start_request.lobby_data.clone())
+    let Ok(lobby_contents) = ClickLobbyContents::try_from(start_request.lobby_data.clone())
     else { tracing::error!("unable to extract lobby contents from lobby data"); return Err(()); };
 
+    get_launch_pack(game_factory_config_ser.clone(), lobby_contents)
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+pub fn get_launch_pack(
+    game_factory_config_ser : Vec<u8>,
+    mut lobby_contents      : ClickLobbyContents,
+) -> Result<GameLaunchPack, ()>
+{
+    // extract players/watchers from lobby contents
     let num_players  = lobby_contents.players.len();
     let num_watchers = lobby_contents.watchers.len();
 
@@ -103,12 +114,9 @@ fn get_launch_pack(game_factory_config_ser: &Vec<u8>, start_request: &GameStartR
     }
 
     // launch pack
-    let launch_pack = GameLaunchPack::new(start_request.game_id(), game_factory_config_ser.clone(), client_init_data);
-
-    Ok(launch_pack)
+    Ok(GameLaunchPack::new(lobby_contents.id, game_factory_config_ser, client_init_data))
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Default)]
@@ -134,7 +142,7 @@ impl GameLaunchPackSourceImpl for ClickGameLaunchPackSource
     /// Request a launch pack for a specified game.
     fn request_launch_pack(&mut self, start_request: &GameStartRequest)
     {
-        match get_launch_pack(&self.game_factory_config_ser, start_request)
+        match launch_pack_from_req(&self.game_factory_config_ser, start_request)
         {
             Ok(launch_pack) => self.queue.push_back(GameLaunchPackReport::Pack(launch_pack)),
             Err(_)          => self.queue.push_back(GameLaunchPackReport::Failure(start_request.game_id())),

@@ -1,4 +1,5 @@
 //local shortcuts
+use crate::*;
 
 //third-party shortcuts
 use bevy_fn_plugin::bevy_plugin;
@@ -9,8 +10,9 @@ use bevy_fn_plugin::bevy_plugin;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]
-pub(crate) fn GamePlugin(_app: &mut App)
+pub(crate) fn GamePlugin(app: &mut App)
 {
+    app.add_plugins(GameMonitorPlugin);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
