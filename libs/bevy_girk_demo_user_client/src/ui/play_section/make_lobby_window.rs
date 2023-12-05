@@ -243,13 +243,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title text
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-            ui,
-            text,
-            TextParams::center()
-                .with_height(Some(100.)),
-            "New Lobby"
-        );
+    spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "New Lobby");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -264,8 +258,7 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Join as: Player\n(UI todo)"
         );
 }
@@ -282,8 +275,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             singleplayer_overlay.clone(),
-            TextParams::center()
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Config: 1 player, 0 watchers\n(UI todo)"
         );
 
@@ -291,8 +283,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             multiplayer_overlay.clone(),
-            TextParams::center()
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Config: 2 players, 1 watcher\n(UI todo)"
         );
 
@@ -336,8 +327,7 @@ fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Password: <empty>\n(UI todo)"
         );
 }
@@ -352,8 +342,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             sp_text.clone(),
-            TextParams::center()
-                .with_height(Some(80.)),
+            TextParams::center().with_height(Some(80.)),
             "Single-player lobby: does not require a server connection."
         );
 
@@ -362,8 +351,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             mp_text.clone(),
-            TextParams::center()
-                .with_height(Some(80.)),
+            TextParams::center().with_height(Some(80.)),
             "Multiplayer lobby: requires a server connection."
         );
 

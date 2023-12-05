@@ -51,17 +51,11 @@ fn main()
         };
 
     // build and launch the bevy app
-    tracing::error!("app");
     let mut app = App::new();
-    //app.insert_resource(client)
-      //  .insert_resource(timer_configs)
-      //  .add_plugins(ClickUserClientPlugin);
-    tracing::error!("plugins");
-    app.finish();
-    tracing::error!("finish");
-    app.update();
-    tracing::error!("update");
-    app.run();
+    app.insert_resource(client)
+        .insert_resource(timer_configs)
+        .add_plugins(ClickUserClientPlugin)
+        .run();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

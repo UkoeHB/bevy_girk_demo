@@ -142,9 +142,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
-                .with_height(Some(100.)),
+            TextParams::center().with_height(Some(100.)),
             "Join Lobby"
         );
 }
@@ -161,9 +159,7 @@ fn add_subtitle(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let text_entity = spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
-                .with_height(Some(40.)),
+            TextParams::center().with_height(Some(40.)),
             default_text
         );
 
@@ -197,9 +193,7 @@ fn add_member_type_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Member type: Player\n(UI todo)"
         );
 }
@@ -216,9 +210,7 @@ fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_basic_text(
             ui,
             text,
-            TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
-                .with_width(Some(75.)),
+            TextParams::center().with_width(Some(75.)),
             "Password: <empty>\n(UI todo)"
         );
 }
