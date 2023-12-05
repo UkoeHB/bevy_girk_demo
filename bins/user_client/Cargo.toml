@@ -12,6 +12,7 @@ doctest = false
 bevy           = { workspace = true, default-features = true }
 enfync         = { workspace = true }
 bevy_simplenet = { workspace = true }
+tracing        = { workspace = true }
 url            = { workspace = true }
 wasm-timer     = { workspace = true }
 

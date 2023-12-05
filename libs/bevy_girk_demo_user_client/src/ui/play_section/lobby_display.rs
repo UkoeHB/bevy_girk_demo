@@ -388,7 +388,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 
     // disable button when the page number is zero
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<ListPage>|
@@ -426,7 +426,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 
     // disable button when the page number is maxed
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, page: ReactRes<ListPage>|
@@ -535,7 +535,7 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when there is no lobby
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
@@ -565,7 +565,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when we don't own the lobby or when the lobby is not ready to start
     let disable_overlay = make_overlay(ui.tree(), &area, "", true);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>|

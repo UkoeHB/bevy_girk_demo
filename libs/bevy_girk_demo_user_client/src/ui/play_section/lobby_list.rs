@@ -382,7 +382,7 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when displaying 'now'
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
@@ -404,7 +404,7 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when no newer lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
@@ -427,7 +427,7 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when no older lobbies to request
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
@@ -450,7 +450,7 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when last requested the oldest lobbies
     let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
@@ -501,7 +501,7 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // disable button when we are in a lobby already
     let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|

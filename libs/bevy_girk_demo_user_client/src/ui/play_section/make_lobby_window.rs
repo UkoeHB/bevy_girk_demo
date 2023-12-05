@@ -223,7 +223,7 @@ fn setup_window_reactors(
     // prepare blocker for make button
     let accept_disable = make_overlay(ui.tree(), &popup_pack.accept_button, "", false);
     let accept_entity = popup_pack.accept_entity;
-    ui.commands().spawn((accept_disable.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((accept_disable.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // disable 'make' button when disconnected and configs are non-local
     ui.rcommands.on(
@@ -247,7 +247,6 @@ fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             text,
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(100.)),
             "New Lobby"
         );
@@ -266,7 +265,6 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             text,
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
             "Join as: Player\n(UI todo)"
         );
@@ -285,7 +283,6 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             singleplayer_overlay.clone(),
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
             "Config: 1 player, 0 watchers\n(UI todo)"
         );
@@ -295,7 +292,6 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             multiplayer_overlay.clone(),
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
             "Config: 2 players, 1 watcher\n(UI todo)"
         );
@@ -326,8 +322,6 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 *toggle = !*toggle;
             }
         );
-    let branch = button.fetch_mut(ui.tree()).unwrap();
-    branch.set_depth(600.);  //todo: remove when lunex is fixed
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -343,7 +337,6 @@ fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             text,
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_width(Some(75.)),
             "Password: <empty>\n(UI todo)"
         );
@@ -360,7 +353,6 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             sp_text.clone(),
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(80.)),
             "Single-player lobby: does not require a server connection."
         );
@@ -371,7 +363,6 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ui,
             mp_text.clone(),
             TextParams::center()
-                .with_depth(700.)  //todo: remove when lunex is fixed
                 .with_height(Some(80.)),
             "Multiplayer lobby: requires a server connection."
         );

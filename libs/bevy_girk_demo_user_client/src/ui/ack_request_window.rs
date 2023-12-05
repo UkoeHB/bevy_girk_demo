@@ -138,11 +138,11 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
 
     // disabler for reject button
     let reject_disable_overlay = make_overlay(ui.tree(), &popup_pack.cancel_button, "", true);
-    ui.commands().spawn((reject_disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((reject_disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // disabler for accept button
     let enable_disable_overlay = make_overlay(ui.tree(), &popup_pack.accept_button, "", true);
-    ui.commands().spawn((enable_disable_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((enable_disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // setup window reactor
     let window_overlay = popup_pack.window_overlay.clone();

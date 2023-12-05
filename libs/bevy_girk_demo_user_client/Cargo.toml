@@ -18,8 +18,8 @@ bevy_simplenet = { workspace = true, features = ["client", "bevy"] }
 serde          = { workspace = true }
 tracing        = { workspace = true }
 
-bevy_lunex      = { version = "0.0.6" }
-bevy_lunex_core = { version = "0.0.6" }
+bevy_lunex      = { version = "0.0.9" }
+bevy_lunex_core = { version = "0.0.9" }
 
 bevy_girk_backend_public = { workspace = true }
 bevy_girk_game_fw        = { workspace = true }

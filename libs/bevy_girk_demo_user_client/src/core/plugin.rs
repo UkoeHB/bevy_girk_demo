@@ -37,8 +37,8 @@ fn BevyEnginePlugin(app: &mut App)
     // add to app
     app.add_plugins(bevy_plugins)
         .insert_resource(bevy::winit::WinitSettings{
-            focused_mode   : UpdateMode::Reactive{ max_wait: std::time::Duration::from_millis(100) },
-            unfocused_mode : UpdateMode::ReactiveLowPower{ max_wait: std::time::Duration::from_millis(250) },
+            focused_mode   : UpdateMode::Reactive{ wait: std::time::Duration::from_millis(100) },
+            unfocused_mode : UpdateMode::ReactiveLowPower{ wait: std::time::Duration::from_millis(250) },
             ..Default::default()
         });
 }
@@ -60,7 +60,7 @@ pub fn ClickUserClientPlugin(app: &mut App)
         .add_plugins(HostClientPlugin)
         .add_plugins(LobbiesPlugin)
         .add_plugins(GamePlugin)
-        .add_plugins(UIPlugin);
+        .add_plugins(UiPlugin);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

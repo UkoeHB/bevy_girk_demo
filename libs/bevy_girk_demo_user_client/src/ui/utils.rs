@@ -20,7 +20,7 @@ pub fn toggle_button_availability(
         button_blocker,
         text_entity,
     ))             : In<(bool, Widget, Entity)>,
-    mut uis        : Query<&mut UiTree, With<MainUi>>,
+    mut uis        : Query<&mut UiTree<MainUi>>,
     mut text_query : Query<&mut Text>,
     style_stack    : Res<StyleStackRes<MainUi>>,
 ){

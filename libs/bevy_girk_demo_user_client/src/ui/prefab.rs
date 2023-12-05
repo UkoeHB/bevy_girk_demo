@@ -178,6 +178,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
 
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);
+    window_overlay.fetch_mut(ui.tree()).unwrap().get_container_mut().set_render_depth(Modifier::Set(500.));
 
     // add screen-wide barrier
     let barrier = relative_widget(ui.tree(), window_overlay.end(""), (-10., 110.), (-10., 110.));
@@ -190,7 +191,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             style.background.1
         );
     ui.commands().spawn(barrier_img);
-    ui.commands().spawn((barrier, UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
 
     // window box
     let xmod = style.proportions.x.max(0.).min(100.) / 2.;
@@ -206,7 +207,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             ui.asset_server.load(style.window.0),
             style.window.1
         );
-    ui.commands().spawn((window_img, UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((window_img, UiInteractionBarrier::<MainUi>::default()));
 
     // region for caller's content
     let content_percent = style.content_percent.max(0.).min(100.);
@@ -255,10 +256,6 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
 
         (cancel_button, cancel_entity, accept_button, accept_entity)
     });
-
-    // set depth of window above all other ui elements
-    let branch = window_overlay.fetch_mut(ui.tree()).unwrap();
-    branch.set_depth(500.);
 
     BasicPopupPack{
             window_overlay,

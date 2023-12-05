@@ -121,17 +121,17 @@ fn bevy_girk_setup(mut commands: Commands, asset_server: Res<AssetServer>)
 fn GIRKSetupPlugin(app: &mut App)
 {
     app
-        .add_plugins(FPSTrackerPlugin)
+        .add_plugins(FpsTrackerPlugin)
         .add_plugins(ConfigPlugin)
         .add_systems(Startup, bevy_girk_setup)
-        .add_systems(Update, refresh_fps_indicator.after(FPSTrackerSet));
+        .add_systems(Update, refresh_fps_indicator.after(FpsTrackerSet));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Realtime systems
-fn refresh_fps_indicator(mut indicator_query: Query<&mut Text, With<FPSIndicator>>, fps_tracker: Res<FPSTracker>)
+fn refresh_fps_indicator(mut indicator_query: Query<&mut Text, With<FPSIndicator>>, fps_tracker: Res<FpsTracker>)
 {
     // 1. only refresh once per second
     if fps_tracker.current_time().as_secs() <= fps_tracker.previous_time().as_secs() { return }

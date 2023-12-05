@@ -4,6 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy_kot::prelude::*;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_lunex::prelude::*;
 
@@ -24,11 +25,11 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
     // root zones
     // - play button (top left)
     let play_button = relative_widget(ui.tree(), root.end("play_button"), (0., 20.), (0., 10.));
-    ui.commands().spawn((play_button.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((play_button.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // - menu bar (center top)
     let menu_bar = relative_widget(ui.tree(), root.end("menu_bar"), (20., 90.), (0., 10.));
-    ui.commands().spawn((menu_bar.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((menu_bar.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // - add separators
     //todo: this is very janky
@@ -39,7 +40,7 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
 
     // - menu item overlay area (everything below the menu bar)
     let menu_overlay = relative_widget(ui.tree(), root.end("menu_overlay"), (0., 100.), (10., 100.));
-    ui.commands().spawn((menu_overlay.clone(), UIInteractionBarrier::<MainUi>::default()));
+    ui.commands().spawn((menu_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
     // - user info (upper right corner)
     let info = relative_widget(ui.tree(), root.end("info"), (90., 100.), (0., 10.));
@@ -54,7 +55,7 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ui(mut commands: Commands)
+fn setup_ui(mut commands: Commands, window: Query<Entity, (With<Window>, With<PrimaryWindow>)>)
 {
     // prepare 2D camera
     commands.spawn(
@@ -62,21 +63,24 @@ fn setup_ui(mut commands: Commands)
         );
 
     // make lunex cursor
-    commands.spawn((bevy_lunex::prelude::Cursor::new(0.0), Transform::default(), MainMouseCursor));
+    commands.spawn((Cursor::new(), Transform::default(), Visibility::default(), MainMouseCursor));
 
     // add new ui tree to ecs
     commands.insert_resource(StyleStackRes::<MainUi>::default());
-    commands.spawn((UiTree::new("ui"), MainUi));
+    let tree = UiTree::<MainUi>::new("ui");
+
+    let window = window.single();
+    commands.entity(window).insert(tree.bundle());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]
-pub(crate) fn UIPlugin(app: &mut App)
+pub(crate) fn UiPlugin(app: &mut App)
 {
     app
-        .add_plugins(LunexUiPlugin)
+        .add_plugins(LunexUiPlugin2D::<MainUi>::new())
         .register_interaction_source(MouseLButtonMain::default())
         .add_systems(PreStartup, setup_ui)
         .add_systems(Startup, build_ui)
