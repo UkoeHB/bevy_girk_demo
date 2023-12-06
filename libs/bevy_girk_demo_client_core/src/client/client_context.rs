@@ -47,7 +47,7 @@ impl ClientContext
     }
 
     pub fn id(&self) -> ClientIdType                     { self.client_id }
-    pub fn client_type(&self) -> ClientType                     { self.client_type }
+    pub fn client_type(&self) -> ClientType              { self.client_type }
     pub fn duration_config(&self) -> &GameDurationConfig { &self.duration_config }
 }
 

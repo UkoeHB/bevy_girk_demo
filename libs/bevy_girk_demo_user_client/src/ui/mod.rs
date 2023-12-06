@@ -5,8 +5,6 @@ mod info;
 mod menu_section;
 mod play_section;
 mod plugin;
-mod prefab;
-mod prefab_styles;
 mod user_client_styles;
 mod utils;
 
@@ -17,7 +15,5 @@ pub(crate) use crate::ui::info::*;
 pub(crate) use crate::ui::menu_section::*;
 pub(crate) use crate::ui::play_section::*;
 pub(crate) use crate::ui::plugin::*;
-pub use crate::ui::prefab::*;
-pub use crate::ui::prefab_styles::*;
 pub(crate) use crate::ui::user_client_styles::*;
 pub use crate::ui::utils::*;

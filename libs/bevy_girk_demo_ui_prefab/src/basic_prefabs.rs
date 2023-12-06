@@ -1,9 +1,11 @@
 //local shortcuts
 use crate::*;
+use bevy_kot_ui::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ecs::*;
+use bevy_kot_ui::builtin::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts

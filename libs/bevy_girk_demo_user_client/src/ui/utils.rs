@@ -1,5 +1,5 @@
 //local shortcuts
-use crate::*;
+use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::ecs::system::SystemParam;

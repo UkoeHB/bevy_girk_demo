@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -35,7 +36,7 @@ impl Default for GameInProgressStyle
 #[derive(StyleBundle, Default, Debug)]
 pub(crate) struct UserClientStyles
 {
-    prefabs: PrefabStyles,
+    prefabs: BasicPrefabStyles,
     game_in_progress: GameInProgressStyle,
 }
 

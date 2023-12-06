@@ -3,7 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
+use bevy_kot_derive::*;
 
 //standard shortcuts
 
@@ -146,7 +146,7 @@ pub fn basic_popup_default_button_style() -> BasicButton
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(StyleBundle, Default, Debug)]
-pub struct PrefabStyles
+pub struct BasicPrefabStyles
 {
     basic_text: BasicText,
     basic_button: BasicButton,

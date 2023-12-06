@@ -1,5 +1,6 @@
 //local shortcuts
 use crate::*;
+use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts

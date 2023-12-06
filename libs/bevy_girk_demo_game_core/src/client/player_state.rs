@@ -3,6 +3,7 @@
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
+use bevy_kot_ecs::*;
 use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +22,7 @@ pub struct PlayerId
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player name component.
-#[derive(Component, Default, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Component, ReactComponent, Default, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerName
 {
     pub name: String,
@@ -29,7 +30,7 @@ pub struct PlayerName
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Component, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
 pub struct PlayerScore
 {
     /// Note: This is only `pub` for testing purposes.
