@@ -6,7 +6,6 @@ mod menu_section;
 mod play_section;
 mod plugin;
 mod user_client_styles;
-mod utils;
 
 //API exports
 pub(crate) use crate::ui::ack_request_window::*;
@@ -16,4 +15,3 @@ pub(crate) use crate::ui::menu_section::*;
 pub(crate) use crate::ui::play_section::*;
 pub(crate) use crate::ui::plugin::*;
 pub(crate) use crate::ui::user_client_styles::*;
-pub use crate::ui::utils::*;

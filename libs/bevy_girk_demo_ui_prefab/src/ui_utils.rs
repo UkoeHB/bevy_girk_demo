@@ -1,10 +1,10 @@
 //local shortcuts
-use bevy_girk_demo_ui_prefab::*;
+use crate::*;
 
 //third-party shortcuts
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -14,15 +14,15 @@ use bevy_lunex::prelude::*;
 
 /// Toggle a button's availability by showing/hiding a widget that blocks the button, and toggling the button label's
 /// font color.
-pub fn toggle_button_availability(
+pub fn toggle_button_availability<Ui: LunexUi>(
     In((
         enable,
         button_blocker,
         text_entity,
     ))             : In<(bool, Widget, Entity)>,
-    mut uis        : Query<&mut UiTree<MainUi>>,
+    mut uis        : Query<&mut UiTree<Ui>>,
     mut text_query : Query<&mut Text>,
-    style_stack    : Res<StyleStackRes<MainUi>>,
+    style_stack    : Res<StyleStackRes<Ui>>,
 ){
     // toggle visibility of button blocker
     let Ok(mut ui) = uis.get_single_mut()

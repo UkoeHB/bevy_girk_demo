@@ -10,4 +10,4 @@ pub use crate::core::*;
 pub(crate) use crate::game::*;
 pub(crate) use crate::host_client::*;
 pub(crate) use crate::lobbies::*;
-pub use crate::ui::*;
+pub(crate) use crate::ui::*;
