@@ -17,7 +17,7 @@ use bevy_lunex::prelude::*;
 fn build_ui(mut ui: UiBuilder<MainUi>)
 {
     // set base styles
-    ui.add_style(PrefabStyles::default());
+    ui.add_style(UserClientStyles::default());
 
     // root widget
     let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));
@@ -50,6 +50,7 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
     ui.div(|ui| add_menu_bar_section(ui, &menu_bar, &menu_overlay));
     ui.div(|ui| add_info_section(ui, &info));
     ui.div(|ui| add_ack_lobby_window(ui));
+    ui.div(|ui| add_game_in_progress(ui));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -89,6 +90,7 @@ pub(crate) fn UiPlugin(app: &mut App)
         .add_plugins(UiConnectionStatusPlugin)
         .add_plugins(UiPlaySectionPlugin)
         .add_plugins(UiAckLobbyWindowPlugin)
+        .add_plugins(UiGameInProgressPlugin)
 
         //.add_plugins(UIDebugOverlayPlugin)  //DEBUG ONLY
         ;
