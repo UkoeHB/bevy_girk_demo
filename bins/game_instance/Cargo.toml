@@ -9,10 +9,9 @@ test    = false
 doctest = false
 
 [dependencies]
-bevy = { version = "0.12", default-features = false }
-tracing-subscriber = { version = "0.3" }
-
-tracing = { workspace = true }
+bevy               = { version = "0.12", default-features = false }
+tracing-subscriber = { workspace = true }
+tracing            = { workspace = true }
 
 bevy_girk_game_instance = { workspace = true }
 bevy_girk_utils         = { workspace = true }

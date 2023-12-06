@@ -50,6 +50,17 @@ fn prepare_game_client_skin(app: &mut App, _client_id: u64, player_input_sender:
 
 fn main()
 {
+    // log to stderr (not stdout, which is piped to the parent process for sending game instance reports)
+    //todo: log to file instead (use env::arg configs?)
+    //todo: this doesn't seem to be working?
+    /*
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(tracing::Level::WARN)
+        .with_writer(std::io::stderr)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    */
+
     // get connect info as input arg
     let connect_info = get_game_connect_info(std::env::args()).expect("game connect info is missing");
 

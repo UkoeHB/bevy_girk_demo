@@ -22,7 +22,8 @@ const WINDOWED_TOGGLE_KEY: KeyCode = KeyCode::W;
 #[bevy_plugin]
 fn BevyEnginePlugin(app: &mut App)
 {
-    app.add_plugins(bevy::DefaultPlugins);
+    // use custom logging
+    app.add_plugins(bevy::DefaultPlugins.build().disable::<bevy::log::LogPlugin>());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
