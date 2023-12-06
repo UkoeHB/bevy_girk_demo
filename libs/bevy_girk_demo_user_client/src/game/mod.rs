@@ -1,4 +1,5 @@
 //module tree
+mod config_temp;
 mod game_launchers;
 mod game_monitor;
 mod plugin;
@@ -9,6 +10,7 @@ mod native;
 mod wasm;
 
 //API exports
+pub(crate) use crate::game::config_temp::*;
 pub(crate) use crate::game::game_launchers::*;
 pub(crate) use crate::game::game_monitor::*;
 pub(crate) use crate::game::plugin::*;
