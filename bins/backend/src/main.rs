@@ -200,7 +200,7 @@ fn main()
 
     // launch game hub server attached to host server
     let game_ticks_per_sec = Ticks(20);
-    let game_num_ticks     = Ticks(20 * 25);
+    let game_num_ticks     = Ticks(20 * 5);
     let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
             host_hub_url,
             make_hub_server_configs(),

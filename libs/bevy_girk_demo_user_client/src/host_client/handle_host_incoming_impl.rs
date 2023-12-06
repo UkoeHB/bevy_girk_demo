@@ -124,10 +124,11 @@ pub(crate) fn handle_pending_lobby_ack_fail(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_start(
-    In((lobby_id, _game_connect)) : In<(u64, GameConnectInfo)>,
-    mut rcommands                 : ReactCommands,
-    mut lobby_display             : ReactResMut<LobbyDisplay>,
-    mut ack_request               : ReactResMut<AckRequestData>,
+    In((lobby_id, game_connect)) : In<(u64, GameConnectInfo)>,
+    mut rcommands                : ReactCommands,
+    mut lobby_display            : ReactResMut<LobbyDisplay>,
+    mut ack_request              : ReactResMut<AckRequestData>,
+    mut game_monitor             : ReactResMut<GameMonitor>,
 ){
     tracing::info!(lobby_id, "game start info received");
 
@@ -137,8 +138,8 @@ pub(crate) fn handle_game_start(
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
-    //todo: launch a game
-    tracing::error!(lobby_id, "game starting is not yet implemented");
+    // launch the game
+    launch_multiplayer_game(game_monitor.get_mut(&mut rcommands), game_connect);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
