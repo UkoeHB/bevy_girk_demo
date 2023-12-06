@@ -2,6 +2,7 @@
 use crate::*;
 
 //third-party shortcuts
+use bevy::log::*;
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy::winit::UpdateMode;
@@ -27,6 +28,12 @@ fn BevyEnginePlugin(app: &mut App)
                     ..Default::default()
                 }),
                 ..Default::default()
+            }
+        )
+        .set(
+            LogPlugin{
+                level: Level::WARN,
+                filter: "bevy_girk_game_instance=trace,bevy_girk_demo_user_client=trace,user_client=trace".to_string(),
             }
         );
 

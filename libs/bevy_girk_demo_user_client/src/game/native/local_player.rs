@@ -29,7 +29,7 @@ fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> 
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
-    let max_init_ticks  = Ticks(200);
+    let max_init_ticks  = Ticks(10);
     let game_prep_ticks = Ticks(0);
 
     // server setup config
@@ -95,7 +95,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
         {
             // prep game launch pack
             let game_ticks_per_sec = Ticks(20);
-            let game_num_ticks = Ticks(20 * 5);
+            let game_num_ticks = Ticks(20 * 1);
             let game_configs = make_click_game_configs(game_ticks_per_sec, game_num_ticks);
             let Ok(launch_pack) = get_launch_pack(ser_msg(&game_configs), lobby_contents)
             else { tracing::error!("failed getting launch pack for local player game"); return None; };
