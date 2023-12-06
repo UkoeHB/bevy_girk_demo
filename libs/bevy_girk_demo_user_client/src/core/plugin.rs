@@ -33,7 +33,7 @@ fn BevyEnginePlugin(app: &mut App)
         .set(
             LogPlugin{
                 level: Level::WARN,
-                filter: "bevy_girk_game_instance=warn,bevy_girk_demo_user_client=warn,user_client=warn".to_string(),
+                filter: "bevy_girk_game_instance=trace,bevy_girk_demo_user_client=trace,user_client=trace".to_string(),
             }
         );
 

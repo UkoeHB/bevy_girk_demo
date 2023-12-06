@@ -14,8 +14,8 @@ use bevy_kot::prelude::*;
 
 fn check_game_monitor(mut rcommands: ReactCommands, mut monitor: ReactResMut<GameMonitor>)
 {
-    // do nothing if the game is running
-    if monitor.is_running() { return; }
+    // do nothing if the game is running or there is no game
+    if monitor.is_running() || !monitor.has_game() { return; }
 
     // try to extract the game over report
     let Ok(result) = monitor.get_mut_noreact().take_result() else { return; };
@@ -23,6 +23,7 @@ fn check_game_monitor(mut rcommands: ReactCommands, mut monitor: ReactResMut<Gam
     // send game over report to the app
     if let Some(report) = result
     {
+        tracing::debug!("received game over report from game monitor");
         rcommands.send(report);
     }
 
@@ -80,7 +81,7 @@ impl GameMonitor
 
     pub(crate) fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
     {
-        let Some(inner) = &mut self.inner else { return Ok(None); };
+        let Some(inner) = &mut self.inner else { return Err(()); };
         inner.take_result()
     }
 }

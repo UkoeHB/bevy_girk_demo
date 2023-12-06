@@ -55,7 +55,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
 
             // launch game
             //todo: inject game app binary path
-            tracing::trace!(?GAME_INSTANCE_PATH, "launching game instance for local player game");
+            tracing::trace!("launching game instance for local player game");
             let (report_sender, mut report_receiver) = new_io_channel::<GameInstanceReport>();
             let launcher = GameInstanceLauncherProcess::new(String::from(GAME_INSTANCE_PATH));
             let mut game_instance = launcher.launch(launch_pack, report_sender);
@@ -70,7 +70,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
 
             // launch game client
             //todo: inject game client binary path
-            tracing::trace!(?GAME_CLIENT_PATH, "launching game client for local player game");
+            tracing::trace!("launching game client for local player game");
             let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), connect_info)
             else { tracing::error!("failed launching game client for local player game"); return None; };
 
@@ -89,7 +89,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
             { tracing::warn!("local player game instance closed with error"); }
 
             // get game instance report
-            let Some(GameInstanceReport::GameOver(_, game_over_report)) = report_receiver.try_recv()
+            let Some(GameInstanceReport::GameOver(_, game_over_report)) = report_receiver.recv().await
             else { tracing::error!("did not receive game over report for local player game"); return None; };
 
             tracing::info!("local player game ended");
