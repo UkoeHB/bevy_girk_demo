@@ -94,6 +94,10 @@ fn make_local_lobby(
     if !make_lobby.is_empty()
     { tracing::warn!("ignoring make local lobby request because a multiplayer request is pending"); return; };
 
+    // do nothing if we are in a hosted lobby
+    if lobby_display.is_hosted()
+    { tracing::warn!("ignoring make local lobby request because we are in a multiplayer lobby"); return; };
+
     // make a local lobby
     // - note: do not log the password
     tracing::trace!(?window.member_type, ?window.config, "making a local lobby");
@@ -226,12 +230,26 @@ fn setup_window_reactors(
     let accept_entity = popup_pack.accept_entity;
     ui.commands().spawn((accept_disable.clone(), UiInteractionBarrier::<MainUi>::default()));
 
-    // disable 'make' button when disconnected and configs are non-local
+    // disable 'make' button
+    // - when disconnected and configs are non-local
+    // - when in a hosted lobby or waiting for a hosted lobby request
     ui.rcommands.on(
-            (resource_mutation::<ConnectionStatus>(), resource_mutation::<MakeLobbyWindow>()),
-            move |mut ui: UiUtils<MainUi>, status: ReactRes<ConnectionStatus>, window: ReactRes<MakeLobbyWindow>|
+            (
+                resource_mutation::<ConnectionStatus>(),
+                resource_mutation::<MakeLobbyWindow>(),
+                resource_mutation::<LobbyDisplay>(),
+            ),
+            move
+            |
+                mut ui        : UiUtils<MainUi>,
+                status        : ReactRes<ConnectionStatus>,
+                window        : ReactRes<MakeLobbyWindow>,
+                make_lobby    : Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
+                lobby_display : ReactResMut<LobbyDisplay>
+            |
             {
                 let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
+                let enable = enable && make_lobby.is_empty() && !lobby_display.is_hosted();
                 ui.toggle_basic_button(enable, &accept_disable, accept_entity);
             }
         );
