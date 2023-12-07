@@ -10,7 +10,7 @@ use bevy::prelude::*;
 
 /// Client core mode
 #[derive(States, Debug, Default, Eq, PartialEq, Hash, Copy, Clone)]
-pub enum ClientCoreMode
+pub enum ClientMode
 {
     #[default]
     Init,

@@ -75,7 +75,7 @@ pub enum ClientSet
 #[bevy_plugin]
 pub fn ClientCoreStartupPlugin(app: &mut App)
 {
-    app.add_state::<ClientCoreMode>()
+    app.add_state::<ClientMode>()
         .add_systems(PreStartup,
             (
                 prestartup_check,
@@ -111,7 +111,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     app.configure_sets(Update,
                 ClientSet::InitStartup
                     .run_if(in_state(ClientFWMode::Init))
-                    .run_if(in_state(ClientCoreMode::Init))
+                    .run_if(in_state(ClientMode::Init))
             );
 
     // Init reinitialize. (runs if client needs to be reinitialized during a game)
@@ -119,7 +119,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     app.configure_sets(Update,
                 ClientSet::InitReinit
                     .run_if(in_state(ClientFWMode::Init))  //framework is reinitializing
-                    .run_if(not(in_state(ClientCoreMode::Init)))  //client core is not in init
+                    .run_if(not(in_state(ClientMode::Init)))  //client is not in init
             );
 
     // Init core. (always runs when framework is being initialized, regardless of client mode)
@@ -135,21 +135,21 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     app.configure_sets(Update,
                 ClientSet::Prep
                     .run_if(in_state(ClientFWMode::Game))
-                    .run_if(in_state(ClientCoreMode::Prep))
+                    .run_if(in_state(ClientMode::Prep))
             );
 
     // Play systems.
     app.configure_sets(Update,
                 ClientSet::Play
                     .run_if(in_state(ClientFWMode::Game))
-                    .run_if(in_state(ClientCoreMode::Play))
+                    .run_if(in_state(ClientMode::Play))
             );
 
     // GameOver systems.
     app.configure_sets(Update,
                 ClientSet::GameOver
                     .run_if(in_state(ClientFWMode::End))
-                    .run_if(in_state(ClientCoreMode::GameOver))
+                    .run_if(in_state(ClientMode::GameOver))
             );
 
     // Misc

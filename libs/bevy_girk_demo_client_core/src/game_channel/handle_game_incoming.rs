@@ -80,12 +80,12 @@ pub(crate) fn try_handle_game_core_output(world: &mut World, serialized_message:
     else { tracing::warn!("failed deserializing game message"); return false; };
 
     // handle based on current client mode
-    match syscall(world, (), get_current_client_core_mode)
+    match syscall(world, (), get_current_client_mode)
     {
-        ClientCoreMode::Init     => handle_game_core_output_init(world, message, ticks),
-        ClientCoreMode::Prep     => handle_game_core_output_prep(world, message, ticks),
-        ClientCoreMode::Play     => handle_game_core_output_play(world, message, ticks),
-        ClientCoreMode::GameOver => handle_game_core_output_gameover(world, message, ticks),
+        ClientMode::Init     => handle_game_core_output_init(world, message, ticks),
+        ClientMode::Prep     => handle_game_core_output_prep(world, message, ticks),
+        ClientMode::Play     => handle_game_core_output_play(world, message, ticks),
+        ClientMode::GameOver => handle_game_core_output_gameover(world, message, ticks),
     }
 
     return true;

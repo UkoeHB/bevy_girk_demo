@@ -68,7 +68,7 @@ fn handle_input_gameover(_world: &mut World, input: PlayerClientInput)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Handle player inputs for ClientCoreMode::Init.
+/// Handle player inputs for ClientMode::Init.
 pub(crate) fn handle_player_inputs_init(world: &mut World)
 {
     process_player_inputs(world, | world, input | handle_input_init(world, input));
@@ -76,7 +76,7 @@ pub(crate) fn handle_player_inputs_init(world: &mut World)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Handle player inputs for ClientCoreMode::Prep.
+/// Handle player inputs for ClientMode::Prep.
 pub(crate) fn handle_player_inputs_prep(world: &mut World)
 {
     process_player_inputs(world, | world, input | handle_input_prep(world, input));
@@ -84,7 +84,7 @@ pub(crate) fn handle_player_inputs_prep(world: &mut World)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Handle player inputs for ClientCoreMode::Play.
+/// Handle player inputs for ClientMode::Play.
 pub(crate) fn handle_player_inputs_play(world: &mut World)
 {
     process_player_inputs(world, | world, input | handle_input_play(world, input));
@@ -92,7 +92,7 @@ pub(crate) fn handle_player_inputs_play(world: &mut World)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Handle player inputs for ClientCoreMode::GameOver.
+/// Handle player inputs for ClientMode::GameOver.
 pub(crate) fn handle_player_inputs_gameover(world: &mut World)
 {
     process_player_inputs(world, | world, input | handle_input_gameover(world, input));

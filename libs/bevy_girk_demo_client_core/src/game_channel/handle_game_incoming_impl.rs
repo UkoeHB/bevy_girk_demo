@@ -17,8 +17,8 @@ use bevy_kot_ecs::*;
 fn update_client_mode(
     In(current_game_mode)       : In<GameMode>,
     client_initialization_state : Res<State<ClientInitializationState>>,
-    current_client_mode         : Res<State<ClientCoreMode>>,
-    mut next_client_mode        : ResMut<NextState<ClientCoreMode>>
+    current_client_mode         : Res<State<ClientMode>>,
+    mut next_client_mode        : ResMut<NextState<ClientMode>>
 ){
     // do not update game mode if we are in the process of initializing the client
     if *client_initialization_state != ClientInitializationState::Done { return; }
@@ -27,10 +27,10 @@ fn update_client_mode(
     let new_client_mode =
         match current_game_mode
         {
-            GameMode::Init     => ClientCoreMode::Init,
-            GameMode::Prep     => ClientCoreMode::Prep,
-            GameMode::Play     => ClientCoreMode::Play,
-            GameMode::GameOver => ClientCoreMode::GameOver,
+            GameMode::Init     => ClientMode::Init,
+            GameMode::Prep     => ClientMode::Prep,
+            GameMode::Play     => ClientMode::Play,
+            GameMode::GameOver => ClientMode::GameOver,
         };
 
     if new_client_mode == **current_client_mode { return; }
@@ -45,7 +45,7 @@ fn update_client_mode(
 pub(crate) fn handle_current_game_mode(In(current_game_mode): In<GameMode>, world: &mut World)
 {
     syscall(world, current_game_mode, update_client_mode);
-    syscall(world, (), apply_state_transition::<ClientCoreMode>);
+    syscall(world, (), apply_state_transition::<ClientMode>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

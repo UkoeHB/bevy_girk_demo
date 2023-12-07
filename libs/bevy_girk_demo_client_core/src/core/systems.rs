@@ -14,10 +14,10 @@ use bevy_girk_utils::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Helper function-system for accessing the client core mode.
-pub fn get_current_client_core_mode(current_client_core_mode: Res<State<ClientCoreMode>>) -> ClientCoreMode
+/// Helper function-system for accessing the client mode.
+pub fn get_current_client_mode(current_client_mode: Res<State<ClientMode>>) -> ClientMode
 {
-    **current_client_core_mode
+    **current_client_mode
 }
 
 //-------------------------------------------------------------------------------------------------------------------

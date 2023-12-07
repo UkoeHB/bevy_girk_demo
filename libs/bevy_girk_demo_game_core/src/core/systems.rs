@@ -55,8 +55,7 @@ pub(crate) fn update_game_mode(
     let expected_game_mode = duration_config.expected_mode(game_ticks.elapsed.ticks());
 
     // update the game mode
-    if expected_game_mode == **current_game_mode
-        { return; }
+    if expected_game_mode == **current_game_mode { return; }
     next_game_mode.set(expected_game_mode);
     tracing::info!(?expected_game_mode, "new game mode");
 }

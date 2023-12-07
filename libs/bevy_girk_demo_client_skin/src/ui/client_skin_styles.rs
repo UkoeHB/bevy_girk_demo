@@ -45,11 +45,34 @@ impl Default for GameInitializingStyle
 
 //-------------------------------------------------------------------------------------------------------------------
 
+#[derive(Style, Clone, Debug)]
+pub(crate) struct GameOverStyle
+{
+    pub(crate) background_img: (&'static str, Vec2),
+    pub(crate) background_color: Color,
+    pub(crate) text: BasicText,
+}
+
+impl Default for GameOverStyle
+{
+    fn default() -> Self
+    {
+        Self{
+            background_img   : FILM,
+            background_color : Color::WHITE,
+            text             : basic_text_default_light_style(),
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 #[derive(StyleBundle, Default, Debug)]
 pub(crate) struct ClientSkinStyles
 {
-    prefabs: BasicPrefabStyles,
-    game_in_progress: GameInitializingStyle,
+    prefabs          : BasicPrefabStyles,
+    game_in_progress : GameInitializingStyle,
+    game_over        : GameOverStyle,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

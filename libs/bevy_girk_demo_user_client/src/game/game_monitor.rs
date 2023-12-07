@@ -23,7 +23,7 @@ fn check_game_monitor(mut rcommands: ReactCommands, mut monitor: ReactResMut<Gam
     // send game over report to the app
     if let Some(report) = result
     {
-        tracing::debug!("received game over report from game monitor");
+        tracing::info!("received game over report from game monitor");
         rcommands.send(report);
     }
 

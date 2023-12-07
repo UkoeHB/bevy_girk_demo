@@ -73,21 +73,6 @@ pub enum GameSet
 #[bevy_plugin]
 pub fn GameTickPlugin(app: &mut App)
 {
-    // ADMIN
-    app.add_systems(Update,
-            (
-                // determine which game mode the previous tick was in and set it
-                update_game_mode.in_set(GameSet::PostInit),
-                apply_state_transition::<GameMode>.in_set(GameSet::PostInit),
-                // elapse the previous tick
-                advance_game_tick.in_set(GameSet::PostInit),
-                advance_prep_tick.in_set(GameSet::Prep),
-                advance_play_tick.in_set(GameSet::Play),
-                advance_game_over_tick.in_set(GameSet::GameOver),
-            ).chain().in_set(GameFWTickSet::Admin)
-        );
-
-
     // GAME Tick systems (after initialization).
     app.configure_sets(Update,
             GameSet::PostInit
@@ -117,7 +102,19 @@ pub fn GameTickPlugin(app: &mut App)
             );
 
 
-    // MISC
+    // ADMIN
+    app.add_systems(Update,
+            (
+                // determine which game mode the previous tick was in and set it
+                update_game_mode.in_set(GameSet::PostInit),
+                apply_state_transition::<GameMode>.in_set(GameSet::PostInit),
+                // elapse the previous tick
+                advance_game_tick.in_set(GameSet::PostInit),
+                advance_prep_tick.in_set(GameSet::Prep),
+                advance_play_tick.in_set(GameSet::Play),
+                advance_game_over_tick.in_set(GameSet::GameOver),
+            ).chain().in_set(GameFWTickSet::Admin)
+        );
 
     // Respond to state transitions
     app.add_systems(OnEnter(GameMode::Init), notify_game_mode_all);
