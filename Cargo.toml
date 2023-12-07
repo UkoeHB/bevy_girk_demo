@@ -89,6 +89,8 @@ bevy_kot_ui     = { version = "0.9" }
 bevy_kot_utils  = { version = "0.9" }
 bevy_fn_plugin  = { version = "0.1" }
 bevy_framepace  = { version = "0.14" }
+bevy_lunex      = { version = "0.0.9" }
+bevy_lunex_core = { version = "0.0.9" }
 bevy_renet      = { version = "0.0.10" }
 #bevy_renet = { git = "https://github.com/lucaspoffo/renet", rev = "cb80542" }
 bevy_replicon  = { version = "0.17.0" }

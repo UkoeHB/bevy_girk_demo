@@ -41,7 +41,7 @@ fn get_game_connect_info(mut args: std::env::Args) -> Result<GameConnectInfo, ()
 
 fn prepare_game_client_skin(app: &mut App, _client_id: u64, player_input_sender: Sender<PlayerInput>)
 {
-    app.add_plugins(GIRKClientPluginTemp)
+    app.add_plugins(ClickClientSkinPlugin)
         .insert_resource(player_input_sender);
 }
 

@@ -3,7 +3,7 @@
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_kot_ecs::*;
+use bevy_kot_derive::*;
 use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 

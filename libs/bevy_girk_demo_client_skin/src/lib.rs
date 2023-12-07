@@ -1,5 +1,7 @@
 //module tree
-mod client_temp;
+mod core;
+mod ui;
 
 //API exports
-pub use crate::client_temp::*;
+pub use crate::core::*;
+pub(crate) use crate::ui::*;
