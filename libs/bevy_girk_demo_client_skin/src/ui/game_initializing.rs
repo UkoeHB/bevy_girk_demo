@@ -63,7 +63,7 @@ fn update_loading_bar(
     let LayoutPackage::Relative(layout) = bar_branch.get_container_mut().get_layout_mut()
     else { tracing::error!("loading bar not relative layout"); return; };
 
-    layout.relative_2.x = progress;
+    layout.relative_2.x = progress * 100.;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
             ImageParams::center()
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_depth(0.1)
+                //.with_depth(0.1)
                 .with_color(style.loading_bar_box_color),
             ui.asset_server.load(style.loading_bar_box_img.0),
             style.loading_bar_box_img.1
@@ -117,7 +117,8 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
     ui.commands().spawn(bar_box_img);
 
     // add loading bar
-    let loading_bar = relative_widget(ui.tree(), bar_box.end(""), (0., 0.), (0., 100.));
+    let loading_bar_frame = relative_widget(ui.tree(), bar_box.end(""), (0.5, 99.5), (0.5, 99.5));
+    let loading_bar = relative_widget(ui.tree(), loading_bar_frame.end(""), (0., 0.), (0., 100.));
     let loading_bar_img = ImageElementBundle::new(
             &loading_bar,
             ImageParams::center()
@@ -143,7 +144,7 @@ pub(crate) fn UiInitializingPlugin(app: &mut App)
         .add_systems(Update,
             update_loading_bar
                 .in_set(ClientFWTickSet::End)
-                .in_set(ClientSet::InitCore)
+                //.in_set(ClientSet::InitCore)
         );
 }
 

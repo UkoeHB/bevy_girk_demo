@@ -28,7 +28,7 @@ use bevy_girk_game_fw::*;
 fn prestartup_check(world: &World)
 {
     if !world.contains_resource::<ClickGameInitializer>()
-        { panic!("ClickGameInitializer is missing on startup!"); }
+    { panic!("ClickGameInitializer is missing on startup!"); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

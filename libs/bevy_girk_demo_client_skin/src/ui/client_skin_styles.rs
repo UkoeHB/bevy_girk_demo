@@ -31,12 +31,14 @@ impl Default for GameInitializingStyle
     {
         Self{
             background_img   : BOX,
-            background_color : Color::BLACK,
+            background_color : Color::DARK_GRAY,
             text             : basic_text_default_light_style(),
-            loading_bar_box_img : BOX,
+
+            loading_bar_box_img   : BOX,
             loading_bar_box_color : Color::WHITE,
+
             loading_bar_img   : FILM,
-            loading_bar_color : Color::GRAY,
+            loading_bar_color : Color::BLACK,
         }
     }
 }

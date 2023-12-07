@@ -272,7 +272,7 @@ impl GameFactoryImpl for ClickGameFactory
         else { tracing::error!("could not deserialize click game factory config"); return Err(()); };
 
         // initialize clients and game config
-        let (game_fw_initializer, game_ctx, user_clients) = prepare_game_startup(
+        let (game_fw_initializer, game_initializer, user_clients) = prepare_game_startup(
                 &launch_pack.client_init_data,
                 config.game_duration_config
             )?;
@@ -280,7 +280,7 @@ impl GameFactoryImpl for ClickGameFactory
         // prepare game app
         prepare_game_app_framework(app, config.game_fw_config, game_fw_initializer);
         prepare_game_app_replication(app);
-        prepare_game_app_core(app, game_ctx);
+        prepare_game_app_core(app, game_initializer);
 
         // set up renet server
         // - we use a unique auth key so clients can only interact with the server created here
