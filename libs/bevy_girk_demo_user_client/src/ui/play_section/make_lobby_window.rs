@@ -394,25 +394,11 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // title
-    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
-    ui.div(|ui| add_window_title(ui, &title_area));
-
-    // form section: 'join as' lobby member type for owner
-    let join_as_area = relative_widget(ui.tree(), area.end(""), (15., 47.), (20., 50.));
-    ui.div(|ui| add_join_as_field(ui, &join_as_area));
-
-    // form section: max players, max watchers
-    let config_area = relative_widget(ui.tree(), area.end(""), (53., 85.), (20., 50.));
-    ui.div(|ui| add_config_field(ui, &config_area));
-
-    // form section: password
-    let password_area = relative_widget(ui.tree(), area.end(""), (30., 70.), (57., 87.));
-    ui.div(|ui| add_password_field(ui, &password_area));
-
-    // indicator for local single-player
-    let connection_requirement_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (95., 100.));
-    ui.div(|ui| add_connection_requirement_field(ui, &connection_requirement_area));
+    ui.div_rel(area.end(""), (40., 60.), (5.,  15.),  |ui, area| add_window_title(ui, area));
+    ui.div_rel(area.end(""), (15., 47.), (20., 50.),  |ui, area| add_join_as_field(ui, area));
+    ui.div_rel(area.end(""), (53., 85.), (20., 50.),  |ui, area| add_config_field(ui, area));
+    ui.div_rel(area.end(""), (30., 70.), (57., 87.),  |ui, area| add_password_field(ui, area));
+    ui.div_rel(area.end(""), (10., 90.), (95., 100.), |ui, area| add_connection_requirement_field(ui, area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -467,25 +467,14 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_navigation_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // text displaying lobby li (center)st position
-    let lobby_list_stats_area = relative_widget(ui.tree(), area.end(""), (38., 62.), (20., 60.));
-    ui.div(|ui| add_lobby_list_stats(ui, &lobby_list_stats_area));
+    // navigation info
+    ui.div_rel(area.end(""), (38., 62.), (20., 60.), |ui, area| add_lobby_list_stats(ui, area));
 
-    // button: go to first page (far left)
-    let clamp_left_button_area = relative_widget(ui.tree(), area.end(""), (1., 13.), (5., 95.));
-    ui.div(|ui| add_clamp_now_button(ui, &clamp_left_button_area));
-
-    // button: paginate left (mid left)
-    let paginate_left_button_area = relative_widget(ui.tree(), area.end(""), (14., 26.), (5., 95.));
-    ui.div(|ui| add_paginate_left_button(ui, &paginate_left_button_area));
-
-    // button: paginate right (mid right)
-    let paginate_right_button_area = relative_widget(ui.tree(), area.end(""), (74., 86.), (5., 95.));
-    ui.div(|ui| add_paginate_right_button(ui, &paginate_right_button_area));
-
-    // button: go to last page (far right)
-    let clamp_right_button_area = relative_widget(ui.tree(), area.end(""), (87., 99.), (5., 95.));
-    ui.div(|ui| add_clamp_oldest_button(ui, &clamp_right_button_area));
+    // navigation buttons
+    ui.div_rel(area.end(""), ( 1., 13.), ( 5., 95.), |ui, area| add_clamp_now_button(ui, area));
+    ui.div_rel(area.end(""), (14., 26.), ( 5., 95.), |ui, area| add_paginate_left_button(ui, area));
+    ui.div_rel(area.end(""), (74., 86.), ( 5., 95.), |ui, area| add_paginate_right_button(ui, area));
+    ui.div_rel(area.end(""), (87., 99.), ( 5., 95.), |ui, area| add_clamp_oldest_button(ui, area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -493,7 +482,7 @@ fn add_navigation_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // overlay
+    // area
     let button_area = relative_widget(ui.tree(), area.end(""), (25., 75.), (10., 90.));
 
     // button ui
@@ -518,38 +507,20 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // title
-    let lobby_list_title = relative_widget(ui.tree(), area.end(""), (0., 100.), ( 0., 15.));
-    ui.div(|ui| add_lobby_list_title(ui, &lobby_list_title));
-
-    // refresh indicator
-    let lobby_list_refresh_indicator = relative_widget(ui.tree(), area.end(""), (70., 75.), (10., 15.));
-    ui.div(|ui| add_lobby_list_refresh_indicator(ui, &lobby_list_refresh_indicator));
-
-    // refresh button
-    let lobby_list_refresh_button = relative_widget(ui.tree(), area.end(""), (75., 90.), (10., 15.));
-    ui.div(|ui| add_lobby_list_refresh_button(ui, &lobby_list_refresh_button));
-
-    // list subsection
-    let lobby_list_subsection = relative_widget(ui.tree(), area.end(""), (10., 90.), (15., 75.));
-    ui.div(|ui| add_lobby_list_subsection(ui, &lobby_list_subsection));
-
-    // navigation subsection
-    let navigation_subsection = relative_widget(ui.tree(), area.end(""), (10., 90.), (75., 80.));
-    ui.div(|ui| add_navigation_subsection(ui, &navigation_subsection));
-
-    // new lobby button
-    let new_lobby_button = relative_widget(ui.tree(), area.end(""), (0., 100.), (80., 95.));
-    ui.div(|ui| add_new_lobby_button(ui, &new_lobby_button));
-
+    // build liist
+    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), |ui, area| add_lobby_list_title(ui, area));
+    ui.div_rel(area.end(""), (70., 75.), (10., 15.), |ui, area| add_lobby_list_refresh_indicator(ui, area));
+    ui.div_rel(area.end(""), (75., 90.), (10., 15.), |ui, area| add_lobby_list_refresh_button(ui, area));
+    ui.div_rel(area.end(""), (10., 90.), (15., 75.), |ui, area| add_lobby_list_subsection(ui, area));
+    ui.div_rel(area.end(""), (10., 90.), (75., 80.), |ui, area| add_navigation_subsection(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), (80., 95.), |ui, area| add_new_lobby_button(ui, area));
 
     // prepare windows
     // - these are defined with respect to the ui root, so we don't pass in area widgets
     ui.div(|ui| add_join_lobby_window(ui));
     ui.div(|ui| add_make_lobby_window(ui));
 
-
-    // initialize UI listening to lobby page
+    // initialize UI
     ui.rcommands.trigger_resource_mutation::<LobbyPage>();
     ui.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
 }

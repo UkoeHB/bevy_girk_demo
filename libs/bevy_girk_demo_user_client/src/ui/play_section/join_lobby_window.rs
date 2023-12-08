@@ -221,21 +221,10 @@ fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // title
-    let title_area = relative_widget(ui.tree(), area.end(""), (40., 60.), (5., 15.));
-    ui.div(|ui| add_window_title(ui, &title_area));
-
-    // info subtitle
-    let subtitle_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (20., 30.));
-    ui.div(|ui| add_subtitle(ui, &subtitle_area));
-
-    // form section: lobby member type
-    let member_type_area = relative_widget(ui.tree(), area.end(""), (15., 47.), (40., 70.));
-    ui.div(|ui| add_member_type_field(ui, &member_type_area));
-
-    // form section: password
-    let password_area = relative_widget(ui.tree(), area.end(""), (53., 85.), (40., 70.));
-    ui.div(|ui| add_password_field(ui, &password_area));
+    ui.div_rel(area.end(""), (40., 60.), (5., 15.),  |ui, area| add_window_title(ui, area));
+    ui.div_rel(area.end(""), (10., 90.), (20., 30.), |ui, area| add_subtitle(ui, area));
+    ui.div_rel(area.end(""), (15., 47.), (40., 70.), |ui, area| add_member_type_field(ui, area));
+    ui.div_rel(area.end(""), (53., 85.), (40., 70.), |ui, area| add_password_field(ui, area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

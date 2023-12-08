@@ -14,7 +14,10 @@ use bevy_lunex::prelude::*;
 
 pub(crate) fn add_game(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
+    // scoreboard
+    //let scoreboard = relative_widget;
 
+    // clicker
 }
 
 //-------------------------------------------------------------------------------------------------------------------

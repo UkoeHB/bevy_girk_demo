@@ -372,7 +372,7 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_page_left_button<ListPage: ListPageTrait>(
+fn add_page_left_button<ListPage: ListPageTrait>(
     ui       : &mut UiBuilder<MainUi>,
     area     : &Widget,
     entities : &Arc<Vec<Entity>>,
@@ -410,7 +410,7 @@ fn add_display_list_page_left_button<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_display_list_page_right_button<ListPage: ListPageTrait>(
+fn add_page_right_button<ListPage: ListPageTrait>(
     ui       : &mut UiBuilder<MainUi>,
     area     : &Widget,
     entities : &Arc<Vec<Entity>>,
@@ -451,7 +451,7 @@ fn add_display_list_page_right_button<ListPage: ListPageTrait>(
 fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // prepare content widgets
-    let mut content_entities = Vec::with_capacity(NUM_LOBBY_CONTENT_ENTRIES);
+    let mut contents = Vec::with_capacity(NUM_LOBBY_CONTENT_ENTRIES);
 
     let entry_height = (1. / NUM_LOBBY_CONTENT_ENTRIES as f32) * 90.;
 
@@ -472,24 +472,20 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>
                 "Watcher 00: ??????" //default value to set the scaling (want same scaling for all member types)
             );
 
-        content_entities.push(text_entity);
+        contents.push(text_entity);
     }
 
-    let content_entities = Arc::new(content_entities);
+    let contents = Arc::new(contents);
 
     // update the contents when the lobby display changes
-    let content_entities_clone = content_entities.clone();
+    let contents_clone = contents.clone();
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
-            prep_fncall(content_entities_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
+            prep_fncall(contents_clone.clone(), update_display_list_contents_on_lobby_display::<ListPage>)
         );
 
-    // paginate left button (bottom left corner)
-    let page_left_area = relative_widget(ui.tree(), area.end(""), (1., 15.), (85., 98.));
-    ui.div(|ui| add_display_list_page_left_button::<ListPage>(ui, &page_left_area, &content_entities));
-
-    // paginate right button (bottom right corner)
-    let page_right_area = relative_widget(ui.tree(), area.end(""), (85., 99.), (85., 98.));
-    ui.div(|ui| add_display_list_page_right_button::<ListPage>(ui, &page_right_area, &content_entities));
+    // add page left/right buttons
+    ui.div_rel(area.end(""), (1., 15.), (85., 98.), |ui, area| add_page_left_button::<ListPage>(ui, area, &contents));
+    ui.div_rel(area.end(""), (85., 99.), (85., 98.), |ui, area| add_page_right_button::<ListPage>(ui, area, &contents));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -500,13 +496,9 @@ fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, a
     // box for entire area
     spawn_plain_box(ui, area.clone(), None);
 
-    // header
-    let header_area = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 20.));
-    ui.div(|ui| add_display_list_header::<ListPage>(ui, &header_area));
-
-    // contents
-    let contents_area = relative_widget(ui.tree(), area.end(""), (0., 100.), (20., 100.));
-    ui.div(|ui| add_display_list_contents::<ListPage>(ui, &contents_area));
+    // fill the box
+    ui.div_rel(area.end(""), (0., 100.), (0., 20.), |ui, area| add_display_list_header::<ListPage>(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), (20., 100.), |ui, area| add_display_list_contents::<ListPage>(ui, area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -519,17 +511,10 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let box_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (0., 100.));
     spawn_plain_box(ui, box_area.clone(), None);
 
-    // summary box
-    let summary_box_area = relative_widget(ui.tree(), box_area.end(""), (0., 100.), (0., 20.));
-    ui.div(|ui| add_lobby_display_summary_box(ui, &summary_box_area));
-
-    // players list
-    let player_list_area = relative_widget(ui.tree(), box_area.end(""), (0.5, 50.), (20., 100.));
-    ui.div(|ui| add_lobby_display_list::<PlayerListPage>(ui, &player_list_area));
-
-    // watchers list
-    let watcher_list_area = relative_widget(ui.tree(), box_area.end(""), (50., 99.5), (20., 100.));
-    ui.div(|ui| add_lobby_display_list::<WatcherListPage>(ui, &watcher_list_area));
+    // fill the box
+    ui.div_rel(box_area.end(""), (0., 100.),  (0., 20.),   |ui, area| add_lobby_display_summary_box(ui, area));
+    ui.div_rel(box_area.end(""), (0.5, 50.),  (20., 100.), |ui, area| add_lobby_display_list::<PlayerListPage>(ui, area));
+    ui.div_rel(box_area.end(""), (50., 99.5), (20., 100.), |ui, area| add_lobby_display_list::<WatcherListPage>(ui, area));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -641,19 +626,11 @@ fn add_lobby_buttons(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // title
-    let lobby_display_title = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 15.));
-    ui.div(|ui| add_lobby_display_title(ui, &lobby_display_title));
+    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), |ui, area| add_lobby_display_title(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), (15., 75.), |ui, area| add_lobby_display_box(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), (75., 90.), |ui, area| add_lobby_buttons(ui, area));
 
-    // display box
-    let lobby_display_box = relative_widget(ui.tree(), area.end(""), (0., 100.), (15., 75.));
-    ui.div(|ui| add_lobby_display_box(ui, &lobby_display_box));
-
-    // leave/launch buttons
-    let lobby_leave_button = relative_widget(ui.tree(), area.end(""), (0., 100.), (75., 90.));
-    ui.div(|ui| add_lobby_buttons(ui, &lobby_leave_button));
-
-    // initialize UI listening to lobby display
+    // initialize UI
     ui.rcommands.trigger_resource_mutation::<LobbyDisplay>();
     ui.rcommands.trigger_resource_mutation::<PlayerListPage>();
     ui.rcommands.trigger_resource_mutation::<WatcherListPage>();
