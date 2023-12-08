@@ -508,17 +508,17 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // build liist
-    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), |ui, area| add_lobby_list_title(ui, area));
-    ui.div_rel(area.end(""), (70., 75.), (10., 15.), |ui, area| add_lobby_list_refresh_indicator(ui, area));
-    ui.div_rel(area.end(""), (75., 90.), (10., 15.), |ui, area| add_lobby_list_refresh_button(ui, area));
-    ui.div_rel(area.end(""), (10., 90.), (15., 75.), |ui, area| add_lobby_list_subsection(ui, area));
-    ui.div_rel(area.end(""), (10., 90.), (75., 80.), |ui, area| add_navigation_subsection(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (80., 95.), |ui, area| add_new_lobby_button(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), add_lobby_list_title);
+    ui.div_rel(area.end(""), (70., 75.), (10., 15.), add_lobby_list_refresh_indicator);
+    ui.div_rel(area.end(""), (75., 90.), (10., 15.), add_lobby_list_refresh_button);
+    ui.div_rel(area.end(""), (10., 90.), (15., 75.), add_lobby_list_subsection);
+    ui.div_rel(area.end(""), (10., 90.), (75., 80.), add_navigation_subsection);
+    ui.div_rel(area.end(""), (0., 100.), (80., 95.), add_new_lobby_button);
 
     // prepare windows
     // - these are defined with respect to the ui root, so we don't pass in area widgets
-    ui.div(|ui| add_join_lobby_window(ui));
-    ui.div(|ui| add_make_lobby_window(ui));
+    ui.div(add_join_lobby_window);
+    ui.div(add_make_lobby_window);
 
     // initialize UI
     ui.rcommands.trigger_resource_mutation::<LobbyPage>();
