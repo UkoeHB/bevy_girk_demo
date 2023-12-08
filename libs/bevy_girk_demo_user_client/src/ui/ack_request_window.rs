@@ -106,8 +106,8 @@ fn add_timer(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (40., 60.), (20., 40.), |ui, area| add_window_title(ui, area));
-    ui.div_rel(area.end(""), (40., 60.), (57., 87.), |ui, area| add_timer(ui, area));
+    ui.div_rel(area.end(""), (40., 60.), (20., 40.), add_window_title);
+    ui.div_rel(area.end(""), (40., 60.), (57., 87.), add_timer);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

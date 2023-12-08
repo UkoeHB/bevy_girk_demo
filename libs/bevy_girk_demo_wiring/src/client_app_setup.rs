@@ -1,7 +1,6 @@
 //local shortcuts
 use crate::*;
 use bevy_girk_demo_client_core::*;
-use bevy_girk_demo_game_core::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -23,10 +22,10 @@ use bevy_renet::renet::transport::ClientAuthentication;
 pub fn prepare_client_core(
     client_app  : &mut App,
     initializer : ClientInitializer
-) -> Sender<PlayerInput>
+) -> Sender<PlayerClientInput>
 {
     // player input channel
-    let (player_input_sender, player_input_receiver) = new_channel::<PlayerInput>();
+    let (player_input_sender, player_input_receiver) = new_channel::<PlayerClientInput>();
 
     // app
     client_app
@@ -46,7 +45,7 @@ pub fn prepare_client_core(
 pub fn make_game_client_core(
     expected_protocol_id : u64,
     connect_info         : GameConnectInfo
-) -> (App, ClientIdType, Sender<PlayerInput>)
+) -> (App, ClientIdType, Sender<PlayerClientInput>)
 {
     // extract connect token and validate protocol version
     let ServerConnectToken::Native{ bytes: serialized_connect_token } = connect_info.server_connect_token;

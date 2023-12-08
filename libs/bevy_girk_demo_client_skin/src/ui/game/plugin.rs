@@ -13,9 +13,9 @@ use bevy_lunex::prelude::*;
 
 pub(crate) fn add_game(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (0., 100.), ( 0.,  10.), |ui, area| add_game_header(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (10.,  65.), |ui, area| add_game_scoreboard(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (65., 100.), |ui, area| add_game_clicker(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), ( 0.,  10.), add_game_header);
+    ui.div_rel(area.end(""), (0., 100.), (10.,  65.), add_game_scoreboard);
+    ui.div_rel(area.end(""), (0., 100.), (65., 100.), add_game_clicker);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

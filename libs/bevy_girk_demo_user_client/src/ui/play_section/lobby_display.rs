@@ -497,8 +497,8 @@ fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, a
     spawn_plain_box(ui, area.clone(), None);
 
     // fill the box
-    ui.div_rel(area.end(""), (0., 100.), (0., 20.), |ui, area| add_display_list_header::<ListPage>(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (20., 100.), |ui, area| add_display_list_contents::<ListPage>(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), (0., 20.), add_display_list_header::<ListPage>);
+    ui.div_rel(area.end(""), (0., 100.), (20., 100.), add_display_list_contents::<ListPage>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -512,9 +512,9 @@ fn add_lobby_display_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_plain_box(ui, box_area.clone(), None);
 
     // fill the box
-    ui.div_rel(box_area.end(""), (0., 100.),  (0., 20.),   |ui, area| add_lobby_display_summary_box(ui, area));
-    ui.div_rel(box_area.end(""), (0.5, 50.),  (20., 100.), |ui, area| add_lobby_display_list::<PlayerListPage>(ui, area));
-    ui.div_rel(box_area.end(""), (50., 99.5), (20., 100.), |ui, area| add_lobby_display_list::<WatcherListPage>(ui, area));
+    ui.div_rel(box_area.end(""), (0., 100.),  (0., 20.),   add_lobby_display_summary_box);
+    ui.div_rel(box_area.end(""), (0.5, 50.),  (20., 100.), add_lobby_display_list::<PlayerListPage>);
+    ui.div_rel(box_area.end(""), (50., 99.5), (20., 100.), add_lobby_display_list::<WatcherListPage>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -626,9 +626,9 @@ fn add_lobby_buttons(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), |ui, area| add_lobby_display_title(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (15., 75.), |ui, area| add_lobby_display_box(ui, area));
-    ui.div_rel(area.end(""), (0., 100.), (75., 90.), |ui, area| add_lobby_buttons(ui, area));
+    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), add_lobby_display_title);
+    ui.div_rel(area.end(""), (0., 100.), (15., 75.), add_lobby_display_box);
+    ui.div_rel(area.end(""), (0., 100.), (75., 90.), add_lobby_buttons);
 
     // initialize UI
     ui.rcommands.trigger_resource_mutation::<LobbyDisplay>();

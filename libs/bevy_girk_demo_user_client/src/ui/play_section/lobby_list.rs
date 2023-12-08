@@ -468,13 +468,13 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_navigation_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // navigation info
-    ui.div_rel(area.end(""), (38., 62.), (20., 60.), |ui, area| add_lobby_list_stats(ui, area));
+    ui.div_rel(area.end(""), (38., 62.), (20., 60.), add_lobby_list_stats);
 
     // navigation buttons
-    ui.div_rel(area.end(""), ( 1., 13.), ( 5., 95.), |ui, area| add_clamp_now_button(ui, area));
-    ui.div_rel(area.end(""), (14., 26.), ( 5., 95.), |ui, area| add_paginate_left_button(ui, area));
-    ui.div_rel(area.end(""), (74., 86.), ( 5., 95.), |ui, area| add_paginate_right_button(ui, area));
-    ui.div_rel(area.end(""), (87., 99.), ( 5., 95.), |ui, area| add_clamp_oldest_button(ui, area));
+    ui.div_rel(area.end(""), ( 1., 13.), ( 5., 95.), add_clamp_now_button);
+    ui.div_rel(area.end(""), (14., 26.), ( 5., 95.), add_paginate_left_button);
+    ui.div_rel(area.end(""), (74., 86.), ( 5., 95.), add_paginate_right_button);
+    ui.div_rel(area.end(""), (87., 99.), ( 5., 95.), add_clamp_oldest_button);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

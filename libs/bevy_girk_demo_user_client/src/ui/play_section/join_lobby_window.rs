@@ -221,10 +221,10 @@ fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (40., 60.), (5., 15.),  |ui, area| add_window_title(ui, area));
-    ui.div_rel(area.end(""), (10., 90.), (20., 30.), |ui, area| add_subtitle(ui, area));
-    ui.div_rel(area.end(""), (15., 47.), (40., 70.), |ui, area| add_member_type_field(ui, area));
-    ui.div_rel(area.end(""), (53., 85.), (40., 70.), |ui, area| add_password_field(ui, area));
+    ui.div_rel(area.end(""), (40., 60.), (5., 15.),  add_window_title);
+    ui.div_rel(area.end(""), (10., 90.), (20., 30.), add_subtitle);
+    ui.div_rel(area.end(""), (15., 47.), (40., 70.), add_member_type_field);
+    ui.div_rel(area.end(""), (53., 85.), (40., 70.), add_password_field);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

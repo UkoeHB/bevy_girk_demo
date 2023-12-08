@@ -176,7 +176,7 @@ impl PluginGroup for ClientCorePlugins
             // For this demo we assume watcher clients will re-use the player skin, which depends on `PlayerInputPlugin`.
             // A different project may want to completely separate player and watcher skins, in which case this plugin
             // can go in a player-client-specific crate.
-            .add(PlayerInputPlugin)
+            .add(PlayerClientInputPlugin)
     }
 }
 

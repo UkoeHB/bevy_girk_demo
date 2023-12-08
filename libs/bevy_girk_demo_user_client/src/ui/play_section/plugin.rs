@@ -14,8 +14,8 @@ use bevy_lunex::prelude::*;
 
 fn add_play_overlay(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (0., 50.),   (0., 100.), |ui, area| add_lobby_display(ui, area));
-    ui.div_rel(area.end(""), (50., 100.), (0., 100.), |ui, area| add_lobby_list(ui, area));
+    ui.div_rel(area.end(""), (0., 50.),   (0., 100.), add_lobby_display);
+    ui.div_rel(area.end(""), (50., 100.), (0., 100.), add_lobby_list);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

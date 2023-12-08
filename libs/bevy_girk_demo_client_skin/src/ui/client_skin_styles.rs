@@ -46,6 +46,30 @@ impl Default for GameInitializingStyle
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone, Debug)]
+pub(crate) struct GameClickerStyle
+{
+    pub(crate) button: BasicButton,
+}
+
+impl Default for GameClickerStyle
+{
+    fn default() -> Self
+    {
+        Self{
+            button: BasicButton{
+                default_img: MISC_BUTTON,
+                pressed_img: MISC_BUTTON,
+                default_img_color: Color::CRIMSON,
+                pressed_img_color: Color::MAROON,
+                text: basic_button_default_text_style(),
+            }
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
 pub(crate) struct GameOverStyle
 {
     pub(crate) background_img: (&'static str, Vec2),
@@ -72,6 +96,7 @@ pub(crate) struct ClientSkinStyles
 {
     prefabs          : BasicPrefabStyles,
     game_in_progress : GameInitializingStyle,
+    game_clicker     : GameClickerStyle,
     game_over        : GameOverStyle,
 }
 
