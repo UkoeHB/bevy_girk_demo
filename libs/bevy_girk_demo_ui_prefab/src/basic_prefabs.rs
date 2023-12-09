@@ -13,7 +13,11 @@ use bevy_lunex::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// The text style of `params` will be overwritten.
+/// Spawn a text element in the specified widget.
+///
+/// Uses style [`BasicText`].
+///
+/// The `TextStyle` of `params` will be overwritten.
 pub fn spawn_basic_text(
     ui           : &mut UiBuilder<MainUi>,
     widget       : Widget,
@@ -38,6 +42,9 @@ pub fn spawn_basic_text(
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Spawn a box in the specified widget.
+///
+/// Uses style [`PlainBox`].
 pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 {
     let style = ui.style::<PlainBox>();
@@ -58,6 +65,9 @@ pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Spawn an outline in the specified widget.
+///
+/// Uses style [`PlainOutline`].
 pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 {
     let style = ui.style::<PlainOutline>();
@@ -78,6 +88,9 @@ pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Spawn a basic button in the specified widget.
+///
+/// Uses style [`BasicButton`]
 pub fn spawn_basic_button<Marker>(
     ui               : &mut UiBuilder<MainUi>,
     button_overlay   : &Widget,
@@ -192,6 +205,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     let barrier_img = ImageElementBundle::new(
             &barrier,
             ImageParams::center()
+                .with_depth(-0.1)
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
             ui.asset_server.load(style.background.0),
@@ -207,7 +221,6 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     let window_img = ImageElementBundle::new(
             &window,
             ImageParams::center()
-                .with_depth(0.1)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
                 .with_color(style.window_color),
