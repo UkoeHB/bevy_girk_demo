@@ -91,8 +91,8 @@ impl Default for GameClickerStyle
             button: BasicButton{
                 default_img: MISC_BUTTON,
                 pressed_img: MISC_BUTTON,
-                default_img_color: Color::CRIMSON,
-                pressed_img_color: Color::MAROON,
+                default_img_color: Color::hsl(360., 1., 0.30),
+                pressed_img_color: Color::hsl(360., 1., 0.20),
                 text: basic_button_default_text_style(),
             }
         }
