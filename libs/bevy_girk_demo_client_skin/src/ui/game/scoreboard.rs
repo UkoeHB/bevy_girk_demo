@@ -179,11 +179,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // remove entry when PlayerScore is removed
     ui.rcommands.on(removal::<PlayerScore>(),
-        |
-            In(player_entity) : In<Entity>,
-            mut ui            : UiUtils<MainUi>,
-            mut tracker       : ReactResMut<GameScoreboardTracker>
-        |
+        |In(player_entity): In<Entity>, mut ui: UiUtils<MainUi>, mut tracker: ReactResMut<GameScoreboardTracker>|
         {
             // remove entry from tracker
             let Some((placement_entry, score_entry)) = tracker.get_mut(&mut ui.builder.rcommands).pop_entry(player_entity)
@@ -197,10 +193,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // update score positions when the tracker is modified
     ui.rcommands.on(resource_mutation::<GameScoreboardTracker>(),
-        |
-            mut ui  : UiUtils<MainUi>,
-            tracker : ReactRes<GameScoreboardTracker>
-        |
+        |mut ui: UiUtils<MainUi>, tracker: ReactRes<GameScoreboardTracker>|
         {
             // iterate up from the lowest score
             let mut position = tracker.len();
