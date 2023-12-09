@@ -39,6 +39,42 @@ pub fn basic_text_default_light_style() -> BasicText
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone, Debug)]
+pub struct PlainBox
+{
+    pub img: (&'static str, Vec2),
+}
+
+impl Default for PlainBox
+{
+    fn default() -> Self
+    {
+        Self{
+            img: BOX,
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
+pub struct PlainOutline
+{
+    pub img: (&'static str, Vec2),
+}
+
+impl Default for PlainOutline
+{
+    fn default() -> Self
+    {
+        Self{
+            img: OUTLINE,
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
 pub struct BasicButton
 {
     pub default_img: (&'static str, Vec2),
@@ -149,6 +185,8 @@ pub fn basic_popup_default_button_style() -> BasicButton
 pub struct BasicPrefabStyles
 {
     basic_text: BasicText,
+    plain_box: PlainBox,
+    plain_outline: PlainOutline,
     basic_button: BasicButton,
     basic_button_availability: BasicButtonAvailability,
     basic_popup: BasicPopup,

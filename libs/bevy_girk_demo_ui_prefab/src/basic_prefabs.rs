@@ -21,8 +21,9 @@ pub fn spawn_basic_text(
     initial_text : &str,
 ) -> Entity
 {
-    let style = ui.get_style::<BasicText>().unwrap();
+    let style = ui.style::<BasicText>();
 
+    //todo: add widget
     let text_style = TextStyle {
             font      : ui.asset_server.load(style.font),
             font_size : 45.0,
@@ -32,21 +33,23 @@ pub fn spawn_basic_text(
     let text_params = params.with_style(&text_style);
     let text_entity = ui.commands().spawn(TextElementBundle::new(widget, text_params, initial_text)).id();
 
-    text_entity    
+    text_entity
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 {
+    let style = ui.style::<PlainBox>();
+
+    //todo: add widget
     let image = ImageElementBundle::new(
             &widget,
             ImageParams::center()
-                .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(BOX.0),
-            BOX.1
+            ui.asset_server.load(style.img.0),
+            style.img.1
         );
     let box_entity = ui.commands().spawn(image).id();
 
@@ -55,20 +58,22 @@ pub fn spawn_plain_box(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Option
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget, depth: Option<f32>) -> Entity
+pub fn spawn_plain_outline(ui: &mut UiBuilder<MainUi>, widget: Widget) -> Entity
 {
+    let style = ui.style::<PlainOutline>();
+
+    //todo: add widget
     let image = ImageElementBundle::new(
             &widget,
             ImageParams::center()
-                .with_depth(depth.unwrap_or_default())  //todo: remove when lunex depth bug is fixed
                 .with_width(Some(100.))
                 .with_height(Some(100.)),
-            ui.asset_server.load(OUTLINE.0),
-            OUTLINE.1
+            ui.asset_server.load(style.img.0),
+            style.img.1
         );
-    let box_entity = ui.commands().spawn(image).id();
+    let outline_entity = ui.commands().spawn(image).id();
 
-    box_entity
+    outline_entity
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -80,7 +85,7 @@ pub fn spawn_basic_button<Marker>(
     unpress_callback : impl IntoSystem<(), (), Marker> + Send + Sync + 'static,
 ) -> Entity
 {
-    let style = ui.get_style::<BasicButton>().unwrap();
+    let style = ui.style::<BasicButton>();
 
     // add default button image
     let default_button = make_overlay(ui.tree(), &button_overlay, "", true);
@@ -176,7 +181,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     accept_callback : impl IntoSystem<(), (), Marker2> + Send + Sync + 'static,
 ) -> BasicPopupPack
 {
-    let style = ui.get_style::<BasicPopup>().unwrap();
+    let style = ui.style::<BasicPopup>();
 
     // popup overlay attached to root of ui tree
     let window_overlay = make_overlay(ui.tree(), &Widget::new("root"), "", false);

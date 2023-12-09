@@ -46,6 +46,22 @@ impl Default for GameInitializingStyle
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone, Debug)]
+pub(crate) struct GameScoreboardStyle
+{
+    pub(crate) text: BasicText,
+}
+
+impl Default for GameScoreboardStyle
+{
+    fn default() -> Self
+    {
+        Self{ text: basic_text_default_light_style() }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
 pub(crate) struct GameClickerStyle
 {
     pub(crate) button: BasicButton,
@@ -96,6 +112,7 @@ pub(crate) struct ClientSkinStyles
 {
     prefabs          : BasicPrefabStyles,
     game_in_progress : GameInitializingStyle,
+    game_scoreboard  : GameScoreboardStyle,
     game_clicker     : GameClickerStyle,
     game_over        : GameOverStyle,
 }

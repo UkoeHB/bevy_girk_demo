@@ -188,7 +188,7 @@ fn add_subtitle(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_member_type_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ui, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone());
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
@@ -205,7 +205,7 @@ fn add_member_type_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ui, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone());
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(

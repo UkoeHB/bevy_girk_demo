@@ -122,6 +122,26 @@ pub struct UiUtils<'w, 's, Ui: LunexUi>
 
 impl<'w, 's, Ui: LunexUi> UiUtils<'w, 's, Ui>
 {
+    /// Mutably access a widget's `RelativeLayout`.
+    pub fn get_relative_layout_mut<'a, 'b: 'a>(&'a mut self, widget: &'b Widget) -> Option<&'a mut RelativeLayout>
+    {
+        let Ok(widget_branch) = widget.fetch_mut(self.builder.tree()) else { return None; };
+        let LayoutPackage::Relative(ref mut layout) = widget_branch.get_container_mut().get_layout_mut() else { return None; };
+
+        Some(layout)
+    }
+
+    /// Remove a widget from the tree.
+    ///
+    /// Returns `true` if removal succeeded.
+    pub fn remove_widget(&mut self, widget: &Widget) -> bool
+    {
+        !self.builder
+            .tree()
+            .drop_branch(widget.path())
+            .is_err()
+    }
+
     /// Toggle visibility of a single widget.
     ///
     /// Does nothing if the widget is invalid.

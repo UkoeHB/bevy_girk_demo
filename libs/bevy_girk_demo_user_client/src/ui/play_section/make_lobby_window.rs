@@ -271,7 +271,7 @@ fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ui, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone());
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(
@@ -288,7 +288,7 @@ fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ui, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone());
 
     let singleplayer_overlay = make_overlay(ui.tree(), area, "", true);
     spawn_basic_text(
@@ -340,7 +340,7 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // field outline
-    spawn_plain_outline(ui, area.clone(), Some(700.));
+    spawn_plain_outline(ui, area.clone());
 
     let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
     spawn_basic_text(

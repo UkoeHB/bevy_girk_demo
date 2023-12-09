@@ -30,7 +30,7 @@ pub struct PlayerName
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
 pub struct PlayerScore
 {
     /// Note: This is only `pub` for testing purposes.

@@ -36,7 +36,7 @@ fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id:
 {
     let client_init_data = ClickClientInitDataForGame::Player{
             client_id   : client_id,
-            player_name : String::from("player") + stringify!(client_id),
+            player_name : format!("player{}", client_id),
         };
 
     ClientInitDataForGame{
