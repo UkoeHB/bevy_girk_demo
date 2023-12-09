@@ -15,6 +15,15 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+fn add_backdrop(ui: &mut UiBuilder<MainUi>, area: &Widget)
+{
+    ui.add_style(ui.style::<UserClientBackdrop>().plain_box.clone());
+    spawn_plain_box(ui, area.clone());
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
 fn build_ui(mut ui: UiBuilder<MainUi>)
 {
     // set base styles
@@ -22,6 +31,9 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
 
     // root widget
     let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));
+
+    // backdrop
+    ui.div_rel(root.end(""), (-5000., 5000.), (-5000., 5000.), add_backdrop);
 
     // root zones
     // - play button (top left)
