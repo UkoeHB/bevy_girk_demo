@@ -35,6 +35,10 @@ fn activate_new_selection<U: LunexUi>(
 
 fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Widget, display_name: &str) -> Entity
 {
+    // button style
+    let style = ui.style::<MenuButtonStyle>();
+    ui.add_style(style.text.clone());
+
     // add default button image
     let default_button = make_overlay(ui.tree(), button, "default", true);
     let default_image = ImageElementBundle::new(
@@ -42,9 +46,10 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Wi
             ImageParams::center()
                 .with_depth(50.)
                 .with_width(Some(100.))
-                .with_height(Some(100.)),
-                ui.asset_server.load(MENU_BAR_BUTTON.0),
-                MENU_BAR_BUTTON.1
+                .with_height(Some(100.))
+                .with_color(style.default_img_color),
+                ui.asset_server.load(style.default_img.0),
+                style.default_img.1
         );
     ui.commands().spawn(default_image);
 
@@ -56,9 +61,9 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Wi
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::GRAY),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON.0),
-            MENU_BAR_BUTTON.1
+                .with_color(style.pressed_img_color),
+            ui.asset_server.load(style.pressed_img.0),
+            style.pressed_img.1
         );
     ui.commands().spawn(selected_image);
 
@@ -83,9 +88,6 @@ fn add_menu_bar_button(ui: &mut UiBuilder<MainUi>, button: &Widget, overlay: &Wi
 
     // add main menu button tag
     entity_commands.insert(MainMenuButton);
-
-    // set text style
-    ui.add_style(basic_text_default_light_style());
 
     // add button text
     let text = make_overlay(ui.tree(), button, "", true);

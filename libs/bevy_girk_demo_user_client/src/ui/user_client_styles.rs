@@ -12,16 +12,109 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone, Debug)]
-pub(crate) struct UserClientBackdrop
+pub(crate) struct UserClientBackdropStyle
 {
-    pub(crate) plain_box: PlainBox,
+    pub(crate) backdrop_box: PlainBox,
 }
 
-impl Default for UserClientBackdrop
+impl Default for UserClientBackdropStyle
 {
     fn default() -> Self
     {
-        Self{ plain_box : PlainBox{ img: BACKDROP } }
+        Self{ backdrop_box : PlainBox{ img: CLIENT_BACKDROP } }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
+pub(crate) struct PlayButtonStyle
+{
+    pub default_img: (&'static str, Vec2),
+    pub pressed_img: (&'static str, Vec2),
+
+    pub default_img_color_play: Color,
+    pub pressed_img_color_play: Color,
+
+    pub default_img_color_inlobby: Color,
+    pub pressed_img_color_inlobby: Color,
+
+    pub text: BasicText,
+}
+
+impl Default for PlayButtonStyle
+{
+    fn default() -> Self
+    {
+        Self{ 
+            default_img: MENU_BAR_BUTTON,
+            pressed_img: MENU_BAR_BUTTON,
+            default_img_color_play: Color::hsl(94., 1., 0.35),
+            pressed_img_color_play: Color::hsl(94., 1., 0.22),
+            default_img_color_inlobby: Color::hsl(180., 1., 0.35),
+            pressed_img_color_inlobby: Color::hsl(180., 1., 0.22),
+            text: basic_text_default_light_style(),
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
+pub(crate) struct MenuButtonStyle
+{
+    pub default_img: (&'static str, Vec2),
+    pub pressed_img: (&'static str, Vec2),
+
+    pub default_img_color: Color,
+    pub pressed_img_color: Color,
+
+    pub text: BasicText,
+}
+
+impl Default for MenuButtonStyle
+{
+    fn default() -> Self
+    {
+        Self{ 
+            default_img: MENU_BAR_BUTTON,
+            pressed_img: MENU_BAR_BUTTON,
+            default_img_color: Color::hsl(32., 1., 0.35),
+            pressed_img_color: Color::hsl(32., 1., 0.22),
+            text: basic_text_default_light_style(),
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
+pub(crate) struct LobbyDisplayStyle
+{
+    pub(crate) backdrop_box: PlainBox,
+}
+
+impl Default for LobbyDisplayStyle
+{
+    fn default() -> Self
+    {
+        Self{ backdrop_box : PlainBox{ img: LOBBY_BACKDROP } }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
+pub(crate) struct LobbyListStyle
+{
+    pub(crate) backdrop_box: PlainBox,
+}
+
+impl Default for LobbyListStyle
+{
+    fn default() -> Self
+    {
+        Self{ backdrop_box : PlainBox{ img: LOBBY_BACKDROP } }
     }
 }
 
@@ -53,8 +146,25 @@ impl Default for GameInProgressStyle
 pub(crate) struct UserClientStyles
 {
     prefabs          : BasicPrefabStyles,
-    client_backdrop  : UserClientBackdrop,
+    client_backdrop  : UserClientBackdropStyle,
+    play_button      : PlayButtonStyle,
+    menu_buttons     : MenuButtonStyle,
+    lobby_display    : LobbyDisplayStyle,
+    lobby_list       : LobbyListStyle,
     game_in_progress : GameInProgressStyle,
+}
+
+impl UserClientStyles
+{
+    pub(crate) fn new() -> Self
+    {
+        // customize defaults
+        let mut default: Self = Default::default();
+        default.prefabs.basic_popup.backdrop = POPUP_BACKDROP;
+        default.prefabs.basic_popup.backdrop_color = Color::WHITE;
+
+        default
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

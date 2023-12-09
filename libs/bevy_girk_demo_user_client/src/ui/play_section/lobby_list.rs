@@ -314,8 +314,15 @@ fn add_lobby_list_refresh_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // list box
-    spawn_plain_box(ui, area.clone());
+    // backdrop
+    ui.div(|ui|{
+        ui.add_style(ui.style::<LobbyListStyle>().backdrop_box.clone());
+        spawn_plain_box(ui, area.clone());
+    });
+
+    // list outline above backdrop
+    let outline = make_overlay(ui.tree(), &area, "", true);
+    spawn_plain_outline(ui, outline.clone());
 
     // prepare contents
     let mut contents = Vec::with_capacity(LOBBY_LIST_SIZE as usize);

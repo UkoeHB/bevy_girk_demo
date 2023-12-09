@@ -493,8 +493,8 @@ fn add_display_list_contents<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>
 
 fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // box for entire area
-    spawn_plain_box(ui, area.clone());
+    // outline for entire area
+    spawn_plain_outline(ui, area.clone());
 
     // fill the box
     ui.div_rel(area.end(""), (0., 100.), (0., 20.), add_display_list_header::<ListPage>);
@@ -506,15 +506,20 @@ fn add_lobby_display_list<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, a
 
 fn add_lobby_display_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    // box for entire display
-    //todo: it's better to place a box for the summary box area, but the box image gets too stretched
-    let box_area = relative_widget(ui.tree(), area.end(""), (10., 90.), (0., 100.));
-    spawn_plain_box(ui, box_area.clone());
+    // backdrop for entire display
+    ui.div(|ui|{
+        ui.add_style(ui.style::<LobbyDisplayStyle>().backdrop_box.clone());
+        spawn_plain_box(ui, area.clone());
+    });
+
+    // outline above backdrop
+    let outline = make_overlay(ui.tree(), &area, "", true);
+    spawn_plain_outline(ui, outline.clone());
 
     // fill the box
-    ui.div_rel(box_area.end(""), (0., 100.),  (0., 20.),   add_lobby_display_summary_box);
-    ui.div_rel(box_area.end(""), (0.5, 50.),  (20., 100.), add_lobby_display_list::<PlayerListPage>);
-    ui.div_rel(box_area.end(""), (50., 99.5), (20., 100.), add_lobby_display_list::<WatcherListPage>);
+    ui.div_rel(area.end(""), (0., 100.),  (0., 20.),   add_lobby_display_summary_box);
+    ui.div_rel(area.end(""), (0.5, 50.),  (20., 100.), add_lobby_display_list::<PlayerListPage>);
+    ui.div_rel(area.end(""), (50., 99.5), (20., 100.), add_lobby_display_list::<WatcherListPage>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -626,9 +631,9 @@ fn add_lobby_buttons(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.div_rel(area.end(""), (0., 100.), ( 0., 15.), add_lobby_display_title);
-    ui.div_rel(area.end(""), (0., 100.), (15., 75.), add_lobby_display_box);
-    ui.div_rel(area.end(""), (0., 100.), (75., 90.), add_lobby_buttons);
+    ui.div_rel(area.end(""), ( 0., 100.), ( 0., 15.), add_lobby_display_title);
+    ui.div_rel(area.end(""), (10.,  90.), (15., 75.), add_lobby_display_box);
+    ui.div_rel(area.end(""), ( 0., 100.), (75., 90.), add_lobby_buttons);
 
     // initialize UI
     ui.rcommands.trigger_resource_mutation::<LobbyDisplay>();

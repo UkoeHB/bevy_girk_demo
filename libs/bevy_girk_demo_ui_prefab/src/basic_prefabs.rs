@@ -214,7 +214,7 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
     ui.commands().spawn(barrier_img);
     ui.commands().spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
 
-    // window box
+    // window backdrop
     let xmod = style.proportions.x.max(0.).min(100.) / 2.;
     let ymod = style.proportions.y.max(0.).min(100.) / 2.;
     let window = relative_widget(ui.tree(), window_overlay.end(""), (50. - xmod, 50. + xmod), (50. - ymod, 50. + ymod));
@@ -223,11 +223,18 @@ pub fn spawn_basic_popup<Marker1, Marker2>(
             ImageParams::center()
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(style.window_color),
-            ui.asset_server.load(style.window.0),
-            style.window.1
+                .with_color(style.backdrop_color),
+            ui.asset_server.load(style.backdrop.0),
+            style.backdrop.1
         );
     ui.commands().spawn((window_img, UiInteractionBarrier::<MainUi>::default()));
+
+    // window border
+    ui.div(|ui|{
+        ui.add_style(style.border.clone());
+        let window_border = make_overlay(ui.tree(), &window, "", true);
+        spawn_plain_outline(ui, window_border);
+    });
 
     // region for caller's content
     let content_percent = style.content_percent.max(0.).min(100.);

@@ -17,7 +17,7 @@ use bevy_lunex::prelude::*;
 
 fn add_backdrop(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
-    ui.add_style(ui.style::<UserClientBackdrop>().plain_box.clone());
+    ui.add_style(ui.style::<UserClientBackdropStyle>().backdrop_box.clone());
     spawn_plain_box(ui, area.clone());
 }
 
@@ -27,7 +27,7 @@ fn add_backdrop(ui: &mut UiBuilder<MainUi>, area: &Widget)
 fn build_ui(mut ui: UiBuilder<MainUi>)
 {
     // set base styles
-    ui.add_style(UserClientStyles::default());
+    ui.add_style(UserClientStyles::new());
 
     // root widget
     let root = relative_widget(ui.tree(), "root", (0., 100.), (0., 100.));

@@ -46,6 +46,9 @@ fn make_play_button(
     selected_button_overlay : &Widget,
 ) -> [Widget; 3]
 {
+    // get style
+    let style = ui.style::<PlayButtonStyle>();
+
     // add default button image
     let default_button = make_overlay(ui.tree(), &default_button_overlay, "play_default", false);
     let default_image = ImageElementBundle::new(
@@ -54,9 +57,9 @@ fn make_play_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::BISQUE),  //tint the default button (todo: it's ugly)
-                ui.asset_server.load(MENU_BAR_BUTTON.0),
-                MENU_BAR_BUTTON.1
+                .with_color(style.default_img_color_play),
+                ui.asset_server.load(style.default_img.0),
+                style.default_img.1
         );
     ui.commands().spawn(default_image);
 
@@ -68,14 +71,11 @@ fn make_play_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-                ui.asset_server.load(MENU_BAR_BUTTON.0),
-                MENU_BAR_BUTTON.1
+                .with_color(style.pressed_img_color_play),
+                ui.asset_server.load(style.pressed_img.0),
+                style.pressed_img.1
         );
     ui.commands().spawn(selected_image);
-
-    // set text style
-    ui.add_style(basic_text_default_light_style());
 
     // add button text
     let text = make_overlay(ui.tree(), button, "play_text", false);
@@ -101,6 +101,9 @@ fn make_in_lobby_button(
     selected_button_overlay : &Widget,
 ) -> [Widget; 3]
 {
+    // get style
+    let style = ui.style::<PlayButtonStyle>();
+
     // add default button image
     let default_button = make_overlay(ui.tree(), &default_button_overlay, "inlobby_default", false);
     let default_image = ImageElementBundle::new(
@@ -109,9 +112,9 @@ fn make_in_lobby_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::YELLOW),  //use tint to differentiate (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON.0),
-            MENU_BAR_BUTTON.1
+                .with_color(style.default_img_color_inlobby),
+                ui.asset_server.load(style.default_img.0),
+                style.default_img.1
         );
     ui.commands().spawn(default_image);
 
@@ -123,14 +126,11 @@ fn make_in_lobby_button(
                 .with_depth(50.)
                 .with_width(Some(100.))
                 .with_height(Some(100.))
-                .with_color(Color::OLIVE),  //tint the default button (todo: it's ugly)
-            ui.asset_server.load(MENU_BAR_BUTTON.0),
-            MENU_BAR_BUTTON.1
+                .with_color(style.pressed_img_color_inlobby),
+                ui.asset_server.load(style.pressed_img.0),
+                style.pressed_img.1
         );
     ui.commands().spawn(selected_image);
-
-    // set text style
-    ui.add_style(basic_text_default_light_style());
 
     // add button text
     let text = make_overlay(ui.tree(), button, "inlobby_text", false);
@@ -154,7 +154,6 @@ fn make_in_lobby_button(
 pub(crate) enum MainPlayButton
 {
     Play,
-    #[allow(dead_code)]
     InLobby,
 }
 
@@ -194,6 +193,9 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
 
 pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUi>, button: &Widget, area_overlay: &Widget) -> Entity
 {
+    // set text style
+    ui.add_style(ui.style::<PlayButtonStyle>().text.clone());
+
     // prepare overlays for controlling visibility
     let default_button_overlay = make_overlay(ui.tree(), button, "default", true);
     let selected_button_overlay = make_overlay(ui.tree(), button, "selected", false);

@@ -93,8 +93,8 @@ impl Default for BasicButton
         Self{
             default_img: MISC_BUTTON,
             pressed_img: MISC_BUTTON,
-            default_img_color: Color::GRAY,
-            pressed_img_color: Color::DARK_GRAY,
+            default_img_color: Color::hsl(202., 0.37, 0.37),
+            pressed_img_color: Color::hsl(202., 0.37, 0.23),
             text: basic_button_default_text_style(),
         }
     }
@@ -134,10 +134,12 @@ pub struct BasicPopup
     pub button: BasicButton,
     /// Image stretched across the screen behind the popup.
     pub background: (&'static str, Vec2),
+    /// Border for the window.
+    pub border: PlainOutline,
     /// Image for the window.
-    pub window: (&'static str, Vec2),
+    pub backdrop: (&'static str, Vec2),
     /// Color adjustment for the window (applied to window image).
-    pub window_color: Color,
+    pub backdrop_color: Color,
 
     /// Proportional share of the OS window assigned to the popup.
     pub proportions: Vec2,
@@ -162,8 +164,9 @@ impl Default for BasicPopup
         Self{
             button: BasicButton::default(),
             background: FILM,
-            window: BOX,
-            window_color: Color::AZURE,
+            border: PlainOutline::default(),
+            backdrop: EMPTY,
+            backdrop_color: Color::AZURE,
             proportions: Vec2{ x: 80.0, y: 80.0 },
             content_percent: 82.0,
             button_spacing: 15.0,
@@ -184,12 +187,12 @@ pub fn basic_popup_default_button_style() -> BasicButton
 #[derive(StyleBundle, Default, Debug)]
 pub struct BasicPrefabStyles
 {
-    basic_text: BasicText,
-    plain_box: PlainBox,
-    plain_outline: PlainOutline,
-    basic_button: BasicButton,
-    basic_button_availability: BasicButtonAvailability,
-    basic_popup: BasicPopup,
+    pub basic_text: BasicText,
+    pub plain_box: PlainBox,
+    pub plain_outline: PlainOutline,
+    pub basic_button: BasicButton,
+    pub basic_button_availability: BasicButtonAvailability,
+    pub basic_popup: BasicPopup,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -9,7 +9,9 @@ use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) const BACKDROP        : (&'static str, Vec2) = ("userclient_backdrop.png", Vec2::new(640.0, 480.0));
+pub(crate) const CLIENT_BACKDROP : (&'static str, Vec2) = ("userclient_backdrop.png", Vec2::new(640.0, 480.0));
+pub(crate) const LOBBY_BACKDROP  : (&'static str, Vec2) = ("lobby_backdrop.png", Vec2::new(640.0, 480.0));
+pub(crate) const POPUP_BACKDROP  : (&'static str, Vec2) = ("userclient_popup_backdrop.png", Vec2::new(640.0, 480.0));
 pub(crate) const MISC_BUTTON     : (&'static str, Vec2) = ("button.png", Vec2::new(250.0, 142.0));
 pub(crate) const MENU_BAR_BUTTON : (&'static str, Vec2) = MISC_BUTTON;
 pub(crate) const _OUTLINE         : (&'static str, Vec2) = ("outline.png", Vec2::new(236.0, 139.0));
