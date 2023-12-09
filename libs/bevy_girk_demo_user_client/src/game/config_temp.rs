@@ -21,7 +21,7 @@ pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
 {
     // game duration
     let game_ticks_per_sec = Ticks(20);
-    let game_num_ticks = Ticks(game_ticks_per_sec.0 * 5);
+    let game_num_ticks = Ticks(game_ticks_per_sec.0 * 30);
 
     // versioning
     //todo: use hasher directly

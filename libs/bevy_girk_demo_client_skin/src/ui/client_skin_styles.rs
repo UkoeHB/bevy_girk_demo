@@ -12,6 +12,22 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Style, Clone, Debug)]
+pub(crate) struct GameClientBackdrop
+{
+    pub(crate) plain_box: PlainBox,
+}
+
+impl Default for GameClientBackdrop
+{
+    fn default() -> Self
+    {
+        Self{ plain_box : PlainBox{ img: BACKDROP } }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Style, Clone, Debug)]
 pub(crate) struct GameInitializingStyle
 {
     pub(crate) background_img: (&'static str, Vec2),
@@ -111,6 +127,7 @@ impl Default for GameOverStyle
 pub(crate) struct ClientSkinStyles
 {
     prefabs          : BasicPrefabStyles,
+    backdrop         : GameClientBackdrop,
     game_in_progress : GameInitializingStyle,
     game_scoreboard  : GameScoreboardStyle,
     game_clicker     : GameClickerStyle,
