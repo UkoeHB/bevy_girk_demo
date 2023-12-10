@@ -28,6 +28,7 @@ macro_rules! SCORE_FMT     { () => ("{}: {}") }
 
 struct TrackerEntry
 {
+    revoke_token     : RevokeToken,
     placement_widget : Widget,
     score_widget     : Widget,
     score            : PlayerScore,
@@ -42,9 +43,15 @@ struct GameScoreboardTracker
 
 impl GameScoreboardTracker
 {
-    fn add(&mut self, player_entity: Entity, placement_widget: Widget, score_widget: Widget, score: PlayerScore)
+    fn add(
+        &mut self,
+        player_entity    : Entity,
+        revoke_token     : RevokeToken,
+        placement_widget : Widget,
+        score_widget     : Widget,
+        score            : PlayerScore)
     {
-        let _ = self.entries.insert(player_entity, TrackerEntry{ placement_widget, score_widget, score });
+        let _ = self.entries.insert(player_entity, TrackerEntry{ revoke_token, placement_widget, score_widget, score });
         let _ = self.ordered.insert((score, player_entity));
     }
 
@@ -71,12 +78,12 @@ impl GameScoreboardTracker
             )
     }
 
-    fn pop_entry(&mut self, player_entity: Entity) -> Option<(Widget, Widget)>
+    fn pop_entry(&mut self, player_entity: Entity) -> Option<TrackerEntry>
     {
         let Some(entry) = self.entries.remove(&player_entity) else { return None; };
         let _ = self.ordered.remove(&(entry.score, player_entity));
 
-        Some((entry.placement_widget, entry.score_widget))
+        Some(entry)
     }
 
     fn len(&self) -> usize
@@ -145,7 +152,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             }
 
             // update score display value when PlayerScore is mutated
-            ui.rcommands.on(entity_mutation::<PlayerScore>(player_entity),
+            let revoke_token = ui.rcommands.on(entity_mutation::<PlayerScore>(player_entity),
                 move
                 |
                     mut ui      : UiUtils<MainUi>,
@@ -170,7 +177,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             );
 
             // add entry to tracker
-            tracker.get_mut(&mut ui.rcommands).add(player_entity, placement_entry, score_entry, **score);
+            tracker.get_mut(&mut ui.rcommands).add(player_entity, revoke_token, placement_entry, score_entry, **score);
 
             // end style
             ui.style_stack.pop();
@@ -182,12 +189,13 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
         |In(player_entity): In<Entity>, mut ui: UiUtils<MainUi>, mut tracker: ReactResMut<GameScoreboardTracker>|
         {
             // remove entry from tracker
-            let Some((placement_entry, score_entry)) = tracker.get_mut(&mut ui.builder.rcommands).pop_entry(player_entity)
+            let Some(entry) = tracker.get_mut(&mut ui.builder.rcommands).pop_entry(player_entity)
             else { tracing::error!(?player_entity, "player with removed score is missing from scoreboard tracker"); return; };
 
             // clean up ui
-            ui.remove_widget(&placement_entry);
-            ui.remove_widget(&score_entry);
+            ui.remove_widget(&entry.placement_widget);
+            ui.remove_widget(&entry.score_widget);
+            ui.builder.rcommands.revoke(entry.revoke_token);
         }
     );
 
