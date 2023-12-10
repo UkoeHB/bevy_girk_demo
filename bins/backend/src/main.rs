@@ -202,7 +202,8 @@ fn main()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
         .from_env().unwrap()
         .add_directive("hyper=info".parse().unwrap())
-        .add_directive("ezsockets=info".parse().unwrap());
+        .add_directive("ezsockets=info".parse().unwrap()
+        .add_directive("bevy_replicon=info".parse().unwrap()));
     let subscriber = tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)

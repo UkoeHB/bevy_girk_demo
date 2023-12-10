@@ -72,13 +72,15 @@ fn add_reconnect_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // enable button when we can reconnect
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
-    ui.rcommands.on(resource_mutation::<GameReconnector>(),
-            move |mut ui: UiUtils<MainUi>, reconnector: ReactRes<GameReconnector>|
+    ui.rcommands.on((resource_mutation::<GameMonitor>(), resource_mutation::<GameReconnector>()),
+            move |mut ui: UiUtils<MainUi>, game_monitor: ReactRes<GameMonitor>, reconnector: ReactRes<GameReconnector>|
             {
                 ui.builder.style_stack.push();
                 ui.builder.add_style(ui.builder.style::<GameInProgressStyle>().reconnect_button_avail.clone());
-                let enable = reconnector.can_reconnect();
+
+                let enable = !game_monitor.is_running() && reconnector.can_reconnect();
                 ui.toggle_basic_button(enable, button_entity, &disable_overlay);
+
                 ui.builder.style_stack.pop();
             }
         );
