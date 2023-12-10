@@ -36,12 +36,16 @@ pub(crate) fn handle_connection_lost(
     mut rcommands     : ReactCommands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
+    mut reconnector   : ReactResMut<GameReconnector>,
 ){
     // clear lobby display if hosted
     if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear(); }
 
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
+
+    // clear reconnector
+    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).force_clear_if(LobbyType::Hosted); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -124,11 +128,15 @@ pub(crate) fn handle_pending_lobby_ack_fail(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_start(
-    In((lobby_id, game_connect)) : In<(u64, GameConnectInfo)>,
-    mut rcommands                : ReactCommands,
-    mut lobby_display            : ReactResMut<LobbyDisplay>,
-    mut ack_request              : ReactResMut<AckRequestData>,
-    mut game_monitor             : ReactResMut<GameMonitor>,
+    In((
+        lobby_id,
+        game_connect
+    ))                : In<(u64, GameConnectInfo)>,
+    mut rcommands     : ReactCommands,
+    mut lobby_display : ReactResMut<LobbyDisplay>,
+    mut ack_request   : ReactResMut<AckRequestData>,
+    mut game_monitor  : ReactResMut<GameMonitor>,
+    mut reconnector   : ReactResMut<GameReconnector>,
 ){
     tracing::info!(lobby_id, "game start info received");
 
@@ -138,19 +146,38 @@ pub(crate) fn handle_game_start(
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
+    // update reconnector
+    // - do this before checking the current game in case the reconnector was cleared due to a host server disconnect
+    let launcher = move |monitor: &mut GameMonitor| launch_multiplayer_game(monitor, lobby_id, game_connect.clone());
+    reconnector.get_mut(&mut rcommands).set(lobby_id, LobbyType::Hosted, launcher.clone());
+
+    // don't launch game if we are already running this game
+    let current_game_id = game_monitor.game_id();
+    if (Some(lobby_id) == current_game_id) && game_monitor.is_running() { return; }
+
+    // kill the existing game client
+    let game_monitor = game_monitor.get_mut(&mut rcommands);
+    if let Some(id) = current_game_id { game_monitor.kill(id); }
+
     // launch the game
-    launch_multiplayer_game(game_monitor.get_mut(&mut rcommands), game_connect);
+    (launcher)(game_monitor);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_aborted(
-    In(lobby_id): In<u64>,
+    In(lobby_id)     : In<u64>,
+    mut rcommands    : ReactCommands,
+    mut game_monitor : ReactResMut<GameMonitor>,
+    mut reconnector  : ReactResMut<GameReconnector>,
 ){
     tracing::info!(lobby_id, "game aborted by host server");
 
-    //todo: force-close existing game
-    tracing::error!(lobby_id, "game aborting is not yet implemented");
+    // force-close existing game
+    if game_monitor.is_running() { game_monitor.get_mut(&mut rcommands).kill(lobby_id); }
+
+    // clear reconnector
+    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).clear(lobby_id); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -159,10 +186,14 @@ pub(crate) fn handle_game_over(
     In((
         lobby_id,
         game_over_report
-    ))            : In<(u64, GameOverReport)>,
-    mut rcommands : ReactCommands,
+    ))              : In<(u64, GameOverReport)>,
+    mut rcommands   : ReactCommands,
+    mut reconnector : ReactResMut<GameReconnector>,
 ){
     tracing::info!(lobby_id, "game over report received");
+
+    // clear reconnector
+    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).clear(lobby_id); }
 
     // send game over report data event
     //todo: do something with the report

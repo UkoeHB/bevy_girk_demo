@@ -23,9 +23,20 @@ pub(crate) struct GameMonitorLocalNative
 
 impl GameMonitorImpl for GameMonitorLocalNative
 {
+    fn game_id(&self) -> u64
+    {
+        u64::MAX
+    }
+
     fn is_running(&self) -> bool
     {
         !self.task.done()
+    }
+
+    fn kill(&mut self)
+    {
+        //todo
+        tracing::error!("kill not yet implemented for GameMonitorLocalNative");
     }
 
     fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>

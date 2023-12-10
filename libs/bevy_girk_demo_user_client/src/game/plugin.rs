@@ -12,7 +12,8 @@ use bevy_fn_plugin::bevy_plugin;
 #[bevy_plugin]
 pub(crate) fn GamePlugin(app: &mut App)
 {
-    app.add_plugins(GameMonitorPlugin);
+    app.add_plugins(GameMonitorPlugin)
+        .add_plugins(GameReconnectorPlugin);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

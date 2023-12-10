@@ -7,7 +7,9 @@ use bevy_kot::prelude::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_fn_plugin::bevy_plugin;
+//use bevy_girk_client_fw::*;
 use bevy_lunex::prelude::*;
+//use bevy_lunex_ui::prelude::LunexUiSystemSet2D;
 
 //standard shortcuts
 
@@ -71,6 +73,7 @@ pub(crate) fn UiPlugin(app: &mut App)
 {
     app
         .add_plugins(LunexUiPlugin2D::<MainUi>::new())
+        //.configure_sets(Update, LunexUiSystemSet2D.after(ClientFWTickSet::End))  //todo: need lunex update
         .register_interaction_source(MouseLButtonMain::default())
         .add_systems(PreStartup, setup_ui)
         .add_systems(Startup, build_ui)

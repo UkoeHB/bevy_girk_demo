@@ -14,6 +14,7 @@ use enfync::{AdoptOrDefault, Handle};
 
 pub(crate) struct GameMonitorMultiplayerNative
 {
+    game_id: u64,
     task: enfync::PendingResult<()>,
 }
 
@@ -21,9 +22,20 @@ pub(crate) struct GameMonitorMultiplayerNative
 
 impl GameMonitorImpl for GameMonitorMultiplayerNative
 {
+    fn game_id(&self) -> u64
+    {
+        self.game_id
+    }
+
     fn is_running(&self) -> bool
     {
         !self.task.done()
+    }
+
+    fn kill(&mut self)
+    {
+        //todo
+        tracing::error!("kill not yet implemented for GameMonitorMultiplayerNative");
     }
 
     fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
@@ -37,7 +49,7 @@ impl GameMonitorImpl for GameMonitorMultiplayerNative
 
 /// Launches a multi-player game.
 //todo: inject all configs
-pub(crate) fn launch_multiplayer_game_native(connect_info: GameConnectInfo) -> GameMonitorMultiplayerNative
+pub(crate) fn launch_multiplayer_game_native(game_id: u64, connect_info: GameConnectInfo) -> GameMonitorMultiplayerNative
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
@@ -58,7 +70,7 @@ pub(crate) fn launch_multiplayer_game_native(connect_info: GameConnectInfo) -> G
         }
     );
 
-    GameMonitorMultiplayerNative{ task }
+    GameMonitorMultiplayerNative{ game_id, task }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

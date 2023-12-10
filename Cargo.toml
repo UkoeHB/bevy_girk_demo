@@ -30,7 +30,7 @@ features = [
     "x11",                # Linux: Support X11 windowing system
     "file_watcher",       # Asset hot-reloading
     #"render",             # Graphics Rendering
-    #"multi-threaded",     # Allow multi-threaded system execution
+    "multi-threaded",     # Allow multi-threaded system execution
 
     ## "render" contents
     "bevy_render",        # Rendering framework core
@@ -92,6 +92,7 @@ bevy_fn_plugin  = { version = "0.1" }
 bevy_framepace  = { version = "0.14" }
 bevy_lunex      = { version = "0.0.9" }
 bevy_lunex_core = { version = "0.0.9" }
+bevy_lunex_ui   = { version = "0.0.9" }
 bevy_renet      = { version = "0.0.10" }
 #bevy_renet = { git = "https://github.com/lucaspoffo/renet", rev = "cb80542" }
 bevy_replicon  = { version = "0.17.0" }

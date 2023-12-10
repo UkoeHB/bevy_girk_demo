@@ -32,18 +32,18 @@ pub(crate) fn launch_local_player_game(monitor: &mut GameMonitor, lobby_contents
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn launch_multiplayer_game(monitor: &mut GameMonitor, connect_info: GameConnectInfo)
+pub(crate) fn launch_multiplayer_game(monitor: &mut GameMonitor, game_id: u64, connect_info: GameConnectInfo)
 {
     let monitor_impl =
     {
         #[cfg(not(target_family = "wasm"))]
         {
-            launch_multiplayer_game_native(connect_info)
+            launch_multiplayer_game_native(game_id, connect_info)
         }
 
         #[cfg(target_family = "wasm")]
         {
-            launch_multiplayer_game_wasm(lobby_contents)
+            launch_multiplayer_game_wasm(game_id, lobby_contents)
         }
     };
 

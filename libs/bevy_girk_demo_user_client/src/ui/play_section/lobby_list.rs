@@ -389,14 +389,13 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let button_entity = spawn_basic_button(ui, &area, "Now", request_lobby_list_now);
 
     // disable button when displaying 'now'
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_now();
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -411,15 +410,14 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let button_entity = spawn_basic_button(ui, &area, "<", request_lobby_list_next_newer);
 
     // disable button when no newer lobbies to request
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (first, _, _) = page.stats();
                 let enable = first != 1;
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -434,15 +432,14 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let button_entity = spawn_basic_button(ui, &area, ">", request_lobby_list_next_older);
 
     // disable button when no older lobbies to request
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (_, last, total) = page.stats();
                 let enable = last != total;
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -457,14 +454,13 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let button_entity = spawn_basic_button(ui, &area, "Oldest", request_lobby_list_oldest);
 
     // disable button when last requested the oldest lobbies
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_oldest();
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -504,7 +500,7 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
             {
                 let enable = !display.is_set();
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }

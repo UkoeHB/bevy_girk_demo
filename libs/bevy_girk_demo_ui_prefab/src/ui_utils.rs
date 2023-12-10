@@ -182,7 +182,7 @@ impl<'w, 's, Ui: LunexUi> UiUtils<'w, 's, Ui>
     /// Toggle a button's availability.
     /// - Shows/hides a widget that blocks the button.
     /// - Toggles the button label's font color.
-    pub fn toggle_basic_button(&mut self, enable: bool, button_blocker: &Widget, text_entity: Entity)
+    pub fn toggle_basic_button(&mut self, enable: bool, text_entity: Entity, button_blocker: &Widget)
     {
         // toggle visibility of button blocker
         let ui = self.builder.tree();

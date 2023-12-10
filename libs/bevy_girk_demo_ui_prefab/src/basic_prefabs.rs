@@ -164,6 +164,16 @@ pub fn spawn_basic_button<Marker>(
 
 //-------------------------------------------------------------------------------------------------------------------
 
+pub fn spawn_basic_button_blocker(ui: &mut UiBuilder<MainUi>, area: &Widget, visible: bool) -> Widget
+{
+    let disable_overlay = make_overlay(ui.tree(), &area, "", visible);
+    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+
+    disable_overlay
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 #[derive(Debug, Clone)]
 pub struct BasicPopupPack
 {

@@ -2,6 +2,7 @@
 mod config_temp;
 mod game_launchers;
 mod game_monitor;
+mod game_reconnector;
 mod plugin;
 
 #[cfg(not(target_family = "wasm"))]
@@ -13,6 +14,7 @@ mod wasm;
 pub(crate) use crate::game::config_temp::*;
 pub(crate) use crate::game::game_launchers::*;
 pub(crate) use crate::game::game_monitor::*;
+pub(crate) use crate::game::game_reconnector::*;
 pub(crate) use crate::game::plugin::*;
 
 #[cfg(not(target_family = "wasm"))]

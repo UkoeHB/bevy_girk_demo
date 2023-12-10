@@ -133,12 +133,10 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
     ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
 
     // disabler for reject button
-    let reject_disable_overlay = make_overlay(ui.tree(), &popup_pack.cancel_button, "", true);
-    ui.commands().spawn((reject_disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let reject_disable_overlay = spawn_basic_button_blocker(ui, &popup_pack.cancel_button, true);
 
     // disabler for accept button
-    let enable_disable_overlay = make_overlay(ui.tree(), &popup_pack.accept_button, "", true);
-    ui.commands().spawn((enable_disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let enable_disable_overlay = spawn_basic_button_blocker(ui, &popup_pack.accept_button, true);
 
     // setup window reactor
     let window_overlay = popup_pack.window_overlay.clone();
@@ -152,11 +150,11 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
 
                 // enable the reject button when nack was not sent
                 let enable_reject = !ack_request.is_nacked();
-                ui.toggle_basic_button(enable_reject, &reject_disable_overlay, reject_button_entity);
+                ui.toggle_basic_button(enable_reject, reject_button_entity, &reject_disable_overlay);
 
                 // enable the accept button when nack and ack were not sent
                 let enable_accept = !ack_request.is_nacked() && !ack_request.is_acked();
-                ui.toggle_basic_button(enable_accept, &enable_disable_overlay, accept_button_entity);
+                ui.toggle_basic_button(enable_accept, accept_button_entity, &enable_disable_overlay);
             }
         );
 

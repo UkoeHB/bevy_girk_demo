@@ -123,9 +123,11 @@ impl Default for LobbyListStyle
 #[derive(Style, Clone, Debug)]
 pub(crate) struct GameInProgressStyle
 {
-    pub(crate) background_img: (&'static str, Vec2),
-    pub(crate) background_color: Color,
-    pub(crate) text: BasicText,
+    pub(crate) background_img         : (&'static str, Vec2),
+    pub(crate) background_color       : Color,
+    pub(crate) text                   : BasicText,
+    pub(crate) reconnect_button       : BasicButton,
+    pub(crate) reconnect_button_avail : BasicButtonAvailability,
 }
 
 impl Default for GameInProgressStyle
@@ -133,9 +135,11 @@ impl Default for GameInProgressStyle
     fn default() -> Self
     {
         Self{
-            background_img   : BOX,
-            background_color : Color::BLACK,
-            text             : basic_text_default_light_style(),
+            background_img         : BOX,
+            background_color       : Color::BLACK,
+            text                   : basic_text_default_light_style(),
+            reconnect_button       : BasicButton::default(),
+            reconnect_button_avail : BasicButtonAvailability::default(),
         }
     }
 }
@@ -158,7 +162,7 @@ impl UserClientStyles
 {
     pub(crate) fn new() -> Self
     {
-        // customize defaults
+        // customize backdrop
         let mut default: Self = Default::default();
         default.prefabs.basic_popup.backdrop = POPUP_BACKDROP;
         default.prefabs.basic_popup.backdrop_color = Color::WHITE;

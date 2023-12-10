@@ -90,9 +90,9 @@ fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> 
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
-    let max_init_ticks  = Ticks(game_ticks_per_sec.0 * 5);
-    let game_prep_ticks = Ticks(0);
-    let max_game_over_ticks  = Ticks(game_ticks_per_sec.0 * 3);
+    let max_init_ticks      = Ticks(game_ticks_per_sec.0 * 5);
+    let game_prep_ticks     = Ticks(0);
+    let max_game_over_ticks = Ticks(game_ticks_per_sec.0 * 3);
 
     // server setup config
     let server_setup_config = GameServerSetupConfig{

@@ -395,14 +395,13 @@ fn add_page_left_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is zero
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<ListPage>|
             {
                 let enable = page.get() != 0;
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -433,14 +432,13 @@ fn add_page_right_button<ListPage: ListPageTrait>(
         );
 
     // disable button when the page number is maxed
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<ListPage>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>, page: ReactRes<ListPage>|
             {
                 let enable = !page_is_maxed(&display, &*page);
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 }
@@ -532,14 +530,13 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let button_entity = spawn_basic_button(ui, &area, default_text, leave_current_lobby);
 
     // disable button when there is no lobby
-    let disable_overlay = make_overlay(ui.tree(), &area, "", false);
-    ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
     ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
             {
                 let enable = display.is_set();
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 
@@ -590,7 +587,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     None => false,
                 };
                 let enable = enable && !monitor.has_game();
-                ui.toggle_basic_button(enable, &disable_overlay, button_entity);
+                ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );
 

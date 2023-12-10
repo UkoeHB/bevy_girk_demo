@@ -226,9 +226,8 @@ fn setup_window_reactors(
         );
 
     // prepare blocker for make button
-    let accept_disable = make_overlay(ui.tree(), &popup_pack.accept_button, "", false);
     let accept_entity = popup_pack.accept_entity;
-    ui.commands().spawn((accept_disable.clone(), UiInteractionBarrier::<MainUi>::default()));
+    let accept_disable = spawn_basic_button_blocker(&mut ui, &popup_pack.accept_button, false);
 
     // disable 'make' button
     // - when disconnected and configs are non-local
@@ -250,7 +249,7 @@ fn setup_window_reactors(
             {
                 let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
                 let enable = enable && make_lobby.is_empty() && !lobby_display.is_hosted();
-                ui.toggle_basic_button(enable, &accept_disable, accept_entity);
+                ui.toggle_basic_button(enable, accept_entity, &accept_disable);
             }
         );
 }
