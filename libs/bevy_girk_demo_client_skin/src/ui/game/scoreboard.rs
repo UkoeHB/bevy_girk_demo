@@ -101,15 +101,14 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let scoreboard = relative_widget(ui.tree(), area.end(""), (10., 90.), (5., 95.));
 
     // dynamically add player when PlayerScore is inserted
-    let scoreboard_clone = scoreboard.clone();
     ui.rcommands.on(insertion::<PlayerScore>(),
         move
         |
-            In(player_entity)  : In<Entity>,
-            mut ui             : UiBuilder<MainUi>,
-            mut tracker        : ReactResMut<GameScoreboardTracker>,
-            ctx                : Res<ClientContext>,
-            players            : Query<(&PlayerId, &React<PlayerName>, &React<PlayerScore>)>
+            In(player_entity) : In<Entity>,
+            mut ui            : UiBuilder<MainUi>,
+            mut tracker       : ReactResMut<GameScoreboardTracker>,
+            ctx               : Res<ClientContext>,
+            players           : Query<(&PlayerId, &React<PlayerName>, &React<PlayerScore>)>
         |
         {
             // add style
@@ -120,10 +119,10 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             let Ok((id, name, score)) = players.get(player_entity)
             else { tracing::error!(?player_entity, "player entity missing on score insertion"); return; };
 
-            // make scoreboard placement entry
+            // make scoreboard placement entry (i.e. 1., 2., 3., etc.)
             let num_players = tracker.len() + 1;
             let placement_height = ((num_players - 1) as f32 * ENTRY_HEIGHT, num_players as f32 * ENTRY_HEIGHT);
-            let placement_entry = relative_widget(ui.tree(), scoreboard_clone.end(""), (10., 20.), placement_height);
+            let placement_entry = relative_widget(ui.tree(), scoreboard.end(""), (10., 20.), placement_height);
             let placement_text = relative_widget(ui.tree(), placement_entry.end(""), (10., 100.), (10., 90.));
 
             spawn_basic_text(
@@ -133,8 +132,8 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     format!(PLACEMENT_FMT!(), num_players).as_str()
                 );
 
-            // make scoreboard entry
-            let score_entry = relative_widget(ui.tree(), scoreboard_clone.end(""), (25., 75.), (0., ENTRY_HEIGHT));
+            // make scoreboard entry (i.e. playername: score)
+            let score_entry = relative_widget(ui.tree(), scoreboard.end(""), (25., 75.), (0., ENTRY_HEIGHT));
             let score_text = relative_widget(ui.tree(), score_entry.end(""), (10., 90.), (10., 90.));
 
             let score_text_entity = spawn_basic_text(
@@ -152,6 +151,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             }
 
             // update score display value when PlayerScore is mutated
+            // - note: we need to clean up this callback if PlayerScore is removed from the entity
             let revoke_token = ui.rcommands.on(entity_mutation::<PlayerScore>(player_entity),
                 move
                 |
@@ -165,11 +165,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     else { tracing::error!(?player_entity, "player entity missing on score mutation"); return; };
 
                     // update score
-                    ui.text.write(
-                            score_text_entity,
-                            0,
-                            |text| write!(text, SCORE_FMT!(), name.name, score.score())
-                        ).unwrap();
+                    ui.text.write(score_text_entity, 0, |text| write!(text, SCORE_FMT!(), name.name, score.score())).unwrap();
 
                     // update tracker
                     tracker.get_mut(&mut ui.builder.rcommands).update_score(player_entity, **score);
