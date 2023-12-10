@@ -28,15 +28,14 @@ macro_rules! SCORE_FMT     { () => ("{}: {}") }
 
 struct TrackerEntry
 {
-    revoke_token     : RevokeToken,
-    placement_widget : Widget,
-    score_widget     : Widget,
-    score            : PlayerScore,
+    score_widget : Widget,
+    score        : PlayerScore,
 }
 
 #[derive(ReactResource, Default)]
 struct GameScoreboardTracker
 {
+    placements: Vec<Widget>,
     entries: HashMap<Entity, TrackerEntry>,
     ordered: BTreeSet<(PlayerScore, Entity)>,
 }
@@ -46,12 +45,12 @@ impl GameScoreboardTracker
     fn add(
         &mut self,
         player_entity    : Entity,
-        revoke_token     : RevokeToken,
         placement_widget : Widget,
         score_widget     : Widget,
-        score            : PlayerScore)
-    {
-        let _ = self.entries.insert(player_entity, TrackerEntry{ revoke_token, placement_widget, score_widget, score });
+        score            : PlayerScore
+    ){
+        self.placements.push(placement_widget);
+        let _ = self.entries.insert(player_entity, TrackerEntry{ score_widget, score });
         let _ = self.ordered.insert((score, player_entity));
     }
 
@@ -78,12 +77,12 @@ impl GameScoreboardTracker
             )
     }
 
-    fn pop_entry(&mut self, player_entity: Entity) -> Option<TrackerEntry>
+    fn pop_entry(&mut self, player_entity: Entity) -> Option<Widget>
     {
         let Some(entry) = self.entries.remove(&player_entity) else { return None; };
         let _ = self.ordered.remove(&(entry.score, player_entity));
 
-        Some(entry)
+        self.placements.pop()
     }
 
     fn len(&self) -> usize
@@ -151,7 +150,6 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             }
 
             // update score display value when PlayerScore is mutated
-            // - note: we need to clean up this callback if PlayerScore is removed from the entity
             let revoke_token = ui.rcommands.on(entity_mutation::<PlayerScore>(player_entity),
                 move
                 |
@@ -172,26 +170,29 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 }
             );
 
+            // cleanup
+            let score_entry_clone = score_entry.clone();
+            let cleanup = move |mut ui: UiUtils<MainUi>, mut tracker: ReactResMut<GameScoreboardTracker>|
+            {
+                // remove entry from tracker
+                // - the placement entry returned is the 'last' position in the scoreboard
+                let Some(placement_entry) = tracker.get_mut(&mut ui.builder.rcommands).pop_entry(player_entity)
+                else { tracing::warn!(?player_entity, "dead player is missing from scoreboard tracker"); return; };
+
+                // clean up ui
+                ui.remove_widget(&placement_entry);
+                ui.remove_widget(&score_entry_clone.clone());
+                ui.builder.rcommands.revoke(revoke_token.clone());
+            };
+            //todo: this callback leaks if PlayerScore is added/removed many times (need to add once() adaptor to bevy_kot) 
+            ui.rcommands.on(entity_removal::<PlayerScore>(player_entity), cleanup.clone());
+            ui.rcommands.on_despawn(player_entity, cleanup).unwrap();
+
             // add entry to tracker
-            tracker.get_mut(&mut ui.rcommands).add(player_entity, revoke_token, placement_entry, score_entry, **score);
+            tracker.get_mut(&mut ui.rcommands).add(player_entity, placement_entry, score_entry, **score);
 
             // end style
             ui.style_stack.pop();
-        }
-    );
-
-    // remove entry when PlayerScore is removed
-    ui.rcommands.on(removal::<PlayerScore>(),
-        |In(player_entity): In<Entity>, mut ui: UiUtils<MainUi>, mut tracker: ReactResMut<GameScoreboardTracker>|
-        {
-            // remove entry from tracker
-            let Some(entry) = tracker.get_mut(&mut ui.builder.rcommands).pop_entry(player_entity)
-            else { tracing::error!(?player_entity, "player with removed score is missing from scoreboard tracker"); return; };
-
-            // clean up ui
-            ui.remove_widget(&entry.placement_widget);
-            ui.remove_widget(&entry.score_widget);
-            ui.builder.rcommands.revoke(entry.revoke_token);
         }
     );
 

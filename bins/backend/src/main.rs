@@ -197,6 +197,18 @@ fn make_test_game_hub_server(
 
 fn main()
 {
+    // tracing
+    let filter = tracing_subscriber::EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
+        .from_env().unwrap()
+        .add_directive("hyper=info".parse().unwrap())
+        .add_directive("ezsockets=info".parse().unwrap());
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .with_env_filter(filter)
+        .with_writer(std::io::stderr)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
     // launch host server
     let (mut host_server, host_hub_url, _host_user_url) = make_test_host_server(make_host_server_configs());
 
