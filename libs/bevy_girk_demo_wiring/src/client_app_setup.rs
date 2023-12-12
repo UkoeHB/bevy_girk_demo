@@ -12,7 +12,7 @@ use bevy_kot_utils::*;
 use bevy_renet::renet::transport::ClientAuthentication;
 
 //standard shortcuts
-
+use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -59,7 +59,19 @@ pub fn make_game_client_core(
 
     // get client address based on server address
     let server_addr = connect_token.server_addresses[0].expect("server address is missing");
-    let client_address = client_address_from_server_address(&server_addr);
+    //let client_address = client_address_from_server_address(&server_addr);
+    //todo: renet currently only allows connect token reuse if your IP/port stay the same
+    //WARNING: THIS MAY CAUSE THE CLIENT TO CRASH ON STARTUP AND RECONNECTS WILL FAIL IF YOUR IP CHANGES OR IF THE PORT
+    //         IS STOLEN
+    let client_id = client_start_pack.client_initializer.context.id();
+    let port = (client_id as u32 % ((u16::MAX - 4444u16) as u32)) + 4444u32;
+    let client_address = {
+        match server_addr
+        {
+            SocketAddr::V4(_) => SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), port as u16),
+            SocketAddr::V6(_) => SocketAddr::new(Ipv6Addr::UNSPECIFIED.into(), port as u16),
+        }
+    };
 
     // set up client app
     let mut client_app = App::new();
@@ -70,7 +82,7 @@ pub fn make_game_client_core(
             &mut client_app,
             RenetClientConnectPack::Native(ClientAuthentication::Secure{ connect_token }, client_address),
         );
-    let client_id = client_start_pack.client_initializer.context.id();
+    //let client_id = client_start_pack.client_initializer.context.id();
     let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
 
     (client_app, client_id, player_input_sender)

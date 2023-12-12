@@ -97,7 +97,7 @@ fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> 
     // server setup config
     let server_setup_config = GameServerSetupConfig{
             protocol_id,
-            expire_seconds  : 10u64,
+            expire_seconds  : u32::MAX as u64,  //this needs to be longer than the game time to allow reconnects w/ token
             timeout_seconds : 5i32,
             server_ip       : Ipv6Addr::LOCALHOST,
         };
@@ -199,23 +199,27 @@ fn main()
 {
     // tracing
     let filter = tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
         .from_env().unwrap()
-        .add_directive("hyper=info".parse().unwrap())
-        .add_directive("ezsockets=info".parse().unwrap()
-        .add_directive("bevy_replicon=info".parse().unwrap()));
-    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .add_directive("bevy_simplenet=trace".parse().unwrap())
+        .add_directive("renet=debug".parse().unwrap())
+        .add_directive("renetcode=debug".parse().unwrap())
+        .add_directive("bevy_girk_host_server=trace".parse().unwrap())
+        .add_directive("bevy_girk_game_hub_server=trace".parse().unwrap())
+        .add_directive("bevy_girk_wiring=trace".parse().unwrap())
+        .add_directive("bevy_girk_demo_game_core=trace".parse().unwrap())
+        .add_directive("bevy_girk_game_fw=trace".parse().unwrap());
+    tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+        .init();
 
     // launch host server
     let (mut host_server, host_hub_url, _host_user_url) = make_test_host_server(make_host_server_configs());
 
     // launch game hub server attached to host server
     let game_ticks_per_sec = Ticks(20);
-    let game_num_ticks     = Ticks(20 * 15);
+    let game_num_ticks     = Ticks(20 * 30);
     let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
             host_hub_url,
             make_hub_server_configs(),

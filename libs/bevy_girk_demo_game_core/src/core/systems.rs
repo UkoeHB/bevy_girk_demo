@@ -51,13 +51,13 @@ pub(crate) fn update_game_mode(
     mut next_game_mode : ResMut<NextState<GameMode>>
 ){
     // get expected mode based on elapsed ticks
-    let duration_config    = game_ctx.duration_config();
-    let expected_game_mode = duration_config.expected_mode(game_ticks.elapsed.ticks());
+    let duration_config = game_ctx.duration_config();
+    let new_game_mode   = duration_config.expected_mode(game_ticks.elapsed.ticks());
 
     // update the game mode
-    if expected_game_mode == **current_game_mode { return; }
-    next_game_mode.set(expected_game_mode);
-    tracing::info!(?expected_game_mode, "new game mode");
+    if new_game_mode == **current_game_mode { return; }
+    next_game_mode.set(new_game_mode);
+    tracing::info!(?new_game_mode, "new game mode");
 }
 
 //-------------------------------------------------------------------------------------------------------------------

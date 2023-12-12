@@ -35,7 +35,7 @@ pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
     // server setup config
     let server_setup_config = GameServerSetupConfig{
             protocol_id,
-            expire_seconds  : 10u64,
+            expire_seconds  : u32::MAX as u64,  //this needs to be longer than the game time to allow reconnects w/ token
             timeout_seconds : 5i32,
             server_ip       : Ipv6Addr::LOCALHOST,
         };

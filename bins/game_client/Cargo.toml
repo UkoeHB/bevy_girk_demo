@@ -12,7 +12,7 @@ doctest = false
 bevy               = { workspace = true, default-features = true }
 bevy_kot_utils     = { workspace = true }
 serde_json         = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }
 tracing            = { workspace = true }
 
 bevy_girk_backend_public = { workspace = true }

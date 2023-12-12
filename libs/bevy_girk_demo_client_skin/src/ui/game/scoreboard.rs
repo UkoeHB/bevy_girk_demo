@@ -99,8 +99,8 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // scoreboard section
     let scoreboard = relative_widget(ui.tree(), area.end(""), (10., 90.), (5., 95.));
 
-    // dynamically add player when PlayerScore is inserted
-    ui.rcommands.on(insertion::<PlayerScore>(),
+    // dynamically add player when player is inserted
+    ui.rcommands.on((insertion::<PlayerScore>(), insertion::<PlayerName>()),
         move
         |
             In(player_entity) : In<Entity>,
@@ -110,13 +110,14 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             players           : Query<(&PlayerId, &React<PlayerName>, &React<PlayerScore>)>
         |
         {
+            // access player
+            // - this requires insertion of all components, but components are inserted one
+            //   at a time, so this will always fail until all are present
+            let Ok((id, name, score)) = players.get(player_entity) else { return; };
+
             // add style
             ui.style_stack.push();
             ui.add_style(ui.style::<GameScoreboardStyle>().text.clone());
-
-            // access player
-            let Ok((id, name, score)) = players.get(player_entity)
-            else { tracing::error!(?player_entity, "player entity missing on score insertion"); return; };
 
             // make scoreboard placement entry (i.e. 1., 2., 3., etc.)
             let num_players = tracker.len() + 1;

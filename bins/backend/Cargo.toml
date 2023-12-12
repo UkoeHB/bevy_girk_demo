@@ -13,7 +13,9 @@ bevy               = { version = "0.12", default-features = false }
 bevy_kot_utils     = { workspace = true }
 bevy_simplenet     = { workspace = true }
 enfync             = { workspace = true }
-tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }
+renet              = { version  = "0.0.14" }
+renetcode          = { version  = "0.0.10" }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 url                = { workspace = true }
 

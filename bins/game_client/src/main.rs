@@ -52,11 +52,24 @@ fn main()
 {
     // log to stderr (not stdout, which is piped to the parent process for sending game instance reports)
     //todo: log to file instead (use env::arg configs?)
+    let filter = tracing_subscriber::EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
+        .from_env().unwrap()
+        .add_directive("bevy=trace".parse().unwrap())
+        .add_directive("bevy_app=warn".parse().unwrap())
+        .add_directive("bevy_core=warn".parse().unwrap())
+        .add_directive("bevy_winit=warn".parse().unwrap())
+        .add_directive("bevy_render=warn".parse().unwrap())
+        .add_directive("blocking=warn".parse().unwrap())
+        .add_directive("naga_oil=warn".parse().unwrap())
+        .add_directive("bevy_replicon=info".parse().unwrap());
     let subscriber = tracing_subscriber::FmtSubscriber::builder()
-        .with_max_level(tracing::Level::WARN)
+        .with_env_filter(filter)
         .with_writer(std::io::stderr)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
+    tracing::info!("game client started");
 
     // get connect info as input arg
     let connect_info = get_game_connect_info(std::env::args()).expect("game connect info is missing");
