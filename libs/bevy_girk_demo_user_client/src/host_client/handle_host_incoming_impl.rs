@@ -45,6 +45,9 @@ pub(crate) fn handle_connection_lost(
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
     // clear reconnector
+    // - We clear the reconnector to avoid a situation where a game over/abort is not received from the host server
+    //   since it's disconnected, so the reconnector never gets cleared. This is not ideal since the game may be
+    //   reconnectable even if the host server is disconnected, but avoids some headaches.
     if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).force_clear_if(LobbyType::Hosted); }
 }
 
@@ -174,6 +177,7 @@ pub(crate) fn handle_game_aborted(
     tracing::info!(lobby_id, "game aborted by host server");
 
     // force-close existing game
+    //todo: display a message to user informing them a game was aborted
     if game_monitor.is_running() { game_monitor.get_mut(&mut rcommands).kill(lobby_id); }
 
     // clear reconnector

@@ -6,7 +6,6 @@ use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_game_fw::*;
 use bevy_kot_ecs::*;
-use bevy_renet::renet::Bytes;
 use bevy_replicon::bincode;
 use bevy_replicon::bincode::*;
 use bevy_replicon::prelude::*;
@@ -39,7 +38,7 @@ fn update_react_component<C: ReactComponent>(
 fn deserialize_react_component<C: Component + ReactComponent + DeserializeOwned>(
     entity      : &mut EntityWorldMut,
     _entity_map : &mut ServerEntityMap,
-    cursor      : &mut Cursor<Bytes>,
+    cursor      : &mut Cursor<&[u8]>,
     _tick       : RepliconTick,
 ) -> bincode::Result<()>
 {

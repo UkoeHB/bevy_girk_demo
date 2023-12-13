@@ -53,7 +53,7 @@ fn update_loading_bar(
         .unwrap_or(GameInitProgress::default())
         .0
         .max(0.0)
-        .min(100.0);
+        .min(1.0);
 
     // set bar width equal to the progress
     let Ok(bar_branch) = overlay.loading_bar.fetch_mut(ui.tree())

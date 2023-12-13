@@ -94,7 +94,9 @@ pub fn GameTickPlugin(app: &mut App)
             );
 
     // GAME GameOver systems.
-    //todo: this will only run in the short delay between entering 'game over' and the GameFWMode moving to 'End'
+    // - This will only run in the span between entering 'game over' and the GameFWMode moving to 'End', which is controlled
+    //   by `GameFWConfig::max_end_ticks()`.
+    //todo: allow GameOver to last indefinitely?
     app.configure_sets(Update,
                 GameSet::GameOver
                     .run_if(in_state(GameFWMode::Game))
