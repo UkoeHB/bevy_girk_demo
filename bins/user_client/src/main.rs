@@ -16,9 +16,8 @@ use wasm_timer::{SystemTime, UNIX_EPOCH};
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Parser, Debug)]
-#[command(arg_required_else_help = true)]
 #[command(author, version, about, long_about = None)]
-struct CargoCli
+struct ClientCli
 {
     /// Specify the client id (will be random if unspecified).
     #[arg(long = "id")]
@@ -46,7 +45,7 @@ fn main()
     }
 
     // cli args
-    let args = CargoCli::parse();
+    let args = ClientCli::parse();
 
     // define client id
     let client_id = args.client_id.unwrap_or_else(get_systime_millis);

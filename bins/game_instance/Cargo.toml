@@ -10,6 +10,7 @@ doctest = false
 
 [dependencies]
 bevy               = { version = "0.12", default-features = false }
+clap               = { workspace = true, features = [ "derive" ] }
 tracing-subscriber = { workspace = true }
 tracing            = { workspace = true }
 

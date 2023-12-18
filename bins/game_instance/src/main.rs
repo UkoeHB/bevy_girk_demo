@@ -5,6 +5,7 @@ use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy_girk_game_instance::*;
+use clap::Parser;
 
 //standard shortcuts
 
@@ -27,8 +28,8 @@ fn main()
     let game_factory = GameFactory::new(ClickGameFactory);
 
     // launch the game
-    // - the game launch pack will be extracted from environment args
-    process_game_launcher(&mut std::env::args(), game_factory);
+    let args = GameInstanceCli::parse();
+    process_game_launcher(args, game_factory);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -10,7 +10,7 @@ doctest = false
 
 [dependencies]
 bevy           = { workspace = true, default-features = true }
-clap           = { workspace = true, features = [ "derive" ] }
+clap           = { workspace = true, default-features = true, features = [ "derive" ] }
 enfync         = { workspace = true }
 bevy_simplenet = { workspace = true, features = [ "client", "bevy" ] }
 tracing        = { workspace = true }
