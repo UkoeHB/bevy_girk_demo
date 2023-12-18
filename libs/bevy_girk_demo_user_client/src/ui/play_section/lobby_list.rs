@@ -236,7 +236,7 @@ fn update_lobby_list_contents(
                 {
                     write!(
                             text,
-                            "Lobby: {}, Owner: {}, Players: {}/{}, Watchers: {}/{}",
+                            "Lobby: {:0>6}, Owner: {:0>6}, Players: {}/{}, Watchers: {}/{}",
                             entry.id % 1_000_000u64,
                             entry.owner_id % 1_000_000u128,
                             entry.num(ClickLobbyMemberType::Player),

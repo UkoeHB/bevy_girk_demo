@@ -205,7 +205,7 @@ fn update_list_contents<ListPage: ListPageTrait>(
             }
             Some(member_id) =>
             {
-                let _ = write!(text, "{} {}: {}", tag, member_number, member_id % 1_000_000u128);
+                let _ = write!(text, "{} {}: {:0>6}", tag, member_number, member_id % 1_000_000u128);
             }
         }
     }
@@ -317,7 +317,7 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 {
                     let id       = lobby_contents.id % 1_000_000u64;
                     let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                    text.write(text_entity, 0, |text| write!(text, "Lobby: {} -- Owner: {}", id, owner_id)).unwrap();
+                    text.write(text_entity, 0, |text| write!(text, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id)).unwrap();
                 }
                 else
                 {

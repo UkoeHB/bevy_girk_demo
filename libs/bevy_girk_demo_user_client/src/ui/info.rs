@@ -30,7 +30,7 @@ fn setup_client_id_display(In(area): In<Widget>, mut ui: UiBuilder<MainUi>, clie
                     .with_vertical_anchor(-1.0),
             ).unwrap();
 
-        spawn_basic_text(ui, text, TextParams::topleft(), format!("ID: {}", client.id() % 1_000_000u128).as_str());
+        spawn_basic_text(ui, text, TextParams::topleft(), format!("ID: {:0>6}", client.id() % 1_000_000u128).as_str());
     });
 }
 
@@ -48,7 +48,7 @@ pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
             area.end(""),
             RelativeLayout{  //add slight buffer around edge; extend y-axis to avoid resizing issues
                 absolute_1: Vec2 { x: 5., y: 6. },
-                absolute_2: Vec2 { x: -5., y: 0. },
+                absolute_2: Vec2 { x: -6., y: 0. },
                 relative_1: Vec2 { x: 0., y: 0. },
                 relative_2: Vec2 { x: 100., y: 200. },
                 ..Default::default()
