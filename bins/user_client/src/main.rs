@@ -7,10 +7,33 @@ use bevy_girk_demo_wiring::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
+use clap::Parser;
 
 //standard shortcuts
 use wasm_timer::{SystemTime, UNIX_EPOCH};
 
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Parser, Debug)]
+#[command(arg_required_else_help = true)]
+#[command(author, version, about, long_about = None)]
+struct CargoCli
+{
+    /// Specify the client id (will be random if unspecified).
+    #[arg(long = "id")]
+    client_id: Option<u128>,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+fn get_systime_millis() -> u128
+{
+    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis()
+}
+
+//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn main()
@@ -21,6 +44,12 @@ fn main()
         console_error_panic_hook::set_once();
         //tracing_wasm::set_as_global_default();
     }
+
+    // cli args
+    let args = CargoCli::parse();
+
+    // define client id
+    let client_id = args.client_id.unwrap_or_else(get_systime_millis);
 
     // set asset directory location
     #[cfg(not(target_family = "wasm"))]
@@ -36,9 +65,7 @@ fn main()
     let client = host_user_client_factory().new_client(
             enfync::builtin::Handle::default(),  //automatically selects native/WASM runtime
             url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(),
-            bevy_simplenet::AuthRequest::None{
-                client_id: SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis()
-            },
+            bevy_simplenet::AuthRequest::None{ client_id },
             bevy_simplenet::ClientConfig::default(),
             ()
         );
