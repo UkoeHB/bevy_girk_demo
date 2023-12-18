@@ -14,8 +14,9 @@ use enfync::{AdoptOrDefault, Handle};
 
 pub(crate) struct GameMonitorMultiplayerNative
 {
-    game_id: u64,
-    task: enfync::PendingResult<()>,
+    game_id             : u64,
+    task                : enfync::PendingResult<()>,
+    abort_signal_sender : Option<tokio::sync::oneshot::Sender<()>>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -34,8 +35,8 @@ impl GameMonitorImpl for GameMonitorMultiplayerNative
 
     fn kill(&mut self)
     {
-        //todo
-        tracing::error!("kill not yet implemented for GameMonitorMultiplayerNative");
+        let Some(sender) = self.abort_signal_sender.take() else { return; };
+        let _ = sender.send(());
     }
 
     fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
@@ -53,6 +54,7 @@ pub(crate) fn launch_multiplayer_game_native(game_id: u64, connect_info: GameCon
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
+    let (abort_signal_sender, abort_signal_receiver) = tokio::sync::oneshot::channel::<()>();
     let task = spawner.spawn(
         async move
         {
@@ -64,13 +66,21 @@ pub(crate) fn launch_multiplayer_game_native(game_id: u64, connect_info: GameCon
 
             // wait for client to close
             // - we must wait for client closure to avoid zombie process leak
-            let _ = game_client_process.wait().await;
+            tokio::select!
+            {
+                _ = game_client_process.wait() => tracing::debug!("multi-player game client closed"),
+                _ = abort_signal_receiver =>
+                {
+                    let _ = game_client_process.kill().await;
+                    tracing::warn!("multi-player game client killed");
+                }
+            }
 
             tracing::info!("multiplayer game ended");
         }
     );
 
-    GameMonitorMultiplayerNative{ game_id, task }
+    GameMonitorMultiplayerNative{ game_id, task, abort_signal_sender: Some(abort_signal_sender) }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
