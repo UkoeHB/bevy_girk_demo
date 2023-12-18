@@ -29,3 +29,6 @@ bevy_girk_utils          = { workspace = true }
 bevy_girk_demo_game_core = { path = "../bevy_girk_demo_game_core" }
 bevy_girk_demo_ui_prefab = { path = "../bevy_girk_demo_ui_prefab" }
 bevy_girk_demo_wiring    = { path = "../bevy_girk_demo_wiring" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+tokio = { version = "1.35", default-features = false } #todo: remove this when game monitor impls are moved to bevy_girk

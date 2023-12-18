@@ -16,7 +16,8 @@ use enfync::{AdoptOrDefault, Handle};
 
 pub(crate) struct GameMonitorLocalNative
 {
-    task: enfync::PendingResult<Option<GameOverReport>>,
+    task                : enfync::PendingResult<Option<GameOverReport>>,
+    abort_signal_sender : Option<tokio::sync::oneshot::Sender<()>>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -35,8 +36,8 @@ impl GameMonitorImpl for GameMonitorLocalNative
 
     fn kill(&mut self)
     {
-        //todo
-        tracing::error!("kill not yet implemented for GameMonitorLocalNative");
+        let Some(sender) = self.abort_signal_sender.take() else { return; };
+        let _ = sender.send(());
     }
 
     fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
@@ -56,6 +57,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
+    let (abort_signal_sender, abort_signal_receiver) = tokio::sync::oneshot::channel::<()>();
     let task = spawner.spawn(
         async move
         {
@@ -87,8 +89,15 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
 
             // wait for client to close
             // - we must wait for client closure to avoid zombie process leak
-            let _ = game_client_process.wait().await;
-            tracing::debug!("local player game client closed");
+            tokio::select!
+            {
+                _ = game_client_process.wait() => tracing::debug!("local player game client closed"),
+                _ = abort_signal_receiver =>
+                {
+                    let _ = game_client_process.kill().await;
+                    tracing::warn!("local player game client killed");
+                }
+            }
 
             // command game instance to abort
             // - we assume if the client is closed then the game should die, since this is singleplayer
@@ -108,7 +117,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
         }
     );
 
-    GameMonitorLocalNative{ task }
+    GameMonitorLocalNative{ task, abort_signal_sender: Some(abort_signal_sender) }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
