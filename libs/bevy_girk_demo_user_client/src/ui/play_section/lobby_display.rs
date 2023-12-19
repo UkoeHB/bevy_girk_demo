@@ -264,30 +264,6 @@ fn update_display_list_contents_on_lobby_display<ListPage: ListPageTrait>(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_simple_button_reactors<Tag: Component>(
-    In((
-        button_entity,
-        default_text
-    ))            : In<(Entity, &'static str)>,
-    mut rcommands : ReactCommands,
-    marker        : Query<Entity, With<Tag>>,
-){
-    let marker_entity = marker.single();
-
-    // when a request starts
-    rcommands.on(entity_insertion::<PendingRequest>(marker_entity),
-            move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", "...")).unwrap()
-        );
-
-    // when a request completes
-    rcommands.on(entity_removal::<PendingRequest>(marker_entity),
-            move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", default_text)).unwrap()
-        );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
 fn add_lobby_display_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // set text style
@@ -544,7 +520,7 @@ fn add_leave_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     ui.commands().add(
             move |world: &mut World|
             {
-                syscall(world, (button_entity, default_text), setup_simple_button_reactors::<LeaveLobby>);
+                syscall(world, (button_entity, default_text), setup_simple_pending_button_text::<LeaveLobby>);
             }
         );
 }
@@ -595,7 +571,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     ui.commands().add(
             move |world: &mut World|
             {
-                syscall(world, (button_entity, default_text), setup_simple_button_reactors::<LaunchLobby>);
+                syscall(world, (button_entity, default_text), setup_simple_pending_button_text::<LaunchLobby>);
             }
         );
 }

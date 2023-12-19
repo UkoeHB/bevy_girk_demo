@@ -82,7 +82,8 @@ fn add_reconnect_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     ui.add_style(ui.style::<GameInProgressStyle>().reconnect_button.clone());
 
     // spawn button
-    let button_entity = spawn_basic_button(ui, area, "Reconnect", reconnect_game);
+    let default_text = "Reconnect";
+    let button_entity = spawn_basic_button(ui, area, default_text, reconnect_game);
 
     // enable button when we can reconnect
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
@@ -96,6 +97,14 @@ fn add_reconnect_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 ui.toggle_basic_button(enable, button_entity, &disable_overlay);
 
                 ui.builder.style_stack.pop();
+            }
+        );
+
+    // show pending text when waiting for response
+    ui.commands().add(
+            move |world: &mut World|
+            {
+                syscall(world, (button_entity, default_text), setup_simple_pending_button_text::<ReconnectorButton>);
             }
         );
 }
