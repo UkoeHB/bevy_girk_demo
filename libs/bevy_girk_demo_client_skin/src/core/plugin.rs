@@ -16,6 +16,7 @@ use iyes_progress::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 //hacky timer for delaying initialization
+//todo: remove/improve
 fn initialization_timer(time: Res<Time>) -> Progress
 {
     if time.elapsed_seconds() < 1.0
@@ -82,7 +83,7 @@ pub fn ClickClientSkinPlugin(app: &mut App)
 
         //temp: add initialization delay
         .add_systems(Update, initialization_timer.track_progress()
-            .in_set(ClientSet::InitStartup)
+            .in_set(ClientSet::InitCore)
             .in_set(ClientFWLoadingSet))
         ;
 }
