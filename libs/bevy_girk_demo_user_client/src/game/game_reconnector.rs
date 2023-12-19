@@ -3,6 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy_fn_plugin::bevy_plugin;
+use bevy_girk_utils::*;
 use bevy_kot::prelude::*;
 
 //standard shortcuts
@@ -16,7 +17,7 @@ pub(crate) struct GameReconnector
 {
     game_id     : u64,
     lobby_type  : LobbyType,
-    reconnector : Option<Box<dyn FnMut(&mut GameMonitor) + Send + Sync + 'static>>,
+    reconnector : Option<Box<dyn FnMut(&mut GameMonitor, ServerConnectToken) + Send + Sync + 'static>>,
 }
 
 impl GameReconnector
@@ -28,7 +29,7 @@ impl GameReconnector
         &mut self,
         game_id: u64,
         lobby_type: LobbyType,
-        reconnector: impl FnMut(&mut GameMonitor) + Send + Sync + 'static
+        reconnector: impl FnMut(&mut GameMonitor, ServerConnectToken) + Send + Sync + 'static
     ){
         self.game_id     = game_id;
         self.lobby_type  = lobby_type;
@@ -41,11 +42,23 @@ impl GameReconnector
         self.reconnector.is_some()
     }
 
-    /// Try to reconnect.
-    pub(crate) fn reconnect(&mut self, monitor: &mut GameMonitor)
+    /// Check the current game id.
+    ///
+    /// Returns `None` if [`Self::can_reconnect()`] is false.
+    pub(crate) fn game_id(&self) -> Option<u64>
     {
-        let Some(reconnector) = &mut self.reconnector else { return; };
-        (reconnector)(monitor);
+        if !self.can_reconnect() { return None; }
+        Some(self.game_id)
+    }
+
+    /// Try to reconnect.
+    ///
+    /// Returns an error if there is no registered reconnector.
+    pub(crate) fn reconnect(&mut self, monitor: &mut GameMonitor, token: ServerConnectToken) -> Result<(), ()>
+    {
+        let Some(reconnector) = &mut self.reconnector else { return Err(()); };
+        (reconnector)(monitor, token);
+        Ok(())
     }
 
     /// Clear the reconnector if it contains the given game id.

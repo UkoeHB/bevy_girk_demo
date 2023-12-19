@@ -86,7 +86,7 @@ fn prepare_game_startup(
         {
             #[cfg(target_family = "wasm")]
             {
-                // we assume WASM game instances are only created for local single-player
+                // we assume game instances are only created on WASM for local single-player
                 SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis()
             }
             #[cfg(not(target_family = "wasm"))]
@@ -162,7 +162,7 @@ fn new_server_config(num_clients: usize, server_setup_config: &GameServerSetupCo
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Prepare game start report for participants to use when setting up their game clients.
+/// Prepare game start report to assist participants with setting up their game clients.
 fn prepare_game_start_report(
     app              : &App,
     server_config    : &GameServerSetupConfig,
@@ -175,45 +175,57 @@ fn prepare_game_start_report(
     let game_initializer = app.world.resource::<ClickGameInitializer>();
     let ticks_per_sec    = app.world.resource::<GameFWConfig>().ticks_per_sec();
 
-    // make connect infos for each client
-    let mut connect_infos = Vec::<GameConnectInfo>::new();
-    connect_infos.reserve(user_clients.len());
-
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
+    // make start infos for each client
+    let mut native_count = 0;
+    let mut wasm_count = 0;
+    let mut start_infos = Vec::<GameStartInfo>::new();
+    start_infos.reserve(user_clients.len());
 
     for (env, user_id, client_id) in user_clients.iter()
     {
+        // count client types
+        match env
+        {
+            bevy_simplenet::EnvType::Native => native_count += 1,
+            bevy_simplenet::EnvType::Wasm   => wasm_count += 1,
+        }
+
         // get game start package for client
         let client_start_pack = prepare_client_start_pack(&*game_initializer, *client_id, ticks_per_sec)?;
 
-        //todo: differentiate connect token based on client env type
-        if *env != bevy_simplenet::EnvType::Native { tracing::error!("WASM clients are unsupported"); continue; }
-
-        // get connect token for client
-        let client_connect_token = new_connect_token(
-                current_time,
-                server_config,
-                auth_key,
-                *client_id as u64,
-                server_addresses.clone()
-            );
-
-        // save client's connect info
-        let Ok(serialized_connect_token) = connect_token_to_bytes(&client_connect_token)
-        else { tracing::error!("unable to serialize connect token"); return Err(()); };
-
-        connect_infos.push(
-                GameConnectInfo{
-                        user_id: *user_id,
-                        server_connect_token: ServerConnectToken::Native{ bytes: serialized_connect_token },
-                        serialized_start_data: ser_msg(&client_start_pack),
+        // save client's start info
+        start_infos.push(
+                GameStartInfo{
+                        user_id               : *user_id,
+                        client_id             : *client_id as u64,
+                        serialized_start_data : ser_msg(&client_start_pack),
                     }
             );
     }
 
-    Ok(GameStartReport{ connect_infos })
+    // prepare connect metas based on client types
+    let mut native_meta = None;
+    let wasm_meta = None;
+
+    if native_count > 0
+    {
+        native_meta = Some(GameServerConnectMetaNative{
+            server_config    : server_config.clone(),
+            server_addresses : server_addresses.clone(),
+            auth_key         : auth_key.clone(),
+        });
+    }
+
+    if native_count == 0 && wasm_count == 1
+    {
+        tracing::error!("wasm single-player clients not yet supported");
+    }
+    else if wasm_count > 1
+    {
+        tracing::error!("wasm multi-player clients not yet supported");
+    }
+
+    Ok(GameStartReport{ native_meta, wasm_meta, start_infos })
 }
 
 //-------------------------------------------------------------------------------------------------------------------

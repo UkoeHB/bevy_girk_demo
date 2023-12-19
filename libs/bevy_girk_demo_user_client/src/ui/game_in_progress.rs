@@ -3,7 +3,9 @@ use crate::*;
 use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
+use bevy::prelude::*;
 use bevy_fn_plugin::*;
+use bevy_girk_backend_public::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
@@ -15,15 +17,27 @@ use bevy_lunex::prelude::*;
 
 fn reconnect_game(
     mut rcommands    : ReactCommands,
-    mut game_monitor : ReactResMut<GameMonitor>,
-    mut reconnector  : ReactResMut<GameReconnector>,
+    client           : Res<HostUserClient>,
+    game_monitor     : ReactRes<GameMonitor>,
+    reconnector      : ReactRes<GameReconnector>,
+    reconnect_button : Query<Entity, (With<ReconnectorButton>, Without<React<PendingRequest>>)>,
 ){
+    // check for existing request
+    let Ok(target_entity) = reconnect_button.get_single()
+    else { tracing::error!("ignoring reconnect game request because a request is already pending"); return };
+
     // sanity checks
     if game_monitor.is_running() { tracing::error!("reconnect game selected but client is currently in a game"); }
     if !reconnector.can_reconnect() { tracing::error!("reconnect game selected but client cannot reconnect"); return; }
+    let Some(game_id) = reconnector.game_id()
+    else { tracing::error!("reconnector game id missing on reconnect request"); return; };
 
-    // reconnect
-    reconnector.get_mut_noreact().reconnect(game_monitor.get_mut(&mut rcommands));
+    // request new connect token
+    let Ok(new_req) = client.request(UserToHostRequest::GetConnectToken{ id: game_id })
+    else { tracing::warn!(game_id, "failed sending get connect token request to host server"); return; };
+
+    // save request
+    rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

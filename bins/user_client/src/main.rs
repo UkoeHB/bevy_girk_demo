@@ -15,6 +15,7 @@ use wasm_timer::{SystemTime, UNIX_EPOCH};
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
+//todo: specify app data file path (e.g. contains auth keys [temp solution before 'login'-style auth], logs, settings)
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct ClientCli

@@ -4,6 +4,7 @@ use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy_girk_game_instance::*;
+use bevy_girk_utils::*;
 
 //standard shortcuts
 
@@ -32,18 +33,22 @@ pub(crate) fn launch_local_player_game(monitor: &mut GameMonitor, lobby_contents
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn launch_multiplayer_game(monitor: &mut GameMonitor, game_id: u64, connect_info: GameConnectInfo)
-{
+pub(crate) fn launch_multiplayer_game(
+    monitor    : &mut GameMonitor,
+    game_id    : u64,
+    token      : ServerConnectToken,
+    start_info : GameStartInfo
+){
     let monitor_impl =
     {
         #[cfg(not(target_family = "wasm"))]
         {
-            launch_multiplayer_game_native(game_id, connect_info)
+            launch_multiplayer_game_native(game_id, token, start_info)
         }
 
         #[cfg(target_family = "wasm")]
         {
-            launch_multiplayer_game_wasm(game_id, lobby_contents)
+            launch_multiplayer_game_wasm(game_id, token, start_info)
         }
     };
 

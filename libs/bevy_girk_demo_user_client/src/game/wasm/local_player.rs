@@ -26,12 +26,12 @@ pub(crate) struct GameMonitorLocalWasm
 
 impl GameMonitorImpl for GameMonitorLocalWasm
 {
-    pub(crate) fn is_running(&self) -> bool
+    fn is_running(&self) -> bool
     {
         false
     }
 
-    pub(crate) fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
+    fn take_result(&mut self) -> Result<Option<GameOverReport>, ()>
     {
         Ok(None)
     }

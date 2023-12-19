@@ -5,6 +5,7 @@ use bevy_girk_demo_wiring::*;
 //third-party shortcuts
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
+use bevy_girk_utils::*;
 use enfync::{AdoptOrDefault, Handle};
 
 //standard shortcuts
@@ -50,7 +51,11 @@ impl GameMonitorImpl for GameMonitorMultiplayerNative
 
 /// Launches a multi-player game.
 //todo: inject all configs
-pub(crate) fn launch_multiplayer_game_native(game_id: u64, connect_info: GameConnectInfo) -> GameMonitorMultiplayerNative
+pub(crate) fn launch_multiplayer_game_native(
+    game_id    : u64,
+    token      : ServerConnectToken,
+    start_info : GameStartInfo
+) -> GameMonitorMultiplayerNative
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
@@ -61,7 +66,7 @@ pub(crate) fn launch_multiplayer_game_native(game_id: u64, connect_info: GameCon
             // launch game client
             //todo: inject game client binary path
             tracing::trace!("launching game client for multiplayer game");
-            let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), &connect_info)
+            let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), &token, &start_info)
             else { tracing::error!("failed launching game client for multiplayer game"); return; };
 
             // wait for client to close

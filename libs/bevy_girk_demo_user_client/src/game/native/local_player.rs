@@ -10,8 +10,17 @@ use bevy_kot::prelude::*;
 use enfync::{AdoptOrDefault, Handle};
 
 //standard shortcuts
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
 
+fn get_systime() -> Duration
+{
+    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default()
+}
+
+//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) struct GameMonitorLocalNative
@@ -77,14 +86,20 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
             let Some(GameInstanceReport::GameStart(_, report)) = report_receiver.recv().await
             else { tracing::error!("failed getting game start report for local player game"); return None; };
 
-            // extract game connect info
-            let Some(connect_info) = report.connect_infos.get(0)
-            else { tracing::error!("missing connect infos for local player game"); return None; };
+            // prepare to launch the client
+            let Some(meta) = &report.native_meta
+            else { tracing::error!("missing native meta for setting up local player renet client"); return None; };
+
+            let Some(start_info) = report.start_infos.get(0)
+            else { tracing::error!("missing start info for local player game"); return None; };
+
+            let Ok(token) = new_connect_token_native(meta, get_systime(), start_info.client_id)
+            else { tracing::error!("failed producing connect token for local player game"); return None; };
 
             // launch game client
             //todo: inject game client binary path
             tracing::trace!("launching game client for local player game");
-            let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), connect_info)
+            let Ok(mut game_client_process) = launch_game_client(String::from(GAME_CLIENT_PATH), &token, start_info)
             else { tracing::error!("failed launching game client for local player game"); return None; };
 
             // wait for client to close

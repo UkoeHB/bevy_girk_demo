@@ -17,11 +17,13 @@ pub(crate) fn HostClientPlugin(app: &mut App)
     app
         .insert_react_resource(ConnectionStatus::Connecting)
         .add_react_event::<bevy_girk_game_fw::GameOverReport>()
+        .add_systems(Startup, setup_client_button_entities)
         .add_systems(First,
             (
                 handle_host_incoming,
                 react_to_all_removals_and_despawns,
             ).chain()
+                .before(InteractionSourceSet)
         )
         ;
 }
