@@ -18,6 +18,7 @@ bevy_kot_ui     = { workspace = true }
 bevy_lunex      = { workspace = true }
 bevy_lunex_core = { workspace = true }
 bevy_lunex_ui   = { workspace = true }
+bevy_replicon   = { workspace = true }
 iyes_progress   = { workspace = true }
 tracing         = { workspace = true }
 
