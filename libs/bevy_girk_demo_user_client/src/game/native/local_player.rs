@@ -117,7 +117,7 @@ pub(crate) fn launch_local_player_game_native(lobby_contents: ClickLobbyContents
             // command game instance to abort
             // - we assume if the client is closed then the game should die, since this is singleplayer
             // - this will do nothing if the game instance already closed
-            let _ = game_instance.send_command(GameInstanceCommand::AbortGame);
+            let _ = game_instance.send_command(GameInstanceCommand::Abort);
 
             // wait for game instance to close
             if !game_instance.get().await
