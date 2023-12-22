@@ -53,7 +53,7 @@ fn main()
 
     // run the client
     let args = GameClientCli::parse();
-    process_client_launcher(args.instance, &mut factory);
+    inprocess_client_launcher(args.instance, &mut factory);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

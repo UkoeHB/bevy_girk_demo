@@ -27,7 +27,7 @@ fn main()
 
     // launch the game
     let args = GameInstanceCli::parse();
-    process_game_launcher(args, game_factory);
+    inprocess_game_launcher(args, game_factory);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
