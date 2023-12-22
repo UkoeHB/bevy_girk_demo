@@ -20,14 +20,16 @@ serde_json     = { workspace = true }
 tracing        = { workspace = true }
 wasm-timer     = { workspace = true }
 
-bevy_girk_backend_public = { workspace = true }
-bevy_girk_client_fw      = { workspace = true }
-bevy_girk_game_fw        = { workspace = true }
-bevy_girk_game_instance  = { workspace = true }
-bevy_girk_utils          = { workspace = true }
-bevy_girk_wiring         = { workspace = true }
+bevy_girk_backend_public  = { workspace = true }
+bevy_girk_client_fw       = { workspace = true }
+bevy_girk_client_instance = { workspace = true }
+bevy_girk_game_fw         = { workspace = true }
+bevy_girk_game_instance   = { workspace = true }
+bevy_girk_utils           = { workspace = true }
+bevy_girk_wiring          = { workspace = true }
 
 bevy_girk_demo_client_core = { path = "../bevy_girk_demo_client_core" }
+bevy_girk_demo_client_skin = { path = "../bevy_girk_demo_client_skin" }
 bevy_girk_demo_game_core   = { path = "../bevy_girk_demo_game_core" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

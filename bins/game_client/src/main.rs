@@ -1,15 +1,12 @@
 //module tree
 
-//local shortcuts
-use bevy_girk_demo_client_core::*;
-use bevy_girk_demo_client_skin::*;
+//local shortcuts\
 use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
-use bevy::prelude::*;
+use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-use bevy_kot_utils::*;
 use clap::Parser;
 
 //standard shortcuts
@@ -25,15 +22,6 @@ struct GameClientCli
     token: ServerConnectToken,
     #[arg(short = 'G', value_parser = parse_json::<GameStartInfo>)]
     start_info: GameStartInfo,
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-fn prepare_game_client_skin(app: &mut App, _client_id: u64, player_input_sender: Sender<PlayerClientInput>)
-{
-    app.add_plugins(ClickClientSkinPlugin)
-        .insert_resource(player_input_sender);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -65,16 +53,10 @@ fn main()
     // CLI args
     let args = GameClientCli::parse();
 
-    // prep game core
+    // make client
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let (
-            mut app,
-            client_id,
-            player_input_sender
-        ) = make_game_client_core(protocol_id, args.token, args.start_info);
-
-    // prep game skin
-    prepare_game_client_skin(&mut app, client_id as u64, player_input_sender);
+    let mut factory = ClickClientFactory{ protocol_id };
+    let (mut app, _) = factory.new_client(args.token, args.start_info).unwrap();
 
     // run game to completion
     app.run();

@@ -16,8 +16,9 @@ serde_json         = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }
 tracing            = { workspace = true }
 
-bevy_girk_backend_public = { workspace = true }
-bevy_girk_game_instance  = { workspace = true }
+bevy_girk_backend_public  = { workspace = true }
+bevy_girk_client_instance = { workspace = true }
+bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils          = { workspace = true }
 
 bevy_girk_demo_client_core = { path = "../../libs/bevy_girk_demo_client_core" }
