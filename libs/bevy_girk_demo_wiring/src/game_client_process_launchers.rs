@@ -17,7 +17,7 @@ pub fn launch_game_client(path: String, token: &ServerConnectToken, start_info: 
 
     Command::new(path.as_str())
         .args(["-T", token_ser.as_str()])
-        .args(["-G", start_ser.as_str()])
+        .args(["-S", start_ser.as_str()])
         .spawn()
         .map_err(|_|())
 }

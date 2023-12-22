@@ -5,7 +5,6 @@ use bevy_girk_demo_wiring::*;
 
 //third-party shortcuts
 use bevy_girk_client_instance::*;
-use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 
@@ -18,10 +17,8 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 struct GameClientCli
 {
-    #[arg(short = 'T', value_parser = parse_json::<ServerConnectToken>)]
-    token: ServerConnectToken,
-    #[arg(short = 'G', value_parser = parse_json::<GameStartInfo>)]
-    start_info: GameStartInfo,
+    #[clap(flatten)]
+    instance: ClientInstanceCli,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -50,16 +47,13 @@ fn main()
 
     tracing::info!("game client started");
 
-    // CLI args
-    let args = GameClientCli::parse();
-
-    // make client
+    // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let mut factory = ClickClientFactory{ protocol_id };
-    let (mut app, _) = factory.new_client(args.token, args.start_info).unwrap();
+    let mut factory = ClientFactory::new(ClickClientFactory{ protocol_id });
 
-    // run game to completion
-    app.run();
+    // run the client
+    let args = GameClientCli::parse();
+    process_client_launcher(args.instance, &mut factory);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
