@@ -2,7 +2,8 @@
 
 //local shortcuts
 use bevy_girk_demo_game_core::*;
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_backend::*;
+use bevy_girk_demo_wiring_game_instance::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -197,7 +198,7 @@ fn make_test_game_hub_server(
 
 fn main()
 {
-    // tracing
+    // logging
     let filter = tracing_subscriber::EnvFilter::builder()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
         .from_env().unwrap()

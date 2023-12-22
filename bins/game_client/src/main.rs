@@ -1,7 +1,7 @@
 //module tree
 
 //local shortcuts\
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_client_instance::*;
 
 //third-party shortcuts
 use bevy_girk_client_instance::*;

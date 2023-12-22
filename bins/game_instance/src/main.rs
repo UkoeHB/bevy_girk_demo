@@ -1,7 +1,7 @@
 //module tree
 
 //local shortcuts
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_game_instance::*;
 
 //third-party shortcuts
 use bevy_girk_game_instance::*;
@@ -16,11 +16,13 @@ fn main()
 {
     // log to stderr (not stdout, which is piped to the parent process for sending game instance reports)
     //todo: log to file instead (use env::arg configs?)
-    let subscriber = tracing_subscriber::FmtSubscriber::builder()
-        .with_max_level(tracing::Level::WARN)
+    let filter = tracing_subscriber::EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
+        .from_env().unwrap();
+    tracing_subscriber::FmtSubscriber::builder()
+        .with_env_filter(filter)
         .with_writer(std::io::stderr)
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+        .init();
 
     // make game factory
     let game_factory = GameFactory::new(ClickGameFactory);

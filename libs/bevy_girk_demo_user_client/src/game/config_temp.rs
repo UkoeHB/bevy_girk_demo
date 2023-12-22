@@ -1,6 +1,6 @@
 //local shortcuts
 use bevy_girk_demo_game_core::*;
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_game_instance::*;
 
 //third-party shortcuts
 use bevy_girk_game_fw::*;

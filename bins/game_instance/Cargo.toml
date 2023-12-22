@@ -11,11 +11,11 @@ doctest = false
 [dependencies]
 bevy               = { version = "0.12", default-features = false }
 clap               = { workspace = true, features = [ "derive" ] }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 
 bevy_girk_game_instance = { workspace = true }
 bevy_girk_utils         = { workspace = true }
 
-bevy_girk_demo_game_core = { path = "../../libs/bevy_girk_demo_game_core" }
-bevy_girk_demo_wiring    = { path = "../../libs/bevy_girk_demo_wiring" }
+bevy_girk_demo_game_core            = { path = "../../libs/bevy_girk_demo_game_core" }
+bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }

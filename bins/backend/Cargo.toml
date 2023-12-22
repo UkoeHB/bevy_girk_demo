@@ -26,5 +26,6 @@ bevy_girk_game_instance   = { workspace = true }
 bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-bevy_girk_demo_game_core = { path = "../../libs/bevy_girk_demo_game_core" }
-bevy_girk_demo_wiring    = { path = "../../libs/bevy_girk_demo_wiring" }
+bevy_girk_demo_game_core            = { path = "../../libs/bevy_girk_demo_game_core" }
+bevy_girk_demo_wiring_backend       = { path = "../../libs/bevy_girk_demo_wiring_backend" }
+bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }

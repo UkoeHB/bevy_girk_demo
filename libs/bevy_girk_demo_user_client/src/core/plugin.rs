@@ -2,7 +2,6 @@
 use crate::*;
 
 //third-party shortcuts
-use bevy::log::*;
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy::winit::UpdateMode;
@@ -30,23 +29,14 @@ fn BevyEnginePlugin(app: &mut App)
                 ..Default::default()
             }
         )
-        .set(
-            LogPlugin{
-                level: Level::WARN,
-                filter: "\
-                    bevy_girk_game_instance=trace,\
-                    bevy_girk_demo_user_client=trace,\
-                    user_client=trace,\
-                    bevy_girk_wiring=trace,\
-                    bevy_girk_utils=trace,\
-                    bevy_simplenet=info\
-                ".to_string(),
-            }
-        );
+        .build();
 
     // reduce input lag on native targets
     #[cfg(not(target_family = "wasm"))]
-    let bevy_plugins = bevy_plugins.build().disable::<bevy::render::pipelined_rendering::PipelinedRenderingPlugin>();
+    let bevy_plugins = bevy_plugins.disable::<bevy::render::pipelined_rendering::PipelinedRenderingPlugin>();
+
+    // use custom logging
+    let bevy_plugins = bevy_plugins.disable::<bevy::log::LogPlugin>();
 
     // add to app
     app.add_plugins(bevy_plugins)

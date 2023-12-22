@@ -1,5 +1,5 @@
 //local shortcuts
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_backend::*;
 
 //third-party shortcuts
 use bevy_fn_plugin::bevy_plugin;

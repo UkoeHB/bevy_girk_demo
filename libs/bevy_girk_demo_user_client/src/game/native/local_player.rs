@@ -1,6 +1,7 @@
 //local shortcuts
 use crate::*;
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_backend::*;
+use bevy_girk_demo_wiring_client_instance::*;
 
 //third-party shortcuts
 use bevy_girk_game_fw::*;

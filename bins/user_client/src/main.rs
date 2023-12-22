@@ -2,7 +2,7 @@
 
 //local shortcuts
 use bevy_girk_demo_user_client::*;
-use bevy_girk_demo_wiring::*;
+use bevy_girk_demo_wiring_backend::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
@@ -45,6 +45,22 @@ fn main()
         //tracing_wasm::set_as_global_default();
     }
 
+    // log to stdout
+    //todo: log to file?
+    let filter = tracing_subscriber::EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
+        .from_env().unwrap()
+        .add_directive("bevy_girk_game_instance=trace".parse().unwrap())
+        .add_directive("bevy_girk_demo_user_client=trace".parse().unwrap())
+        .add_directive("user_client=trace".parse().unwrap())
+        .add_directive("bevy_girk_wiring=trace".parse().unwrap())
+        .add_directive("bevy_girk_utils=trace".parse().unwrap())
+        .add_directive("bevy_simplenet=error".parse().unwrap());
+    tracing_subscriber::FmtSubscriber::builder()
+        .with_env_filter(filter)
+        .with_writer(std::io::stdout)
+        .init();
+
     // cli args
     let args = ClientCli::parse();
 
@@ -78,8 +94,8 @@ fn main()
         };
 
     // build and launch the bevy app
-    let mut app = App::new();
-    app.insert_resource(client)
+    App::new()
+        .insert_resource(client)
         .insert_resource(timer_configs)
         .add_plugins(ClickUserClientPlugin)
         .run();
