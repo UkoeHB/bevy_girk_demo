@@ -185,8 +185,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 ui.remove_widget(&score_entry_clone.clone());
                 ui.builder.rcommands.revoke(revoke_token.clone());
             };
-            //todo: this callback leaks if PlayerScore is added/removed many times (need to add once() adaptor to bevy_kot) 
-            ui.rcommands.on(entity_removal::<PlayerScore>(player_entity), cleanup.clone());
+            ui.rcommands.once(entity_removal::<PlayerScore>(player_entity), cleanup.clone());
             ui.rcommands.on_despawn(player_entity, cleanup).unwrap();
 
             // add entry to tracker
