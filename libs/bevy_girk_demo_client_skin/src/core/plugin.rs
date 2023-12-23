@@ -19,11 +19,11 @@ use iyes_progress::*;
 //todo: remove/improve
 fn initialization_timer(time: Res<Time>) -> Progress
 {
-    if time.elapsed_seconds() < 1.0
+    if time.elapsed_seconds() < 0.5
     {
         Progress{ done: 0, total: 2 }
     }
-    else if time.elapsed_seconds() < 2.0
+    else if time.elapsed_seconds() < 1.0
     {
         Progress{ done: 1, total: 2 }
     }
