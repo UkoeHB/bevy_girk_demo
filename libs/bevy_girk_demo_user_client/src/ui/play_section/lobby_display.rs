@@ -7,6 +7,8 @@ use bevy_girk_demo_wiring_backend::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_user_client_utils::*;
+use bevy_girk_utils::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
@@ -115,11 +117,12 @@ fn leave_current_lobby(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn start_current_lobby(
-    mut rcommands    : ReactCommands,
-    client           : Res<HostUserClient>,
-    mut lobby        : ReactResMut<LobbyDisplay>,
-    mut game_monitor : ReactResMut<GameMonitor>,
-    launch_lobby     : Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
+    mut rcommands : ReactCommands,
+    client        : Res<HostUserClient>,
+    mut lobby     : ReactResMut<LobbyDisplay>,
+    mut monitor   : ReactResMut<ClientMonitor>,
+    launch_lobby  : Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
+    configs       : Res<ClientLaunchConfigs>,
 ){
     // check for existing request
     let Ok(target_entity) = launch_lobby.get_single()
@@ -130,7 +133,7 @@ fn start_current_lobby(
     else { tracing::error!("tried to start lobby but we aren't in a lobby"); return; };
 
     // check if there is an existing game
-    if game_monitor.has_game() { tracing::error!("tried to start lobby but we are already in a game"); return; };
+    if monitor.has_client() { tracing::error!("tried to start lobby but we are already in a game"); return; };
 
     // launch the lobby
     match lobby.lobby_type()
@@ -142,8 +145,13 @@ fn start_current_lobby(
             let Some(lobby_contents) = lobby.get_mut(&mut rcommands).clear()
             else { tracing::error!("lobby contents are missing in local lobby"); return; };
 
+            // prep launch pack
+            let game_configs = make_click_game_configs();
+            let Ok(launch_pack) = get_launch_pack(ser_msg(&game_configs), lobby_contents)
+            else { tracing::error!("failed getting launch pack for local player game"); return; };
+
             // launch the game
-            launch_local_player_game(game_monitor.get_mut(&mut rcommands), lobby_contents);
+            launch_local_player_client(monitor.get_mut(&mut rcommands), configs.local.clone(), launch_pack);
         }
         Some(LobbyType::Hosted) =>
         {
@@ -547,7 +555,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 mut ui  : UiUtils<MainUi>,
                 display : ReactRes<LobbyDisplay>,
                 client  : Res<HostUserClient>,
-                monitor : ReactRes<GameMonitor>
+                monitor : ReactRes<ClientMonitor>
             |
             {
                 let enable = match display.get()
@@ -562,7 +570,7 @@ fn add_start_game_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     },
                     None => false,
                 };
-                let enable = enable && !monitor.has_game();
+                let enable = enable && !monitor.has_client();
                 ui.toggle_basic_button(enable, button_entity, &disable_overlay);
             }
         );

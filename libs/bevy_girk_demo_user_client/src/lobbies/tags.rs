@@ -25,7 +25,7 @@ pub(crate) struct LaunchLobby;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn setup_lobby_button_entities(mut commands: Commands)
+pub(crate) fn setup_lobby_tag_entities(mut commands: Commands)
 {
     commands.spawn(JoinLobby);
     commands.spawn(LobbySearch);

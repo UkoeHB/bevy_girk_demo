@@ -9,13 +9,13 @@ use bevy::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Component, Debug)]
-pub(crate) struct ReconnectorButton;
+pub(crate) struct ConnectTokenRequest;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn setup_client_button_entities(mut commands: Commands)
+pub(crate) fn setup_game_tag_entities(mut commands: Commands)
 {
-    commands.spawn(ReconnectorButton);
+    commands.spawn(ConnectTokenRequest);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

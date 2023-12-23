@@ -54,7 +54,8 @@ fn BevyEnginePlugin(app: &mut App)
 ///
 /// Prerequisites:
 /// - You must add a bevy_girk `HostUserClient` to the app.
-/// - You must add a `TimeoutConfigs` resource to the app.
+/// - You must add a [`TimeoutConfigs`] resource to the app.
+/// - You must add a [`ClientLaunchConfigs`] resource to the app.
 #[bevy_plugin]
 pub fn ClickUserClientPlugin(app: &mut App)
 {

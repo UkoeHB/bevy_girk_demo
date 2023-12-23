@@ -11,12 +11,6 @@ use std::net::Ipv6Addr;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: inject these
-pub(crate) const GAME_INSTANCE_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
-pub(crate) const GAME_CLIENT_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
-
-//-------------------------------------------------------------------------------------------------------------------
-
 pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
 {
     // game duration

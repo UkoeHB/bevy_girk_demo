@@ -7,9 +7,12 @@ use bevy_girk_demo_wiring_backend::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_user_client_utils::*;
 use clap::Parser;
+use enfync::AdoptOrDefault;
 
 //standard shortcuts
+use std::sync::Arc;
 use wasm_timer::{SystemTime, UNIX_EPOCH};
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -32,6 +35,13 @@ fn get_systime_millis() -> u128
 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis()
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------
+
+//todo: inject these
+const GAME_INSTANCE_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
+const GAME_CLIENT_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -86,17 +96,33 @@ fn main()
             ()
         );
 
-    // define configs (TEMPORARY: use asset instead ?)
+    // timer configs (TEMPORARY: use asset instead ?)
     let timer_configs = TimerConfigs{
             ack_request_timeout_ms      : ACK_TIMEOUT_MILLIS + 1_000,
             ack_request_timer_buffer_ms : 4_000,
             lobby_list_refresh_ms       : 10_000,
         };
 
+    // launcher configs
+    let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
+    let spawner_fn = Arc::new(move || { spawner.clone() });
+    let launcher_configs = ClientLaunchConfigs{
+            local: LocalPlayerLauncherConfigNative{
+                spawner_fn           : spawner_fn.clone(),
+                game_instance_path   : String::from(GAME_INSTANCE_PATH),
+                client_instance_path : String::from(GAME_CLIENT_PATH),
+            },
+            multiplayer: MultiPlayerLauncherConfigNative{
+                spawner_fn,
+                client_instance_path: String::from(GAME_CLIENT_PATH),
+            }
+        };
+
     // build and launch the bevy app
     App::new()
         .insert_resource(client)
         .insert_resource(timer_configs)
+        .insert_resource(launcher_configs)
         .add_plugins(ClickUserClientPlugin)
         .run();
 }

@@ -6,6 +6,7 @@ use bevy_girk_demo_ui_prefab::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_user_client_utils::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
@@ -18,8 +19,8 @@ use bevy_lunex::prelude::*;
 fn reconnect_game(
     mut rcommands    : ReactCommands,
     client           : Res<HostUserClient>,
-    game_monitor     : ReactRes<GameMonitor>,
-    reconnector      : ReactRes<GameReconnector>,
+    monitor          : ReactRes<ClientMonitor>,
+    starter          : ReactRes<ClientStarter>,
     reconnect_button : Query<Entity, (With<ReconnectorButton>, Without<React<PendingRequest>>)>,
 ){
     // check for existing request
@@ -27,10 +28,10 @@ fn reconnect_game(
     else { tracing::error!("ignoring reconnect game request because a request is already pending"); return };
 
     // sanity checks
-    if game_monitor.is_running() { tracing::error!("reconnect game selected but client is currently in a game"); }
-    if !reconnector.can_reconnect() { tracing::error!("reconnect game selected but client cannot reconnect"); return; }
-    let Some(game_id) = reconnector.game_id()
-    else { tracing::error!("reconnector game id missing on reconnect request"); return; };
+    if monitor.is_running() { tracing::error!("reconnect game selected but client is currently in a game"); }
+    if !starter.has_starter() { tracing::error!("reconnect game selected but client cannot reconnect"); return; }
+    let Some(game_id) = starter.game_id()
+    else { tracing::error!("starter game id missing on reconnect request"); return; };
 
     // request new connect token
     let Ok(new_req) = client.request(UserToHostRequest::GetConnectToken{ id: game_id })
@@ -87,13 +88,13 @@ fn add_reconnect_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // enable button when we can reconnect
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
-    ui.rcommands.on((resource_mutation::<GameMonitor>(), resource_mutation::<GameReconnector>()),
-            move |mut ui: UiUtils<MainUi>, game_monitor: ReactRes<GameMonitor>, reconnector: ReactRes<GameReconnector>|
+    ui.rcommands.on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
+            move |mut ui: UiUtils<MainUi>, monitor: ReactRes<ClientMonitor>, starter: ReactRes<ClientStarter>|
             {
                 ui.builder.style_stack.push();
                 ui.builder.add_style(ui.builder.style::<GameInProgressStyle>().reconnect_button_avail.clone());
 
-                let enable = !game_monitor.is_running() && reconnector.can_reconnect();
+                let enable = !monitor.is_running() && starter.has_starter();
                 ui.toggle_basic_button(enable, button_entity, &disable_overlay);
 
                 ui.builder.style_stack.pop();
@@ -124,17 +125,17 @@ pub(crate) fn add_game_in_progress(ui: &mut UiBuilder<MainUi>)
     ui.div_rel(window_overlay.end(""), (40., 60.), (60., 70.), add_reconnect_button);
 
     // show overlay when a game is in progress
-    ui.rcommands.on((resource_mutation::<GameMonitor>(), resource_mutation::<GameReconnector>()),
-            move |mut ui: UiUtils<MainUi>, game_monitor: ReactRes<GameMonitor>, reconnector: ReactRes<GameReconnector>|
+    ui.rcommands.on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
+            move |mut ui: UiUtils<MainUi>, monitor: ReactRes<ClientMonitor>, starter: ReactRes<ClientStarter>|
             {
-                let enable = game_monitor.is_running() || reconnector.can_reconnect();
+                let enable = monitor.is_running() || starter.has_starter();
                 ui.toggle(enable, &window_overlay);
             }
         );
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<GameMonitor>();
-    ui.rcommands.trigger_resource_mutation::<GameReconnector>();
+    ui.rcommands.trigger_resource_mutation::<ClientMonitor>();
+    ui.rcommands.trigger_resource_mutation::<ClientStarter>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

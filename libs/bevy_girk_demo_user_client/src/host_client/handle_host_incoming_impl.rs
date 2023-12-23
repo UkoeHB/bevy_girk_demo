@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
+use bevy_girk_user_client_utils::*;
 use bevy_girk_utils::*;
 use bevy_kot::prelude::*;
 
@@ -15,10 +16,10 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn clear_pending_request<E>(
+fn clear_pending_request<M>(
     commands   : &mut Commands,
     request_id : u64,
-    result     : Result<(Entity, &React<PendingRequest>), E>
+    result     : Result<(Entity, &React<PendingRequest>), M>
 ) -> bool
 {
     let Ok((entity, pending_req)) = result else { return false; };
@@ -55,7 +56,7 @@ pub(crate) fn handle_connection_lost(
     mut rcommands     : ReactCommands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
-    mut reconnector   : ReactResMut<GameReconnector>,
+    mut starter       : ReactResMut<ClientStarter>,
 ){
     // clear lobby display if hosted
     if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear(); }
@@ -63,11 +64,11 @@ pub(crate) fn handle_connection_lost(
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
-    // clear reconnector
-    // - We clear the reconnector to avoid a situation where a game over/abort is not received from the host server
-    //   since it's disconnected, so the reconnector never gets cleared. When the we reconnect to the host server, we
+    // clear starter
+    // - We clear the starter to avoid a situation where a game over/abort is not received from the host server
+    //   since it's disconnected, so the starter never gets cleared. When the we reconnect to the host server, we
     //   will get a fresh game start package which will be used to reconnect the game automatically (if needed).
-    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).force_clear_if(LobbyType::Hosted); }
+    if starter.has_starter() { starter.get_mut(&mut rcommands).force_clear_if(GameLocation::Hosted); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -158,8 +159,9 @@ pub(crate) fn handle_game_start(
     mut rcommands     : ReactCommands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
-    mut game_monitor  : ReactResMut<GameMonitor>,
-    mut reconnector   : ReactResMut<GameReconnector>,
+    mut monitor       : ReactResMut<ClientMonitor>,
+    mut starter       : ReactResMut<ClientStarter>,
+    configs           : Res<ClientLaunchConfigs>,
 ){
     tracing::info!(lobby_id, "game start info received");
 
@@ -169,51 +171,52 @@ pub(crate) fn handle_game_start(
     // clear ack request
     if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
 
-    // update reconnector
-    // - do this before checking the current game in case the reconnector was cleared due to a host server disconnect
+    // update starter
+    // - do this before checking the current game in case the starter was cleared due to a host server disconnect
+    let config = configs.multiplayer.clone();
     let launcher =
-        move |monitor: &mut GameMonitor, token: ServerConnectToken|
+        move |monitor: &mut ClientMonitor, token: ServerConnectToken|
         {
-            launch_multiplayer_game(monitor, lobby_id, token, start.clone());
+            launch_multiplayer_client(monitor, config.clone(), token, start.clone());
         };
-    reconnector.get_mut(&mut rcommands).set(lobby_id, LobbyType::Hosted, launcher.clone());
+    starter.get_mut(&mut rcommands).set(lobby_id, GameLocation::Hosted, launcher.clone());
 
     // if we are already running this game, then send in the connect token
     // - it's likely that the game client was also disconnected, but failed to request a new connect token since the
     //   user client was disconnected
-    let current_game_id = game_monitor.game_id();
-    if (Some(lobby_id) == current_game_id) && game_monitor.is_running()
+    let current_game_id = monitor.game_id();
+    if (Some(lobby_id) == current_game_id) && monitor.is_running()
     {
         tracing::info!(lobby_id, "received game start for game that is already running, sending new connect token to game");
         panic!("sending tokens into game client not yet supported");
-        //game_monitor.get_mut_noreact().send_token(token);
+        //monitor.get_mut_noreact().send_token(token);
         //return;
     }
 
     // kill the existing game client
-    let game_monitor = game_monitor.get_mut(&mut rcommands);
-    if let Some(id) = current_game_id { game_monitor.kill(id); }
+    let monitor = monitor.get_mut(&mut rcommands);
+    if let Some(id) = current_game_id { monitor.kill(id); }
 
     // launch the game
-    (launcher)(game_monitor, token);
+    (launcher)(monitor, token);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_aborted(
-    In(lobby_id)     : In<u64>,
-    mut rcommands    : ReactCommands,
-    mut game_monitor : ReactResMut<GameMonitor>,
-    mut reconnector  : ReactResMut<GameReconnector>,
+    In(lobby_id)  : In<u64>,
+    mut rcommands : ReactCommands,
+    mut monitor   : ReactResMut<ClientMonitor>,
+    mut starter   : ReactResMut<ClientStarter>,
 ){
     tracing::info!(lobby_id, "game aborted by host server");
 
     // force-close existing game
     //todo: display a message to user informing them a game was aborted
-    if game_monitor.is_running() { game_monitor.get_mut(&mut rcommands).kill(lobby_id); }
+    if monitor.is_running() { monitor.get_mut(&mut rcommands).kill(lobby_id); }
 
-    // clear reconnector
-    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).clear(lobby_id); }
+    // clear starter
+    if starter.has_starter() { starter.get_mut(&mut rcommands).clear(lobby_id); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -222,14 +225,14 @@ pub(crate) fn handle_game_over(
     In((
         lobby_id,
         game_over_report
-    ))              : In<(u64, GameOverReport)>,
-    mut rcommands   : ReactCommands,
-    mut reconnector : ReactResMut<GameReconnector>,
+    ))            : In<(u64, GameOverReport)>,
+    mut rcommands : ReactCommands,
+    mut starter   : ReactResMut<ClientStarter>,
 ){
     tracing::info!(lobby_id, "game over report received");
 
-    // clear reconnector
-    if reconnector.can_reconnect() { reconnector.get_mut(&mut rcommands).clear(lobby_id); }
+    // clear starter
+    if starter.has_starter() { starter.get_mut(&mut rcommands).clear(lobby_id); }
 
     // send game over report data event
     //todo: do something with the report
@@ -294,36 +297,37 @@ pub(crate) fn handle_connect_token(
         request_id,
         game_id,
         token
-    ))               : In<(u64, u64, ServerConnectToken)>,
-    mut rcommands    : ReactCommands,
-    mut game_monitor : ReactResMut<GameMonitor>,
-    mut reconnector  : ReactResMut<GameReconnector>,
-    pending_button   : Query<(Entity, &React<PendingRequest>), With<ReconnectorButton>>,
+    ))             : In<(u64, u64, ServerConnectToken)>,
+    mut rcommands  : ReactCommands,
+    mut monitor    : ReactResMut<ClientMonitor>,
+    mut starter    : ReactResMut<ClientStarter>,
+    token_request  : Query<(Entity, &React<PendingRequest>), With<ConnectTokenRequest>>,
+    pending_button : Query<(Entity, &React<PendingRequest>), With<ReconnectorButton>>,
 ){
     tracing::info!(request_id, "connect token received");
 
     // check if we are currently tracking this game
-    if reconnector.game_id() != Some(game_id) { tracing::warn!("ignoring connect token for unknown game"); return; }
+    if starter.game_id() != Some(game_id) { tracing::warn!("ignoring connect token for unknown game"); return; }
 
-    // clear reconnector request
+    // clear corresponding request
+    let _ = clear_pending_request(rcommands.commands(), request_id, token_request.get_single());
     let _ = clear_pending_request(rcommands.commands(), request_id, pending_button.get_single());
 
     // handle the token
-    match game_monitor.is_running()
+    match monitor.is_running()
     {
         // if the game is running, send the token to the game
         true =>
         {
             tracing::info!(game_id, "sending new connect token into game");
-            panic!("sending token to game is not yet supported");  //todo
-            //game_monitor.get_mut_noreact().send_token(token);
+            monitor.get_mut_noreact().send_token(token);
         }
         // if not running, relaunch the game
-        false if reconnector.can_reconnect() =>
+        false if starter.has_starter() =>
         {
             tracing::info!(game_id, "restarting game with new connect token");
-            if reconnector.get_mut_noreact().reconnect(game_monitor.get_mut(&mut rcommands), token).is_err()
-            { tracing::error!(game_id, "failed using reconnector to reconnect a game"); }
+            if starter.get_mut_noreact().start(monitor.get_mut(&mut rcommands), token).is_err()
+            { tracing::error!(game_id, "failed using starter to reconnect a game"); }
         }
         // not running and not expecting a token
         _ =>

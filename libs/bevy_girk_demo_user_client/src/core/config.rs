@@ -2,6 +2,7 @@
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_user_client_utils::*;
 use serde::{Deserialize, Serialize};
 
 //standard shortcuts
@@ -35,5 +36,19 @@ pub struct TimerConfigs
     /// Refresh interval for the lobby list.
     pub lobby_list_refresh_ms: u64,
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Resource, Clone, Debug)]
+pub struct ClientLaunchConfigsGeneric<S: HandleReqs>
+{
+    pub local: LocalPlayerLauncherConfig<S>,
+    pub multiplayer: MultiPlayerLauncherConfig<S>,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+//todo: update this to use bevy's task pool?
+pub type ClientLaunchConfigs = ClientLaunchConfigsGeneric<enfync::builtin::Handle>;
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -18,8 +18,9 @@ tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "trac
 url                = { workspace = true }
 wasm-timer         = { workspace = true }
 
-bevy_girk_backend_public = { workspace = true }
-bevy_girk_utils          = { workspace = true }
+bevy_girk_backend_public    = { workspace = true }
+bevy_girk_user_client_utils = { workspace = true }
+bevy_girk_utils             = { workspace = true }
 
 bevy_girk_demo_user_client    = { path = "../../libs/bevy_girk_demo_user_client" }
 bevy_girk_demo_wiring_backend = { path = "../../libs/bevy_girk_demo_wiring_backend" }
