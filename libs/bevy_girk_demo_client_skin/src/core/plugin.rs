@@ -1,37 +1,13 @@
 //local shortcuts
 use crate::*;
-use bevy_girk_demo_client_core::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy_fn_plugin::bevy_plugin;
-use bevy_girk_client_fw::*;
-use iyes_progress::*;
 
 //standard shortcuts
 
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
-//hacky timer for delaying initialization
-//todo: remove/improve
-fn initialization_timer(time: Res<Time>) -> Progress
-{
-    if time.elapsed_seconds() < 0.5
-    {
-        Progress{ done: 0, total: 2 }
-    }
-    else if time.elapsed_seconds() < 1.0
-    {
-        Progress{ done: 1, total: 2 }
-    }
-    else
-    {
-        Progress{ done: 2, total: 2 }
-    }
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -80,11 +56,7 @@ pub fn ClickClientSkinPlugin(app: &mut App)
         .add_plugins(bevy_kot::prelude::ReactPlugin)
         .add_plugins(BevyEnginePlugin)
         .add_plugins(UiPlugin)
-
-        //temp: add initialization delay
-        .add_systems(Update, initialization_timer.track_progress()
-            .in_set(ClientSet::InitCore)
-            .in_set(ClientFWLoadingSet))
+        .add_plugins(LoadingSimPlugin)
         ;
 }
 
