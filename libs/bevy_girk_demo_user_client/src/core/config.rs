@@ -39,16 +39,12 @@ pub struct TimerConfigs
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Resource, Clone, Debug)]
-pub struct ClientLaunchConfigsGeneric<S: HandleReqs>
-{
-    pub local: LocalPlayerLauncherConfig<S>,
-    pub multiplayer: MultiPlayerLauncherConfig<S>,
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 //todo: update this to use bevy's task pool?
-pub type ClientLaunchConfigs = ClientLaunchConfigsGeneric<enfync::builtin::Handle>;
+#[derive(Resource, Clone, Debug)]
+pub struct ClientLaunchConfigs
+{
+    pub local: LocalPlayerLauncherConfig<enfync::builtin::Handle>,
+    pub multiplayer: MultiPlayerLauncherConfig<enfync::builtin::Handle>,
+}
 
 //-------------------------------------------------------------------------------------------------------------------
