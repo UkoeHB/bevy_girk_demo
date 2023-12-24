@@ -13,8 +13,51 @@ use std::time::Duration;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn focus_window(mut window: Query<&mut Window, With<PrimaryWindow>>)
+#[derive(Default, Debug)]
+enum AckFocusState
 {
+    #[default]
+    None,
+    Start,
+    Halfway
+}
+
+fn focus_window_for_ack_request(
+    mut state   : Local<AckFocusState>,
+    time        : Res<Time>,
+    ack_request : ReactRes<AckRequestData>,
+    mut window  : Query<&mut Window, With<PrimaryWindow>>
+){
+    // try to reset
+    if !ack_request.is_set()
+    {
+        *state = AckFocusState::None;
+        return;
+    }
+
+    // focus the window when the request timer starts, and when it is half-way done
+    match *state
+    {
+        AckFocusState::None =>
+        {
+            // focus when request was just set
+            *state = AckFocusState::Start;
+        }
+        AckFocusState::Start =>
+        {
+            // focus when timer moves to halfway point
+            let elapsed_since_request = time.elapsed().saturating_sub(ack_request.ack_time).as_millis();
+            if elapsed_since_request < (ack_request.display_duration().as_millis() / 2) { return; }
+
+            *state = AckFocusState::Halfway;
+        }
+        AckFocusState::Halfway =>
+        {
+            // no more focusing, wait for reset
+            return;
+        }
+    }
+
     window.single_mut().focused = true;
 }
 
@@ -38,8 +81,8 @@ fn set_ack_request_data(
 
 fn setup_ack_request_handlers(mut rcommands: ReactCommands)
 {
-    rcommands.on(event::<AckRequest>(), focus_window);
     rcommands.on(event::<AckRequest>(), set_ack_request_data);
+    rcommands.on(resource_mutation::<AckRequestData>(), focus_window_for_ack_request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -144,6 +187,11 @@ impl AckRequestData
     pub(crate) fn is_set(&self) -> bool
     {
         self.current.is_some()
+    }
+
+    pub(crate) fn display_duration(&self) -> Duration
+    {
+        self.timer.duration().saturating_sub(self.timer_buffer)
     }
 
     pub(crate) fn time_remaining_for_display(&self) -> Duration
