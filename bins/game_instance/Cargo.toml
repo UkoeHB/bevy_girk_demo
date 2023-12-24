@@ -15,7 +15,5 @@ tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "trac
 tracing            = { workspace = true }
 
 bevy_girk_game_instance = { workspace = true }
-bevy_girk_utils         = { workspace = true }
 
-bevy_girk_demo_game_core            = { path = "../../libs/bevy_girk_demo_game_core" }
 bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }

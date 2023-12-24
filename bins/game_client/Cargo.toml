@@ -10,17 +10,11 @@ doctest = false
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }
-bevy_kot_utils     = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
-serde_json         = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }
 tracing            = { workspace = true }
 
-bevy_girk_backend_public  = { workspace = true }
 bevy_girk_client_instance = { workspace = true }
-bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-bevy_girk_demo_client_core            = { path = "../../libs/bevy_girk_demo_client_core" }
-bevy_girk_demo_client_skin            = { path = "../../libs/bevy_girk_demo_client_skin" }
 bevy_girk_demo_wiring_client_instance = { path = "../../libs/bevy_girk_demo_wiring_client_instance" }
