@@ -131,6 +131,7 @@ fn run_playtest(num_clients: usize, launch_pack: GameLaunchPack)
                 client_instances.push(client_launcher.launch(
                         token,
                         start_info,
+                        ClientInstanceConfig{ reconnect_interval_secs: 100000u32 },  //localplayer doesn't reconnect
                         client_command_receiver,
                         client_report_sender
                     ));

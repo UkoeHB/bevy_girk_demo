@@ -7,6 +7,7 @@ use bevy_girk_demo_wiring_backend::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_client_instance::*;
 use bevy_girk_user_client_utils::*;
 use clap::Parser;
 use enfync::AdoptOrDefault;
@@ -115,7 +116,8 @@ fn main()
             },
             multiplayer: MultiPlayerLauncherConfigNative{
                 spawner_fn,
-                client_instance_path: String::from(GAME_CLIENT_PATH),
+                client_instance_path   : String::from(GAME_CLIENT_PATH),
+                client_instance_config : ClientInstanceConfig{ reconnect_interval_secs: 5u32 },
             }
         };
 
