@@ -8,14 +8,15 @@ test    = false
 doctest = false
 
 [dependencies]
-bevy            = { version = "0.12", default-features = false }
-bevy_fn_plugin  = { workspace = true }
-bevy_kot_ecs    = { workspace = true }
-bevy_kot_derive = { workspace = true }
-bevy_renet      = { workspace = true }
-bevy_replicon   = { workspace = true }
-serde           = { workspace = true }
-tracing         = { workspace = true }
+bevy                 = { version = "0.12", default-features = false }
+bevy_fn_plugin       = { workspace = true }
+bevy_kot_ecs         = { workspace = true }
+bevy_kot_derive      = { workspace = true }
+bevy_renet           = { workspace = true }
+bevy_replicon        = { workspace = true }
+bevy_replicon_repair = { workspace = true }
+serde                = { workspace = true }
+tracing              = { workspace = true }
 
 bevy_girk_game_fw = { workspace = true }
 bevy_girk_utils   = { workspace = true }

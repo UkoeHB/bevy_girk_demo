@@ -10,6 +10,7 @@ use bevy_replicon::bincode;
 use bevy_replicon::bincode::*;
 use bevy_replicon::prelude::*;
 use bevy_replicon::replicon_core::replication_rules::*;
+use bevy_replicon_repair::*;
 use serde::de::DeserializeOwned;
 
 //standard shortcuts
@@ -52,30 +53,24 @@ fn deserialize_react_component<C: Component + ReactComponent + DeserializeOwned>
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn remove_react_component<C: Component + ReactComponent>(entity: &mut EntityWorldMut, _tick: RepliconTick)
-{
-    entity.remove::<React<C>>();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Initializes all game components that may be replicated (including game framework components).
 ///
 /// Depends on `bevy_replicon::replication_core::ReplicationCorePlugin`.
 #[bevy_plugin]
 pub fn GameReplicationPlugin(app: &mut App)
 {
-    app.replicate::<PlayerId>()
-        .replicate_with::<PlayerName>(
+    app.replicate_repair::<PlayerId>()
+        .replicate_repair_with::<PlayerName>(
             serialize_component::<PlayerName>,
             deserialize_react_component::<PlayerName>,
-            remove_react_component::<PlayerName>)
-        .replicate_with::<PlayerScore>(
+            remove_component::<React<PlayerName>>,
+            repair_component::<React<PlayerName>>)
+        .replicate_repair_with::<PlayerScore>(
             serialize_component::<PlayerScore>,
             deserialize_react_component::<PlayerScore>,
-            remove_react_component::<PlayerScore>)
-        .replicate::<GameInitProgress>();
+            remove_component::<React<PlayerScore>>,
+            repair_component::<React<PlayerScore>>)
+        .replicate_repair::<GameInitProgress>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
