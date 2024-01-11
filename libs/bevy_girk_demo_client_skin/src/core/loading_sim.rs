@@ -64,7 +64,7 @@ pub(crate) fn LoadingSimPlugin(app: &mut App)
         .insert_resource(LoadingTimeStart(Duration::default()))
         .add_systems(Update, initialization_timer.track_progress()
             .in_set(ClientSet::InitCore)
-            .in_set(ClientFWLoadingSet)
+            .in_set(ClientFwLoadingSet)
         )
         .add_systems(Update,
             reset_init_progress

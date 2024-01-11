@@ -23,7 +23,7 @@ use bevy_girk_client_fw::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn check_client_framework_consistency(client_fw_config: &ClientFWConfig, initializer: &ClientInitializer)
+fn check_client_framework_consistency(client_fw_config: &ClientFwConfig, initializer: &ClientInitializer)
 {
     // check the client id
     if client_fw_config.client_id() != initializer.context.id()
@@ -37,13 +37,13 @@ fn check_client_framework_consistency(client_fw_config: &ClientFWConfig, initial
 fn prestartup_check(world: &World)
 {
     // check for expected resources
-    if !world.contains_resource::<ClientFWConfig>()
-    { panic!("ClientFWConfig is missing on startup!"); }
+    if !world.contains_resource::<ClientFwConfig>()
+    { panic!("ClientFwConfig is missing on startup!"); }
     if !world.contains_resource::<ClientInitializer>()
     { panic!("ClientInitializer is missing on startup!"); }
 
     // validate consistency between client framework and core
-    check_client_framework_consistency(world.resource::<ClientFWConfig>(), world.resource::<ClientInitializer>());
+    check_client_framework_consistency(world.resource::<ClientFwConfig>(), world.resource::<ClientInitializer>());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     app.add_systems(Update,
                 (
 
-                ).chain().in_set(ClientFWTickSet::Admin)
+                ).chain().in_set(ClientFwTickSet::Admin)
             );
     */
 
@@ -110,7 +110,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     // - load assets
     app.configure_sets(Update,
                 ClientSet::InitStartup
-                    .run_if(in_state(ClientFWMode::Init))
+                    .run_if(in_state(ClientFwMode::Init))
                     .run_if(in_state(ClientMode::Init))
             );
 
@@ -118,7 +118,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     // - lock display and show reinitialization progress
     app.configure_sets(Update,
                 ClientSet::InitReinit
-                    .run_if(in_state(ClientFWMode::Init))  //framework is reinitializing
+                    .run_if(in_state(ClientFwMode::Init))  //framework is reinitializing
                     .run_if(not(in_state(ClientMode::Init)))  //client is not in init
             );
 
@@ -126,7 +126,7 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     // - connect to game and synchronize times
     app.configure_sets(Update,
                 ClientSet::InitCore
-                    .run_if(in_state(ClientFWMode::Init))
+                    .run_if(in_state(ClientFwMode::Init))
                     .after(ClientSet::InitStartup)
                     .after(ClientSet::InitReinit)
             );
@@ -134,21 +134,21 @@ pub fn ClientCoreTickPlugin(app: &mut App)
     // Prep systems.
     app.configure_sets(Update,
                 ClientSet::Prep
-                    .run_if(in_state(ClientFWMode::Game))
+                    .run_if(in_state(ClientFwMode::Game))
                     .run_if(in_state(ClientMode::Prep))
             );
 
     // Play systems.
     app.configure_sets(Update,
                 ClientSet::Play
-                    .run_if(in_state(ClientFWMode::Game))
+                    .run_if(in_state(ClientFwMode::Game))
                     .run_if(in_state(ClientMode::Play))
             );
 
     // GameOver systems.
     app.configure_sets(Update,
                 ClientSet::GameOver
-                    .run_if(in_state(ClientFWMode::End))
+                    .run_if(in_state(ClientFwMode::End))
                     .run_if(in_state(ClientMode::GameOver))
             );
 

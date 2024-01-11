@@ -67,7 +67,7 @@ fn focus_window_for_ack_request(
 fn set_ack_request_data(
     mut rcommands   : ReactCommands,
     time            : Res<Time>,
-    mut events      : ReactEvents<AckRequest>,
+    mut events      : ReactEventReader<AckRequest>,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
     let ack_req = events.next().unwrap();

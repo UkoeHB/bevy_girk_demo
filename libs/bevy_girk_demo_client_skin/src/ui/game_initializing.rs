@@ -138,11 +138,11 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
 #[bevy_plugin]
 pub(crate) fn UiInitializingPlugin(app: &mut App)
 {
-    app.add_systems(OnEnter(ClientFWMode::Init), activate_initializing_overlay)
-        .add_systems(OnExit(ClientFWMode::Init), deactivate_initializing_overlay)
+    app.add_systems(OnEnter(ClientFwMode::Init), activate_initializing_overlay)
+        .add_systems(OnExit(ClientFwMode::Init), deactivate_initializing_overlay)
         .add_systems(Update,
             update_loading_bar
-                .in_set(ClientFWTickSet::End)
+                .in_set(ClientFwTickSet::End)
                 //.in_set(ClientSet::InitCore)
         );
 }

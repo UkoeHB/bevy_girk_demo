@@ -256,7 +256,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUi>)
     ui.rcommands.on(event::<ActivateJoinLobbyWindow>(),
             move
             |
-                mut events : ReactEvents<ActivateJoinLobbyWindow>,
+                mut events : ReactEventReader<ActivateJoinLobbyWindow>,
                 mut ui     : UiUtils<MainUi>,
                 lobby_page : ReactRes<LobbyPage>,
                 mut window : ReactResMut<JoinLobbyWindow>

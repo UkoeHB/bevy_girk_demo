@@ -9,7 +9,6 @@ doctest = false
 
 [dependencies]
 bevy            = { workspace = true }
-bevy_kot_derive = { workspace = true }
 bevy_kot_ecs    = { workspace = true }
 bevy_kot_ui     = { workspace = true }
 bevy_lunex      = { workspace = true }

@@ -68,7 +68,7 @@ pub enum GameSet
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Game tick plugin. Depends on [GameFWPlugin] and [GameStartupPlugin].
+/// Game tick plugin. Depends on [GameFwPlugin] and [GameStartupPlugin].
 /// Configures system sets and adds basic administrative systems.
 #[bevy_plugin]
 pub fn GameTickPlugin(app: &mut App)
@@ -76,30 +76,30 @@ pub fn GameTickPlugin(app: &mut App)
     // GAME Tick systems (after initialization).
     app.configure_sets(Update,
             GameSet::PostInit
-                .run_if(not(in_state(GameFWMode::Init)))
+                .run_if(not(in_state(GameFwMode::Init)))
         );
 
     // GAME Prep systems.
     app.configure_sets(Update,
                 GameSet::Prep
-                    .run_if(in_state(GameFWMode::Game))
+                    .run_if(in_state(GameFwMode::Game))
                     .run_if(in_state(GameMode::Prep))
             );
 
     // GAME Play systems.
     app.configure_sets(Update,
                 GameSet::Play
-                    .run_if(in_state(GameFWMode::Game))
+                    .run_if(in_state(GameFwMode::Game))
                     .run_if(in_state(GameMode::Play))
             );
 
     // GAME GameOver systems.
-    // - This will only run in the span between entering 'game over' and the GameFWMode moving to 'End', which is controlled
-    //   by `GameFWConfig::max_end_ticks()`.
+    // - This will only run in the span between entering 'game over' and the GameFwMode moving to 'End', which is controlled
+    //   by `GameFwConfig::max_end_ticks()`.
     //todo: allow GameOver to last indefinitely?
     app.configure_sets(Update,
                 GameSet::GameOver
-                    .run_if(in_state(GameFWMode::Game))
+                    .run_if(in_state(GameFwMode::Game))
                     .run_if(in_state(GameMode::GameOver))
             );
 
@@ -115,7 +115,7 @@ pub fn GameTickPlugin(app: &mut App)
                 advance_prep_tick.in_set(GameSet::Prep),
                 advance_play_tick.in_set(GameSet::Play),
                 advance_game_over_tick.in_set(GameSet::GameOver),
-            ).chain().in_set(GameFWTickSet::Admin)
+            ).chain().in_set(GameFwTickSet::Admin)
         );
 
     // Respond to state transitions

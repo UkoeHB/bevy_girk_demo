@@ -1,6 +1,8 @@
 //local shortcuts
 
 //third-party shortcuts
+use bevy_girk_utils::*;
+use bevy_replicon::prelude::EventType;
 use serde::{Serialize, Deserialize};
 
 //standard shortcuts
@@ -14,20 +16,41 @@ pub enum PlayerInput
 {
     /// Click a button.
     ClickButton,
-    /// Placeholder
-    None
+}
+
+impl IntoEventType for PlayerInput
+{
+    fn into_event_type(&self) -> EventType
+    {
+        match &self
+        {
+            Self::ClickButton => SendUnordered.into(),
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Requests that can be sent to the game.
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-pub enum GameRequest
+pub enum ClientRequest
 {
     /// Request the current game mode.
-    GameModeRequest,
+    GetGameMode,
     /// Player input.
     PlayerInput(PlayerInput)
+}
+
+impl IntoEventType for ClientRequest
+{
+    fn into_event_type(&self) -> EventType
+    {
+        match &self
+        {
+            Self::GetGameMode => SendOrdered.into(),
+            Self::PlayerInput(input) => input.into_event_type(),
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

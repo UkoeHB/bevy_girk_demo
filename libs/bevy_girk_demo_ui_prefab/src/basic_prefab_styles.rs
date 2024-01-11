@@ -3,7 +3,7 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_kot_derive::*;
+use bevy_kot_ui::*;
 
 //standard shortcuts
 

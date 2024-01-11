@@ -53,7 +53,7 @@ fn handle_input_play(world: &mut World, input: PlayerClientInput)
     let PlayerClientInput::Play(player_input) = input
     else { tracing::warn!(?input, "ignoring invalid input sent during play mode"); return; };
 
-    syscall(world, GameRequest::PlayerInput(player_input), send_game_request);
+    syscall(world, ClientRequest::PlayerInput(player_input), send_client_request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

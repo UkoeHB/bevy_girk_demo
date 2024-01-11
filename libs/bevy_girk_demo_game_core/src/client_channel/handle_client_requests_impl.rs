@@ -4,7 +4,6 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_girk_utils::*;
 use bevy_kot_ecs::*;
 
 //standard shortcuts
@@ -28,13 +27,12 @@ fn handle_player_click_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn notify_request_rejected(
-    In((client_id, request, reason)) : In<(ClientIdType, GameRequest, RejectionReason)>,
-    mut game_message_buffer          : ResMut<GameMessageBuffer>
+    In((client_id, request, reason)) : In<(ClientIdType, ClientRequest, RejectionReason)>,
+    buffer                   : Res<GameMessageBuffer>
 ){
-    game_message_buffer.add_core_msg(
-            &GameMsg::RequestRejected{reason, request},
+    buffer.send(
+            GameMsg::RequestRejected{reason, request},
             vec![InfoAccessConstraint::Targets(vec![client_id])],
-            SendUnordered
         );
 }
 
@@ -57,7 +55,6 @@ pub(crate) fn handle_player_input(
     match input
     {
         PlayerInput::ClickButton => syscall(world, player_entity, handle_player_click_button),
-        PlayerInput::None => (),
     }
 }
 

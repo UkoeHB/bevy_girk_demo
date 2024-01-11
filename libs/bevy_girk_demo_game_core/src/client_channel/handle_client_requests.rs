@@ -4,7 +4,6 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_girk_utils::*;
 use bevy_kot_ecs::*;
 
 //standard shortcuts
@@ -13,7 +12,7 @@ use bevy_kot_ecs::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn player_syscall<A, S, Marker>(world: &mut World, req: GameRequest, id: ClientIdType, arg: A, sys: S)
+fn player_syscall<A, S, Marker>(world: &mut World, id: ClientIdType, req: ClientRequest, arg: A, sys: S)
 where
     A: Send + Sync + 'static,
     S: IntoSystem<(Entity, A), (), Marker> + Send + Sync + 'static,
@@ -32,48 +31,48 @@ where
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_input_init(world: &mut World, req: GameRequest, id: ClientIdType)
+fn handle_client_request_init(world: &mut World, id: ClientIdType, req: ClientRequest)
 {
     match req
     {
-        GameRequest::GameModeRequest => syscall(world, id, handle_game_mode_request),
-        GameRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
+        ClientRequest::GetGameMode => syscall(world, id, handle_game_mode_request),
+        ClientRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_input_prep(world: &mut World, req: GameRequest, id: ClientIdType)
+fn handle_client_request_prep(world: &mut World, id: ClientIdType, req: ClientRequest)
 {
     match req
     {
-        GameRequest::GameModeRequest => syscall(world, id, handle_game_mode_request),
-        GameRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
+        ClientRequest::GetGameMode => syscall(world, id, handle_game_mode_request),
+        ClientRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_input_play(world: &mut World, req: GameRequest, id: ClientIdType)
+fn handle_client_request_play(world: &mut World, id: ClientIdType, req: ClientRequest)
 {
     match req
     {
-        GameRequest::GameModeRequest => syscall(world, id, handle_game_mode_request),
-        GameRequest::PlayerInput(i)  => player_syscall(world, req, id, i, handle_player_input),
+        ClientRequest::GetGameMode => syscall(world, id, handle_game_mode_request),
+        ClientRequest::PlayerInput(i)  => player_syscall(world, id, req, i, handle_player_input),
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_input_gameover(world: &mut World, req: GameRequest, id: ClientIdType)
+fn handle_client_request_gameover(world: &mut World, id: ClientIdType, req: ClientRequest)
 {
     match req
     {
-        GameRequest::GameModeRequest => syscall(world, id, handle_game_mode_request),
-        GameRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
+        ClientRequest::GetGameMode => syscall(world, id, handle_game_mode_request),
+        ClientRequest::PlayerInput(_)  => syscall(world, (id, req, RejectionReason::ModeMismatch), notify_request_rejected),
     }
 }
 
@@ -83,20 +82,23 @@ fn handle_client_input_gameover(world: &mut World, req: GameRequest, id: ClientI
 /// Handle a message sent to the game from a client.
 ///
 /// Note: this function is meant to be injected to a [`ClientMessageHandler`].
-pub(crate) fn try_handle_game_core_input(world: &mut World, serialized_message: Vec<u8>, client_id: ClientIdType) -> bool
+pub(crate) fn handle_client_request(
+    world         : &mut World,
+    client_id     : ClientIdType,
+    client_packet : &ClientPacket
+) -> Result<(), Option<ClientFwRequest>>
 {
-    let Some(request) = deser_msg::<GameRequest>(&serialized_message[..])
-    else { tracing::trace!("failed deserializing client message"); return false; };
+    let request = deserialize_client_request(client_id, client_packet)?;
 
     match syscall(world, (), get_current_game_mode)
     {
-        GameMode::Init     => handle_client_input_init(world, request, client_id),
-        GameMode::Prep     => handle_client_input_prep(world, request, client_id),
-        GameMode::Play     => handle_client_input_play(world, request, client_id),
-        GameMode::GameOver => handle_client_input_gameover(world, request, client_id),
+        GameMode::Init     => handle_client_request_init(world, client_id, request),
+        GameMode::Prep     => handle_client_request_prep(world, client_id, request),
+        GameMode::Play     => handle_client_request_play(world, client_id, request),
+        GameMode::GameOver => handle_client_request_gameover(world, client_id, request),
     }
 
-    return true;
+    Ok(())
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -12,7 +12,6 @@ bevy            = { workspace = true }
 bevy_fn_plugin  = { workspace = true }
 bevy_framepace  = { workspace = true }
 bevy_kot        = { workspace = true }
-bevy_kot_derive = { workspace = true }
 bevy_kot_ecs    = { workspace = true }
 bevy_kot_ui     = { workspace = true }
 bevy_lunex      = { workspace = true }

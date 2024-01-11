@@ -4,8 +4,8 @@ use bevy_girk_demo_game_core::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_client_fw::*;
 use bevy_girk_game_fw::*;
-use bevy_girk_utils::*;
 use bevy_kot_ecs::*;
 
 //standard shortcuts
@@ -14,7 +14,7 @@ use bevy_kot_ecs::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_request_rejected(reason: RejectionReason, request: GameRequest)
+fn handle_request_rejected(reason: RejectionReason, request: ClientRequest)
 {
     tracing::warn!(?reason, ?request, "game request rejected");
 }
@@ -22,7 +22,7 @@ fn handle_request_rejected(reason: RejectionReason, request: GameRequest)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_init(world: &mut World, message: GameMsg, _tick: Ticks)
+fn handle_game_core_output_init(world: &mut World, _tick: Ticks, message: GameMsg)
 {
     match message
     {
@@ -34,7 +34,7 @@ fn handle_game_core_output_init(world: &mut World, message: GameMsg, _tick: Tick
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_prep(world: &mut World, message: GameMsg, _tick: Ticks)
+fn handle_game_core_output_prep(world: &mut World, _tick: Ticks, message: GameMsg)
 {
     match message
     {
@@ -46,7 +46,7 @@ fn handle_game_core_output_prep(world: &mut World, message: GameMsg, _tick: Tick
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_play(world: &mut World, message: GameMsg, _tick: Ticks)
+fn handle_game_core_output_play(world: &mut World, _tick: Ticks, message: GameMsg)
 {
     match message
     {
@@ -58,7 +58,7 @@ fn handle_game_core_output_play(world: &mut World, message: GameMsg, _tick: Tick
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_gameover(world: &mut World, message: GameMsg, _tick: Ticks)
+fn handle_game_core_output_gameover(world: &mut World, _tick: Ticks, message: GameMsg)
 {
     match message
     {
@@ -74,21 +74,20 @@ fn handle_game_core_output_gameover(world: &mut World, message: GameMsg, _tick: 
 ///
 /// Note: this function is meant to be injected to a [`GameMessageHandler`], where it will be invoked by the client
 ///       framework at the start of each tick to handle incoming game messages.
-pub(crate) fn try_handle_game_core_output(world: &mut World, serialized_message: Vec<u8>, ticks: Ticks) -> bool
+pub(crate) fn handle_game_message(world: &mut World, game_packet: &GamePacket) -> Result<(), Option<(Ticks, GameFwMsg)>>
 {
-    let Some(message) = deser_msg::<GameMsg>(&serialized_message[..])
-    else { tracing::warn!("failed deserializing game message"); return false; };
+    let (ticks, message) = deserialize_game_message(game_packet)?;
 
     // handle based on current client mode
     match syscall(world, (), get_current_client_mode)
     {
-        ClientMode::Init     => handle_game_core_output_init(world, message, ticks),
-        ClientMode::Prep     => handle_game_core_output_prep(world, message, ticks),
-        ClientMode::Play     => handle_game_core_output_play(world, message, ticks),
-        ClientMode::GameOver => handle_game_core_output_gameover(world, message, ticks),
+        ClientMode::Init     => handle_game_core_output_init(world, ticks, message),
+        ClientMode::Prep     => handle_game_core_output_prep(world, ticks, message),
+        ClientMode::Play     => handle_game_core_output_play(world, ticks, message),
+        ClientMode::GameOver => handle_game_core_output_gameover(world, ticks, message),
     }
 
-    return true;
+    Ok(())
 }
 
 //-------------------------------------------------------------------------------------------------------------------
