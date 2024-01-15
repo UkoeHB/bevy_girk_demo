@@ -179,7 +179,7 @@ pub(crate) fn handle_game_start(
         {
             launch_multiplayer_client(monitor, config.clone(), token, start.clone());
         };
-    starter.get_mut(&mut rcommands).set(lobby_id, GameLocation::Hosted, launcher.clone());
+    starter.get_mut(&mut rcommands).set(lobby_id, GameLocation::Hosted, launcher);
 
     // if we are already running this game, then send in the connect token
     // - it's likely that the game client was also disconnected, but failed to request a new connect token since the
@@ -198,7 +198,7 @@ pub(crate) fn handle_game_start(
     if let Some(id) = current_game_id { monitor.kill(id); }
 
     // launch the game
-    (launcher)(monitor, token);
+    starter.get_mut_noreact().start(monitor, token).unwrap();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
