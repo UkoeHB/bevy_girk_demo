@@ -17,7 +17,7 @@ fn main()
     // log to stderr (not stdout, which is piped to the parent process for sending game instance reports)
     //todo: log to file instead (use env::arg configs?)
     let filter = tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
         .from_env().unwrap();
     tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)

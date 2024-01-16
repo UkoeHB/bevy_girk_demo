@@ -47,6 +47,7 @@ pub fn GameStartupPlugin(app: &mut App)
         .add_systems(Startup,
             (
                 setup_game_state,
+                setup_game_message_buffer,
                 setup_game_input_handler,
             ).chain()
         );
