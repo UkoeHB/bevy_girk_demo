@@ -84,6 +84,7 @@ pub fn ClientCoreStartupPlugin(app: &mut App)
         .add_systems(Startup,
             (
                 setup_game_output_handler,
+                setup_client_request_buffer,
                 setup_client_state,
             )
         );

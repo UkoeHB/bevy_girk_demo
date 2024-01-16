@@ -37,7 +37,7 @@ impl ClientFactoryImpl for ClickClientFactory
         // set up client app
         let mut client_app = App::new();
 
-        prepare_client_app_backend(&mut client_app, client_start_pack.client_fw_config, connect_pack);
+        prepare_girk_client_app(&mut client_app, client_start_pack.client_fw_config, connect_pack);
         let client_id = client_start_pack.client_initializer.context.id();
         let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
         prepare_client_skin(&mut client_app, client_id as u64, player_input_sender);
