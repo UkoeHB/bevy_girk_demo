@@ -211,7 +211,7 @@ fn main()
 
     // launch pack
     let game_configs = make_click_game_configs();
-    let Ok(launch_pack) = get_launch_pack(ser_msg(&game_configs), lobby_contents)
+    let Ok(launch_pack) = get_launch_pack(game_configs, lobby_contents)
     else { tracing::error!("failed getting launch pack for playtest"); return; };
 
     // run it

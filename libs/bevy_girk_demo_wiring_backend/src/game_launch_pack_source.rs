@@ -33,54 +33,47 @@ fn get_protocol_id() -> u64
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClientInitDataForGame
+fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClickClientInitDataForGame
 {
-    let client_init_data = ClickClientInitDataForGame::Player{
-            client_id   : client_id,
-            player_name : format!("player{}", client_id),
+    let init = ClickClientInit::Player{
+            client_id,
+            player_name: format!("player{}", client_id),
         };
 
-    ClientInitDataForGame{
-            env,
-            user_id,
-            data: ser_msg(&client_init_data),
-        }
+    ClickClientInitDataForGame{env, user_id, init}
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClientInitDataForGame
+fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClickClientInitDataForGame
 {
-    let client_init_data = ClickClientInitDataForGame::Watcher{
-            client_id: client_id,
-        };
+    let init = ClickClientInit::Watcher{client_id};
 
-    ClientInitDataForGame{
-            env,
-            user_id,
-            data: ser_msg(&client_init_data),
-        }
+    ClickClientInitDataForGame{env, user_id, init}
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn launch_pack_from_req(game_factory_config_ser: &Vec<u8>, start_request: &GameStartRequest) -> Result<GameLaunchPack, ()>
+fn launch_pack_from_req(
+    game_factory_config : &ClickGameFactoryConfig,
+    start_request       : &GameStartRequest
+) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby data
     let Ok(lobby_contents) = ClickLobbyContents::try_from(start_request.lobby_data.clone())
     else { tracing::error!("unable to extract lobby contents from lobby data"); return Err(()); };
 
-    get_launch_pack(game_factory_config_ser.clone(), lobby_contents)
+    get_launch_pack(game_factory_config.clone(), lobby_contents)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 pub fn get_launch_pack(
-    game_factory_config_ser : Vec<u8>,
-    mut lobby_contents      : ClickLobbyContents,
+    game_factory_config : ClickGameFactoryConfig,
+    mut lobby_contents  : ClickLobbyContents,
 ) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby contents
@@ -100,7 +93,7 @@ pub fn get_launch_pack(
     }
 
     // make init data for the clients
-    let mut client_init_data = Vec::<ClientInitDataForGame>::new();
+    let mut client_init_data = Vec::<ClickClientInitDataForGame>::new();
     client_init_data.reserve(num_players + num_watchers);
 
     for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate()
@@ -115,16 +108,16 @@ pub fn get_launch_pack(
     }
 
     // launch pack
-    Ok(GameLaunchPack::new(lobby_contents.id, game_factory_config_ser, client_init_data))
+    let data = ClickLaunchPackData{ config: game_factory_config, clients: client_init_data };
+    Ok(GameLaunchPack::new(lobby_contents.id, ser_msg(&data)))
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Default)]
 pub struct ClickGameLaunchPackSource
 {
     /// Serialized config needed by game factory to start a game.
-    game_factory_config_ser: Vec<u8>,
+    game_factory_config: ClickGameFactoryConfig,
 
     /// Queue of reports.
     queue: VecDeque<GameLaunchPackReport>,
@@ -132,9 +125,9 @@ pub struct ClickGameLaunchPackSource
 
 impl ClickGameLaunchPackSource
 {
-    pub fn new(game_factory_config: &ClickGameFactoryConfig) -> ClickGameLaunchPackSource
+    pub fn new(game_factory_config: ClickGameFactoryConfig) -> ClickGameLaunchPackSource
     {
-        ClickGameLaunchPackSource{ game_factory_config_ser: ser_msg(&game_factory_config), queue: VecDeque::default() }
+        ClickGameLaunchPackSource{ game_factory_config, queue: VecDeque::default() }
     }
 }
 
@@ -143,7 +136,7 @@ impl GameLaunchPackSourceImpl for ClickGameLaunchPackSource
     /// Request a launch pack for a specified game.
     fn request_launch_pack(&mut self, start_request: &GameStartRequest)
     {
-        match launch_pack_from_req(&self.game_factory_config_ser, start_request)
+        match launch_pack_from_req(&self.game_factory_config, start_request)
         {
             Ok(launch_pack) => self.queue.push_back(GameLaunchPackReport::Pack(launch_pack)),
             Err(_)          => self.queue.push_back(GameLaunchPackReport::Failure(start_request.game_id())),

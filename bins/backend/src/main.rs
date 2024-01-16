@@ -177,7 +177,7 @@ fn make_test_game_hub_server(
     // setup
     let (command_sender, command_receiver) = new_channel::<GameHubCommand>();
     let host_hub_client         = make_test_host_hub_client_with_id(0u128, hub_server_url);
-    let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(&game_factory_config));
+    let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(game_factory_config));
     let game_factory            = GameFactory::new(ClickGameFactory);
     let game_launcher           = GameInstanceLauncher::new(GameInstanceLauncherLocal::new(game_factory));
 
