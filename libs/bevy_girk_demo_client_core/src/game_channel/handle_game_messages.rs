@@ -22,7 +22,7 @@ fn handle_request_rejected(reason: RejectionReason, request: ClientRequest)
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_init(world: &mut World, _tick: Ticks, message: GameMsg)
+fn handle_game_core_output_init(world: &mut World, _tick: Tick, message: GameMsg)
 {
     match message
     {
@@ -34,7 +34,7 @@ fn handle_game_core_output_init(world: &mut World, _tick: Ticks, message: GameMs
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_prep(world: &mut World, _tick: Ticks, message: GameMsg)
+fn handle_game_core_output_prep(world: &mut World, _tick: Tick, message: GameMsg)
 {
     match message
     {
@@ -46,7 +46,7 @@ fn handle_game_core_output_prep(world: &mut World, _tick: Ticks, message: GameMs
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_play(world: &mut World, _tick: Ticks, message: GameMsg)
+fn handle_game_core_output_play(world: &mut World, _tick: Tick, message: GameMsg)
 {
     match message
     {
@@ -58,7 +58,7 @@ fn handle_game_core_output_play(world: &mut World, _tick: Ticks, message: GameMs
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_game_core_output_gameover(world: &mut World, _tick: Ticks, message: GameMsg)
+fn handle_game_core_output_gameover(world: &mut World, _tick: Tick, message: GameMsg)
 {
     match message
     {
@@ -74,17 +74,17 @@ fn handle_game_core_output_gameover(world: &mut World, _tick: Ticks, message: Ga
 ///
 /// Note: this function is meant to be injected to a [`GameMessageHandler`], where it will be invoked by the client
 ///       framework at the start of each tick to handle incoming game messages.
-pub(crate) fn handle_game_message(world: &mut World, game_packet: &GamePacket) -> Result<(), Option<(Ticks, GameFwMsg)>>
+pub(crate) fn handle_game_message(world: &mut World, game_packet: &GamePacket) -> Result<(), Option<(Tick, GameFwMsg)>>
 {
-    let (ticks, message) = deserialize_game_message(game_packet)?;
+    let (tick, message) = deserialize_game_message(game_packet)?;
 
     // handle based on current client mode
     match syscall(world, (), get_current_client_mode)
     {
-        ClientMode::Init     => handle_game_core_output_init(world, ticks, message),
-        ClientMode::Prep     => handle_game_core_output_prep(world, ticks, message),
-        ClientMode::Play     => handle_game_core_output_play(world, ticks, message),
-        ClientMode::GameOver => handle_game_core_output_gameover(world, ticks, message),
+        ClientMode::Init     => handle_game_core_output_init(world, tick, message),
+        ClientMode::Prep     => handle_game_core_output_prep(world, tick, message),
+        ClientMode::Play     => handle_game_core_output_play(world, tick, message),
+        ClientMode::GameOver => handle_game_core_output_gameover(world, tick, message),
     }
 
     Ok(())

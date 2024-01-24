@@ -9,7 +9,7 @@ use bevy_girk_utils::*;
 use clap::Parser;
 
 //standard shortcuts
-
+use std::time::Duration;
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ fn main()
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let mut factory = ClientFactory::new(ClickClientFactory{ protocol_id });
+    let mut factory = ClientFactory::new(ClickClientFactory{ protocol_id, resend_time: Duration::from_millis(100) });
 
     // run the client
     let args = GameClientCli::parse();

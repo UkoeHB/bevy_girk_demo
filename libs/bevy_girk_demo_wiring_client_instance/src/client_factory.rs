@@ -10,7 +10,7 @@ use bevy_girk_utils::*;
 use bevy_girk_wiring::*;
 
 //standard shortcuts
-
+use std::time::Duration;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -22,6 +22,7 @@ use bevy_girk_wiring::*;
 pub struct ClickClientFactory
 {
     pub protocol_id: u64,
+    pub resend_time: Duration,
 }
 
 impl ClientFactoryImpl for ClickClientFactory
@@ -34,10 +35,17 @@ impl ClientFactoryImpl for ClickClientFactory
         // extract client startup pack
         let client_start_pack = deser_msg::<ClickClientStartPack>(&start_info.serialized_start_data).unwrap();
 
+        // girk client config
+        let config = GirkClientConfig{
+            client_fw_config : client_start_pack.client_fw_config,
+            resend_time      : self.resend_time,
+            connect_pack,
+        };
+
         // set up client app
         let mut client_app = App::new();
 
-        prepare_girk_client_app(&mut client_app, client_start_pack.client_fw_config, connect_pack);
+        prepare_girk_client_app(&mut client_app, config);
         let client_id = client_start_pack.client_initializer.context.id();
         let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
         prepare_client_skin(&mut client_app, client_id as u64, player_input_sender);

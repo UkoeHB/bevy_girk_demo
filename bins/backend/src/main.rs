@@ -84,16 +84,16 @@ fn make_hub_server_configs() -> GameHubServerStartupPack
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> ClickGameFactoryConfig
+fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> ClickGameFactoryConfig
 {
     // versioning
     //todo: use hasher directly
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
-    let max_init_ticks      = Ticks(game_ticks_per_sec.0 * 5);
-    let game_prep_ticks     = Ticks(0);
-    let max_game_over_ticks = Ticks(game_ticks_per_sec.0 * 3);
+    let max_init_ticks      = game_ticks_per_sec * 5;
+    let game_prep_ticks     = 0;
+    let max_game_over_ticks = game_ticks_per_sec * 3;
 
     // server setup config
     let server_setup_config = GameServerSetupConfig{
@@ -114,6 +114,7 @@ fn make_click_game_configs(game_ticks_per_sec: Ticks, game_num_ticks: Ticks) -> 
             server_setup_config,
             game_fw_config,
             game_duration_config,
+            resend_time: Duration::from_millis(300),
         };
 
     game_factory_config
@@ -219,8 +220,8 @@ fn main()
     let (mut host_server, host_hub_url, _host_user_url) = make_test_host_server(make_host_server_configs());
 
     // launch game hub server attached to host server
-    let game_ticks_per_sec = Ticks(20);
-    let game_num_ticks     = Ticks(20 * 30);
+    let game_ticks_per_sec = 20;
+    let game_num_ticks     = 20 * 30;
     let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
             host_hub_url,
             make_hub_server_configs(),

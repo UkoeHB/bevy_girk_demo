@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 
 //standard shortcuts
 use std::collections::{HashMap, HashSet};
+use std::time::Duration;
 use std::vec::Vec;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -137,7 +138,7 @@ fn client_initializer(
 fn prepare_client_start_pack(
     game_initializer : &ClickGameInitializer,
     client_id        : ClientIdType,
-    ticks_per_sec    : Ticks,
+    ticks_per_sec    : u32,
 ) -> Result<ClickClientStartPack, ()>
 {
     // set up client framework
@@ -196,6 +197,7 @@ pub struct ClickGameFactoryConfig
     pub server_setup_config  : GameServerSetupConfig,
     pub game_fw_config       : GameFwConfig,
     pub game_duration_config : GameDurationConfig,
+    pub resend_time          : Duration,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -274,15 +276,18 @@ impl GameFactoryImpl for ClickGameFactory
         let config = data.config;
         let startup = prepare_game_startup(data.clients, config.game_duration_config)?;
 
+        // girk server config
+        let server_config = GirkServerConfig{
+            game_fw_config      : config.game_fw_config,
+            game_fw_initializer : startup.fw_init,
+            game_server_config  : config.server_setup_config,
+            resend_time         : config.resend_time,
+            native_count        : startup.native_count,
+            wasm_count          : startup.wasm_count,
+        };
+
         // prepare game app
-        let (native_meta, wasm_meta) = prepare_girk_game_app(
-            app,
-            config.game_fw_config,
-            startup.fw_init,
-            config.server_setup_config,
-            startup.native_count,
-            startup.wasm_count
-        );
+        let (native_meta, wasm_meta) = prepare_girk_game_app(app, server_config);
         prepare_game_app_core(app, startup.click_init);
 
         // game start info

@@ -26,8 +26,8 @@ pub struct ClickPlayerReport
 #[derive(Serialize, Deserialize)]
 pub struct ClickGameOverReport
 {
-    /// Total ticks that elapsed during the game.
-    pub game_ticks: Ticks,
+    /// The last game tick that elapsed before this report was created.
+    pub final_game_tick: Tick,
 
     /// Each player's individual report.
     pub player_reports: Vec<ClickPlayerReport>,

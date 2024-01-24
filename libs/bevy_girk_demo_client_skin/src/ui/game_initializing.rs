@@ -51,7 +51,6 @@ fn update_loading_bar(
         .get_single()
         .map(|p| *p)
         .unwrap_or(GameInitProgress::default())
-        .0
         .max(0.0)
         .min(1.0);
 

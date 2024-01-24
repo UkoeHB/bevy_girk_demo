@@ -228,7 +228,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 #[bevy_plugin]
 pub(crate) fn UiGameScoreboardPlugin(app: &mut App)
 {
-    app.insert_react_resource(GameScoreboardTracker::default());
+    app.init_react_resource::<GameScoreboardTracker>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

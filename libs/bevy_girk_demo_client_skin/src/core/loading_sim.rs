@@ -5,7 +5,6 @@ use bevy_girk_demo_client_core::*;
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_client_fw::*;
-use bevy_girk_game_fw::*;
 use iyes_progress::*;
 
 //standard shortcuts
@@ -14,21 +13,13 @@ use std::time::Duration;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn reset_init_progress(mut progress: Query<&mut GameInitProgress>)
-{
-    progress.single_mut().0 = 0.0;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-
 #[derive(Resource)]
-struct LoadingTimeStart(Duration);
+struct LoadingStartTime(Duration);
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn reset_loading_time_start(time: Res<Time>, mut start: ResMut<LoadingTimeStart>)
+fn reset_loading_time_start(time: Res<Time>, mut start: ResMut<LoadingStartTime>)
 {
     start.0 = time.elapsed();
 }
@@ -37,7 +28,7 @@ fn reset_loading_time_start(time: Res<Time>, mut start: ResMut<LoadingTimeStart>
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Hacky timer for delaying initialization.
-fn initialization_timer(time: Res<Time>, start: Res<LoadingTimeStart>) -> Progress
+fn initialization_timer(time: Res<Time>, start: Res<LoadingStartTime>) -> Progress
 {
     if time.elapsed() < start.0 + Duration::from_millis(500)
     {
@@ -61,14 +52,10 @@ fn initialization_timer(time: Res<Time>, start: Res<LoadingTimeStart>) -> Progre
 pub(crate) fn LoadingSimPlugin(app: &mut App)
 {
     app
-        .insert_resource(LoadingTimeStart(Duration::default()))
+        .insert_resource(LoadingStartTime(Duration::default()))
         .add_systems(Update, initialization_timer.track_progress()
             .in_set(ClientSet::InitCore)
             .in_set(ClientFwLoadingSet)
-        )
-        .add_systems(Update,
-            reset_init_progress
-                .run_if(bevy_replicon::client_just_disconnected())
         )
         .add_systems(Update,
             reset_loading_time_start
