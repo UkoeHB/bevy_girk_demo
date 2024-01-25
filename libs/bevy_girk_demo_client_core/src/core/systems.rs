@@ -22,16 +22,16 @@ pub fn get_current_client_mode(current_client_mode: Res<State<ClientMode>>) -> C
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Request the current game mode.
-pub(crate) fn request_game_mode(buffer: Res<ClientRequestBuffer>)
+pub(crate) fn request_game_mode(mut sender: ClientRequestSender)
 {
-    buffer.request(ClientRequest::GetGameMode);
+    sender.request(ClientRequest::GetGameMode);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn send_client_request(In(msg): In<ClientRequest>, buffer: Res<ClientRequestBuffer>)
+pub fn send_client_request(In(msg): In<ClientRequest>, mut sender: ClientRequestSender)
 {
-    buffer.request(msg);
+    sender.request(msg);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

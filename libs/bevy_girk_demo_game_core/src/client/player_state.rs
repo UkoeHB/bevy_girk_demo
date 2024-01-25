@@ -13,10 +13,10 @@ use serde::{Deserialize, Serialize};
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player id component (wraps the player's client id).
-#[derive(Component, Default, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Component, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerId
 {
-    pub id: ClientIdType
+    pub id: ClientId
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ impl PlayerScore
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Players are entities with the components bundled here.
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct PlayerState
 {
     /// Player id. Can be used to access player context from game context.

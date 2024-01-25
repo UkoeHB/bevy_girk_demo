@@ -27,8 +27,8 @@ fn handle_player_click_button(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn notify_request_rejected(
-    In((client_id, request, reason)) : In<(ClientIdType, ClientRequest, RejectionReason)>,
-    buffer                   : Res<GameMessageBuffer>
+    In((client_id, request, reason)) : In<(ClientId, ClientRequest, RejectionReason)>,
+    buffer                           : Res<GameMessageBuffer>
 ){
     buffer.send(
             GameMsg::RequestRejected{reason, request},
@@ -38,7 +38,7 @@ pub(crate) fn notify_request_rejected(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_game_mode_request(In(client_id): In<ClientIdType>, world: &mut World)
+pub(crate) fn handle_game_mode_request(In(client_id): In<ClientId>, world: &mut World)
 {
     syscall(world, client_id, notify_game_mode_single);
 }

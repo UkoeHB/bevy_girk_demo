@@ -12,7 +12,7 @@ use bevy_kot_ecs::*;
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn player_syscall<A, S, Marker>(world: &mut World, id: ClientIdType, req: ClientRequest, arg: A, sys: S)
+fn player_syscall<A, S, Marker>(world: &mut World, id: ClientId, req: ClientRequest, arg: A, sys: S)
 where
     A: Send + Sync + 'static,
     S: IntoSystem<(Entity, A), (), Marker> + Send + Sync + 'static,
@@ -22,7 +22,7 @@ where
         Ok(player_entity) => syscall(world, (player_entity, arg), sys),
         Err(err) =>
         {
-            tracing::trace!(id, ?err, "player syscall failed, client is not player");
+            tracing::trace!(?id, ?err, "player syscall failed, client is not player");
             syscall(world, (id, req, RejectionReason::Invalid), notify_request_rejected);
         }
     }
@@ -31,7 +31,7 @@ where
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_request_init(world: &mut World, id: ClientIdType, req: ClientRequest)
+fn handle_client_request_init(world: &mut World, id: ClientId, req: ClientRequest)
 {
     match req
     {
@@ -43,7 +43,7 @@ fn handle_client_request_init(world: &mut World, id: ClientIdType, req: ClientRe
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_request_prep(world: &mut World, id: ClientIdType, req: ClientRequest)
+fn handle_client_request_prep(world: &mut World, id: ClientId, req: ClientRequest)
 {
     match req
     {
@@ -55,7 +55,7 @@ fn handle_client_request_prep(world: &mut World, id: ClientIdType, req: ClientRe
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_request_play(world: &mut World, id: ClientIdType, req: ClientRequest)
+fn handle_client_request_play(world: &mut World, id: ClientId, req: ClientRequest)
 {
     match req
     {
@@ -67,7 +67,7 @@ fn handle_client_request_play(world: &mut World, id: ClientIdType, req: ClientRe
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_request_gameover(world: &mut World, id: ClientIdType, req: ClientRequest)
+fn handle_client_request_gameover(world: &mut World, id: ClientId, req: ClientRequest)
 {
     match req
     {
@@ -84,7 +84,7 @@ fn handle_client_request_gameover(world: &mut World, id: ClientIdType, req: Clie
 /// Note: this function is meant to be injected to a [`ClientMessageHandler`].
 pub(crate) fn handle_client_request(
     world         : &mut World,
-    client_id     : ClientIdType,
+    client_id     : ClientId,
     client_packet : &ClientPacket
 ) -> Result<(), Option<ClientFwRequest>>
 {

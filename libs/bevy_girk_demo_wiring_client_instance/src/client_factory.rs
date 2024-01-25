@@ -48,7 +48,7 @@ impl ClientFactoryImpl for ClickClientFactory
         prepare_girk_client_app(&mut client_app, config);
         let client_id = client_start_pack.client_initializer.context.id();
         let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
-        prepare_client_skin(&mut client_app, client_id as u64, player_input_sender);
+        prepare_client_skin(&mut client_app, client_id, player_input_sender);
 
         Ok((client_app, self.protocol_id))
     }

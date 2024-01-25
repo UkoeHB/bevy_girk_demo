@@ -24,7 +24,7 @@ struct GameStartupHelper
 {
     fw_init      : GameFwInitializer,
     click_init   : ClickGameInitializer,
-    clients      : Vec<(u128, ClientIdType)>,
+    clients      : Vec<(u128, ClientId)>,
     native_count : usize,
     wasm_count   : usize,
 }
@@ -40,9 +40,9 @@ fn prepare_game_startup(
 {
     // prepare each client
     let mut client_states = Vec::<ClientState>::new();
-    let mut players       = HashMap::<ClientIdType, PlayerState>::new();
-    let mut watchers      = HashSet::<ClientIdType>::new();
-    let mut clients       = Vec::<(u128, ClientIdType)>::new();
+    let mut players       = HashMap::<ClientId, PlayerState>::new();
+    let mut watchers      = HashSet::<ClientId>::new();
+    let mut clients       = Vec::<(u128, ClientId)>::new();
     let mut native_count  = 0;
     let mut wasm_count    = 0;
     client_states.reserve(client_init_data.len());
@@ -59,9 +59,10 @@ fn prepare_game_startup(
             {
                 players.insert(client_id, 
                         PlayerState{
-                                id   : PlayerId { id: client_id },
-                                name : PlayerName{ name: player_name },
-                                ..default()
+                                id        : PlayerId { id: client_id },
+                                name      : PlayerName{ name: player_name },
+                                score     : Default::default(),
+                                replicate : Default::default(),
                             });
                 client_id
             },
@@ -75,7 +76,7 @@ fn prepare_game_startup(
         // make client state
         client_states.push(
                 ClientState{
-                        id            : ClientId::new(client_id),
+                        id            : ClientIdComponent::new(client_id),
                         access_rights :
                             InfoAccessRights{
                                     client : Some(client_id),
@@ -112,14 +113,14 @@ fn prepare_game_startup(
 
 fn client_initializer(
     game_initializer : &ClickGameInitializer,
-    client_id        : ClientIdType,
+    client_id        : ClientId,
 ) -> Result<ClientInitializer, ()>
 {
     let client_type =
         'x : {
             if game_initializer.players.contains_key(&client_id) { break 'x ClientType::Player }
             if game_initializer.watchers.contains(&client_id)    { break 'x ClientType::Watcher }
-            tracing::error!(client_id, "client is not a participant in the game");
+            tracing::error!(?client_id, "client is not a participant in the game");
             return Err(());
         };
 
@@ -137,7 +138,7 @@ fn client_initializer(
 
 fn prepare_client_start_pack(
     game_initializer : &ClickGameInitializer,
-    client_id        : ClientIdType,
+    client_id        : ClientId,
     ticks_per_sec    : u32,
 ) -> Result<ClickClientStartPack, ()>
 {
@@ -157,7 +158,7 @@ fn prepare_client_start_pack(
 fn get_game_start_infos(
     app          : &App,
     game_id      : u64,
-    user_clients : &Vec<(u128, ClientIdType)>,
+    user_clients : &Vec<(u128, ClientId)>,
 ) -> Result<Vec<GameStartInfo>, ()>
 {
     // extract data
@@ -178,7 +179,7 @@ fn get_game_start_infos(
                 GameStartInfo{
                         game_id,
                         user_id               : *user_id,
-                        client_id             : *client_id as u64,
+                        client_id             : client_id.raw(),
                         serialized_start_data : ser_msg(&client_start_pack),
                     }
             );
@@ -208,13 +209,13 @@ pub enum ClickClientInit
 {
     Player{
         /// the client's in-game id
-        client_id: ClientIdType,
+        client_id: ClientId,
         /// the client's player name
         player_name: String,
     },
     Watcher{
         /// the client's in-game id
-        client_id: ClientIdType,
+        client_id: ClientId,
     }
 }
 

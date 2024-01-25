@@ -4,6 +4,7 @@ use bevy_girk_demo_client_skin::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_game_fw::*;
 use bevy_kot_utils::*;
 
 //standard shortcuts
@@ -32,7 +33,7 @@ pub fn prepare_client_core(
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Prepare the click client skin on a client app.
-pub fn prepare_client_skin(app: &mut App, _client_id: u64, player_input_sender: Sender<PlayerClientInput>)
+pub fn prepare_client_skin(app: &mut App, _client_id: ClientId, player_input_sender: Sender<PlayerClientInput>)
 {
     app.add_plugins(ClickClientSkinPlugin)
         .insert_resource(player_input_sender);

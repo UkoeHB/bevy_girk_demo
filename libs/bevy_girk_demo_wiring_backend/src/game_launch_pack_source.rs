@@ -33,7 +33,7 @@ fn get_protocol_id() -> u64
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClickClientInitDataForGame
+fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientId) -> ClickClientInitDataForGame
 {
     let init = ClickClientInit::Player{
             client_id,
@@ -46,7 +46,7 @@ fn make_player_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id:
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientIdType) -> ClickClientInitDataForGame
+fn make_watcher_init_data(env: bevy_simplenet::EnvType, user_id: u128, client_id: ClientId) -> ClickClientInitDataForGame
 {
     let init = ClickClientInit::Watcher{client_id};
 
@@ -98,13 +98,14 @@ pub fn get_launch_pack(
 
     for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate()
     {
-        client_init_data.push(make_player_init_data(*env, *player_user_id, idx as ClientIdType));
+        let client_id = ClientId::from_raw(idx as u64);
+        client_init_data.push(make_player_init_data(*env, *player_user_id, client_id));
     }
 
     for (idx, (env, watcher_user_id)) in lobby_contents.watchers.iter().enumerate()
     {
-        let client_id = idx + num_players;
-        client_init_data.push(make_watcher_init_data(*env, *watcher_user_id, client_id as ClientIdType));
+        let client_id = ClientId::from_raw((idx + num_players) as u64);
+        client_init_data.push(make_watcher_init_data(*env, *watcher_user_id, client_id));
     }
 
     // launch pack

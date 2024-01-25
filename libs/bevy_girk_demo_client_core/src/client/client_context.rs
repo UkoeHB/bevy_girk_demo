@@ -26,7 +26,7 @@ pub enum ClientType
 pub struct ClientContext
 {
     /// This client's id
-    client_id: ClientIdType,
+    client_id: ClientId,
     /// This client's type.
     client_type: ClientType,
 
@@ -38,7 +38,7 @@ impl ClientContext
 {
     /// New context
     pub fn new(
-        client_id       : ClientIdType,
+        client_id       : ClientId,
         client_type     : ClientType,
         duration_config : GameDurationConfig,
     ) -> ClientContext 
@@ -46,7 +46,7 @@ impl ClientContext
         ClientContext{ client_id, client_type, duration_config }
     }
 
-    pub fn id(&self) -> ClientIdType                     { self.client_id }
+    pub fn id(&self) -> ClientId                         { self.client_id }
     pub fn client_type(&self) -> ClientType              { self.client_type }
     pub fn duration_config(&self) -> &GameDurationConfig { &self.duration_config }
 }
