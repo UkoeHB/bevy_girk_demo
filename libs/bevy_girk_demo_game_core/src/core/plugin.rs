@@ -56,6 +56,7 @@ pub fn GameStartupPlugin(app: &mut App)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// System sets that contain tick game logic. These don't run during initialization.
+///
 /// These sets are modal.
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSet
@@ -69,7 +70,8 @@ pub enum GameSet
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Game tick plugin. Depends on [GameFwPlugin] and [GameStartupPlugin].
+/// Game tick plugin. Depends on [`GameFwPlugin`] and [`GameStartupPlugin`].
+///
 /// Configures system sets and adds basic administrative systems.
 #[bevy_plugin]
 pub fn GameTickPlugin(app: &mut App)
