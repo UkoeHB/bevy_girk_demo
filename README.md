@@ -42,3 +42,5 @@ cargo build -p game_client
     - Ping tracker.
     - Input status tracking for client-side prediction.
     - Game replay dev tooling.
+- Deployment to production?
+- Mobile?

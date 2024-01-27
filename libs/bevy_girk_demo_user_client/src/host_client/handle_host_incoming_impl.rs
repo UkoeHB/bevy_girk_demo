@@ -66,7 +66,7 @@ pub(crate) fn handle_connection_lost(
 
     // clear starter
     // - We clear the starter to avoid a situation where a game over/abort is not received from the host server
-    //   since it's disconnected, so the starter never gets cleared. When the we reconnect to the host server, we
+    //   since it's disconnected, so the starter never gets cleared. When we reconnect to the host server, we
     //   will get a fresh game start package which will be used to reconnect the game automatically (if needed).
     if starter.has_starter() { starter.get_mut(&mut rcommands).force_clear_if(GameLocation::Hosted); }
 }
