@@ -5,6 +5,7 @@ use crate::*;
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
+use bevy_replicon_attributes::*;
 
 //standard shortcuts
 
@@ -74,11 +75,13 @@ pub(crate) fn get_current_game_mode(current_game_mode: Res<State<GameMode>>) -> 
 pub(crate) fn notify_game_mode_single(
     In(client_id)     : In<ClientId>,
     current_game_mode : Res<State<GameMode>>,
-    buffer            : Res<GameMessageBuffer>
+    mut sender        : GameMessageSender,
+    attributes        : ClientAttributes,
 ){
-    buffer.send(
+    sender.send(
+            &attributes,
             GameMsg::CurrentGameMode(**current_game_mode),
-            vec![InfoAccessConstraint::Targets(vec![client_id])],
+            vis!(Client(client_id)),
         );
 }
 
@@ -87,11 +90,13 @@ pub(crate) fn notify_game_mode_single(
 /// Notify all clients of the current game mode.
 pub(crate) fn notify_game_mode_all(
     current_game_mode : Res<State<GameMode>>,
-    buffer            : Res<GameMessageBuffer>
+    mut sender        : GameMessageSender,
+    attributes        : ClientAttributes,
 ){
-    buffer.send(
+    sender.send(
+            &attributes,
             GameMsg::CurrentGameMode(**current_game_mode),
-            vec![],
+            vis!(Global),
         );
 }
 

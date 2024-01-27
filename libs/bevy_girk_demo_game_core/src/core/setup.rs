@@ -62,7 +62,7 @@ pub(crate) fn setup_game_state(world: &mut World)
 /// Initializes the game message buffer.
 pub(crate) fn setup_game_message_buffer(mut commands: Commands)
 {
-    commands.insert_resource(GameMessageBuffer::new::<GameMsg>());
+    commands.insert_resource(GameMessageType::new::<GameMsg>());
 }
 
 //-------------------------------------------------------------------------------------------------------------------

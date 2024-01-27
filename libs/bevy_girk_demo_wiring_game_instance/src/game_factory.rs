@@ -10,6 +10,7 @@ use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use bevy_girk_wiring::*;
+use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
 
 //standard shortcuts
@@ -22,7 +23,7 @@ use std::vec::Vec;
 
 struct GameStartupHelper
 {
-    fw_init      : GameFwInitializer,
+    client_set   : GameFwClients,
     click_init   : ClickGameInitializer,
     clients      : Vec<(u128, ClientId)>,
     native_count : usize,
@@ -39,13 +40,13 @@ fn prepare_game_startup(
 ) -> Result<GameStartupHelper, ()>
 {
     // prepare each client
-    let mut client_states = Vec::<ClientState>::new();
+    let mut client_set    = HashSet::<ClientId>::new();
     let mut players       = HashMap::<ClientId, PlayerState>::new();
     let mut watchers      = HashSet::<ClientId>::new();
     let mut clients       = Vec::<(u128, ClientId)>::new();
     let mut native_count  = 0;
     let mut wasm_count    = 0;
-    client_states.reserve(client_init_data.len());
+    client_set.reserve(client_init_data.len());
     players.reserve(client_init_data.len());
     watchers.reserve(client_init_data.len());
     clients.reserve(client_init_data.len());
@@ -59,10 +60,11 @@ fn prepare_game_startup(
             {
                 players.insert(client_id, 
                         PlayerState{
-                                id        : PlayerId { id: client_id },
-                                name      : PlayerName{ name: player_name },
-                                score     : Default::default(),
-                                replicate : Default::default(),
+                                id         : PlayerId { id: client_id },
+                                name       : PlayerName{ name: player_name },
+                                score      : Default::default(),
+                                replicate  : Default::default(),
+                                visibility : vis!(Global),
                             });
                 client_id
             },
@@ -73,17 +75,8 @@ fn prepare_game_startup(
             }
         };
 
-        // make client state
-        client_states.push(
-                ClientState{
-                        id            : ClientIdComponent::new(client_id),
-                        access_rights :
-                            InfoAccessRights{
-                                    client : Some(client_id),
-                                    global : true
-                                }
-                    }
-            );
+        // save client id for the game
+        client_set.insert(client_id);
 
         // count client type
         match client_init.env
@@ -95,12 +88,13 @@ fn prepare_game_startup(
         // save user_id/client_id mapping
         clients.push((client_init.user_id, client_id));
     }
+    debug_assert_eq!(client_set.len(), clients.len());
 
     // finalize
     let game_context = ClickGameContext::new(gen_rand128(), game_duration_config);
 
     Ok(GameStartupHelper{
-        fw_init    : GameFwInitializer{ clients: client_states },
+        client_set : GameFwClients::new(client_set),
         click_init : ClickGameInitializer{ game_context, players, watchers },
         clients,
         native_count,
@@ -279,8 +273,8 @@ impl GameFactoryImpl for ClickGameFactory
 
         // girk server config
         let server_config = GirkServerConfig{
-            game_fw_config      : config.game_fw_config,
-            game_fw_initializer : startup.fw_init,
+            clients             : startup.client_set,
+            config              : config.game_fw_config,
             game_server_config  : config.server_setup_config,
             resend_time         : config.resend_time,
             native_count        : startup.native_count,

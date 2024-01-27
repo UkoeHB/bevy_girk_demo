@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_kot_ecs::*;
 use bevy_replicon::prelude::*;
+use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
 
 //standard shortcuts
@@ -57,6 +58,8 @@ pub struct PlayerState
     pub score: PlayerScore,
     /// Players are replicated
     pub replicate: Replication,
+    /// Players have a visibility condition.
+    pub visibility: VisibilityCondition,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
