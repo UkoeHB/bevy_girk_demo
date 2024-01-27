@@ -4,7 +4,6 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
-use bevy_girk_game_fw::*;
 use bevy_kot_ecs::*;
 use bevy_replicon::bincode;
 use bevy_replicon::bincode::*;
@@ -69,8 +68,7 @@ pub fn GameReplicationPlugin(app: &mut App)
             serialize_component::<PlayerScore>,
             deserialize_react_component::<PlayerScore>,
             remove_component::<React<PlayerScore>>,
-            repair_component::<React<PlayerScore>>)
-        .replicate_repair::<GameInitProgress>();
+            repair_component::<React<PlayerScore>>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
