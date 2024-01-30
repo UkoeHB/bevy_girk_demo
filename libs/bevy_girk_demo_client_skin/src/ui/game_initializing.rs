@@ -141,7 +141,7 @@ pub(crate) fn UiInitializingPlugin(app: &mut App)
         .add_systems(OnExit(ClientFwMode::Init), deactivate_initializing_overlay)
         .add_systems(Update,
             update_loading_bar
-                .in_set(ClientFwTickSet::End)
+                .in_set(ClientFwSet::End)
                 //.in_set(ClientSet::InitCore)
         );
 }
