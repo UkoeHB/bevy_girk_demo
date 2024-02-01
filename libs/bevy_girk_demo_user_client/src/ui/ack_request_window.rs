@@ -28,8 +28,7 @@ fn send_lobby_nack(
     else { tracing::warn!("tried to nack lobby but there is no ack request"); return; };
     tracing::trace!(lobby_id, "nacking lobby");
 
-    let Ok(_) = client.send(UserToHostMsg::NackPendingLobby{ id: lobby_id })
-    else { tracing::warn!("failed sending nack lobby message to host server"); return; };
+    client.send(UserToHostMsg::NackPendingLobby{ id: lobby_id });
 
     // save action
     ack_request.get_mut(&mut rcommands).set_nacked();
@@ -51,8 +50,7 @@ fn send_lobby_ack(
     else { tracing::warn!("tried to ack lobby but there is no ack request"); return; };
     tracing::trace!(lobby_id, "acking lobby");
 
-    let Ok(_) = client.send(UserToHostMsg::AckPendingLobby{ id: lobby_id })
-    else { tracing::warn!("failed sending ack lobby message to host server"); return; };
+    client.send(UserToHostMsg::AckPendingLobby{ id: lobby_id });
 
     // save action
     ack_request.get_mut(&mut rcommands).set_acked();

@@ -70,10 +70,9 @@ fn send_join_lobby_request(
     let lobby_id = lobby_contents.id;
     tracing::trace!(lobby_id, ?window.member_type, "requesting to join lobby");
 
-    let Ok(new_req) = client.request(
+    let new_req = client.request(
             UserToHostRequest::JoinLobby{ id: lobby_id, mcolor: window.member_type.into(), pwd: window.pwd.clone() }
-        )
-    else { tracing::warn!("failed sending join lobby request to host server"); return; };
+        );
 
     // save request
     let request = PendingRequest::new(new_req);

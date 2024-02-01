@@ -31,8 +31,7 @@ fn handle_request_connect_token(
     let Some(game_id) = monitor.game_id() else { tracing::error!("running client monitor is missing its game id"); return; };
 
     // request new connect token
-    let Ok(new_req) = client.request(UserToHostRequest::GetConnectToken{ id: game_id })
-    else { tracing::warn!(game_id, "failed sending get connect token request to host server"); return; };
+    let new_req = client.request(UserToHostRequest::GetConnectToken{ id: game_id });
 
     // save request
     rcommands.insert(target_entity, PendingRequest::new(new_req));

@@ -16,7 +16,7 @@ pub(crate) fn rerequest_latest_lobby_page(
     target_entity       : Entity,
     last_lobby_page_req : &LobbyPageRequest,
 ){
-    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(last_lobby_page_req.get().clone())) else { return; };
+    let new_req = client.request(UserToHostRequest::LobbySearch(last_lobby_page_req.get().clone()));
     rcommands.insert(target_entity, PendingRequest::new(new_req));
 }
 

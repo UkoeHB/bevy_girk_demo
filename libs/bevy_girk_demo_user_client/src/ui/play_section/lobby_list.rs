@@ -54,7 +54,7 @@ fn request_lobby_list_now(
 
     // send request
     tracing::trace!("requesting lobby list: now");
-    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+    let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
@@ -104,7 +104,7 @@ fn request_lobby_list_next_newer(
 
     // send request
     tracing::trace!("requesting lobby list: next newer");
-    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+    let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
@@ -154,7 +154,7 @@ fn request_lobby_list_next_older(
 
     // send request
     tracing::trace!("requesting lobby list: next older");
-    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+    let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);
@@ -180,7 +180,7 @@ fn request_lobby_list_oldest(
 
     // send request
     tracing::trace!("requesting lobby list: oldest");
-    let Ok(new_req) = client.request(UserToHostRequest::LobbySearch(req.clone())) else { return; };
+    let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
     lobby_page_req.get_mut(&mut rcommands).set(req);

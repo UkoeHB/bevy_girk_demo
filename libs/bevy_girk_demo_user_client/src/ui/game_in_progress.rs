@@ -34,8 +34,7 @@ fn reconnect_game(
     else { tracing::error!("starter game id missing on reconnect request"); return; };
 
     // request new connect token
-    let Ok(new_req) = client.request(UserToHostRequest::GetConnectToken{ id: game_id })
-    else { tracing::warn!(game_id, "failed sending get connect token request to host server"); return; };
+    let new_req= client.request(UserToHostRequest::GetConnectToken{ id: game_id });
 
     // save request
     rcommands.insert(target_entity, PendingRequest::new(new_req));

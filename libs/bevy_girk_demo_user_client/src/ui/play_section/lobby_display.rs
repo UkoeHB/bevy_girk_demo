@@ -103,8 +103,7 @@ fn leave_current_lobby(
         Some(LobbyType::Hosted) =>
         {
             // send leave request
-            let Ok(new_req) = client.request(UserToHostRequest::LeaveLobby{ id: lobby_id })
-            else { tracing::warn!(lobby_id, "failed sending leave lobby request to host server"); return; };
+            let new_req = client.request(UserToHostRequest::LeaveLobby{ id: lobby_id });
 
             // save request
             rcommands.insert(target_entity, PendingRequest::new(new_req));
@@ -155,8 +154,7 @@ fn start_current_lobby(
         Some(LobbyType::Hosted) =>
         {
             // send launch reqeust
-            let Ok(new_req) = client.request(UserToHostRequest::LaunchLobbyGame{ id: lobby_id })
-            else { tracing::warn!(lobby_id, "failed sending launch lobby request to host server"); return; };
+            let new_req = client.request(UserToHostRequest::LaunchLobbyGame{ id: lobby_id });
 
             // save request
             rcommands.insert(target_entity, PendingRequest::new(new_req));

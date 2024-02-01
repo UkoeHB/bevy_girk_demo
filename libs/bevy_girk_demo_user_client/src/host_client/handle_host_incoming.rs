@@ -43,7 +43,7 @@ pub(crate) fn handle_connection_change(
 
 pub(crate) fn handle_host_incoming(world: &mut World)
 {
-    while let Some(client_event) = world.resource::<HostUserClient>().next()
+    while let Some(client_event) = world.resource_mut::<HostUserClient>().next()
     {
         match client_event
         {

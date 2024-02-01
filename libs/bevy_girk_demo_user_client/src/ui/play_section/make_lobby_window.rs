@@ -125,14 +125,13 @@ fn send_make_lobby_request(
     // - note: do not log the password
     tracing::trace!(?window.member_type, ?window.config, "requesting to make lobby");
 
-    let Ok(new_req) = client.request(
+    let new_req = client.request(
             UserToHostRequest::MakeLobby{
                     mcolor : window.member_type.into(),
                     pwd    : window.pwd.clone(),
                     data   : ser_msg(&window.config)
                 }
-        )
-    else { tracing::warn!("failed sending make lobby request to host server");  return; };
+        );
 
     // save request
     let request = PendingRequest::new(new_req);
