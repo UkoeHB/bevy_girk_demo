@@ -93,8 +93,7 @@ pub fn get_launch_pack(
     }
 
     // make init data for the clients
-    let mut client_init_data = Vec::<ClickClientInitDataForGame>::new();
-    client_init_data.reserve(num_players + num_watchers);
+    let mut client_init_data = Vec::with_capacity(num_players + num_watchers);
 
     for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate()
     {
