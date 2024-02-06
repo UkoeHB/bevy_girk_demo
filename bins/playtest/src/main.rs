@@ -24,14 +24,18 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[derive(Parser, Debug)]
 struct PlaytestCli
 {
+    /// Specify the number of clients (defaults to 1, minimum is 1).
     #[arg(long)]
     clients: Option<usize>,
+    /// Specify the location of the game instance binary (will use the debug build directory by default).
+    game: Option<String>,
+    /// Specify the location of the game client binary (will use the debug build directory by default).
+    client: Option<String>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: inject these
 const GAME_INSTANCE_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
 const GAME_CLIENT_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
 
@@ -90,7 +94,7 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn run_playtest(num_clients: usize, launch_pack: GameLaunchPack)
+fn run_playtest(num_clients: usize, launch_pack: GameLaunchPack, game_instance_path: String, game_client_path: String)
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
@@ -101,7 +105,7 @@ fn run_playtest(num_clients: usize, launch_pack: GameLaunchPack)
             // launch game
             tracing::trace!("launching game instance for playtest");
             let (game_report_sender, mut game_report_receiver) = new_io_channel::<GameInstanceReport>();
-            let game_launcher = GameInstanceLauncherProcess::new(String::from(GAME_INSTANCE_PATH), spawner_clone.clone());
+            let game_launcher = GameInstanceLauncherProcess::new(game_instance_path, spawner_clone.clone());
             let mut game_instance = game_launcher.launch(launch_pack, game_report_sender);
 
             // wait for game start report
@@ -124,11 +128,10 @@ fn run_playtest(num_clients: usize, launch_pack: GameLaunchPack)
 
                 let (_client_command_sender, client_command_receiver) = new_io_channel::<ClientInstanceCommand>();
                 let (client_report_sender, _client_report_receiver) = new_io_channel::<ClientInstanceReport>();
+
                 tracing::trace!(start_info.client_id, "launching game client for playtest");
-                let client_launcher = ClientInstanceLauncherProcess::new(
-                        String::from(GAME_CLIENT_PATH),
-                        spawner_clone.clone()
-                    );
+                let client_launcher = ClientInstanceLauncherProcess::new(game_client_path.clone(), spawner_clone.clone());
+
                 client_instances.push(client_launcher.launch(
                         token,
                         start_info,
@@ -190,7 +193,11 @@ fn main()
     // env
     let args = PlaytestCli::parse();
     tracing::trace!(?args);
+
+    // unwrap args
     let num_clients = args.clients.unwrap_or(1usize).max(1usize);
+    let game_instance_path = args.game.unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
+    let game_client_path = args.client.unwrap_or_else(|| String::from(GAME_CLIENT_PATH));
 
     // lobby contents
     let mut players = Vec::default();
@@ -216,7 +223,7 @@ fn main()
     else { tracing::error!("failed getting launch pack for playtest"); return; };
 
     // run it
-    run_playtest(num_clients, launch_pack);
+    run_playtest(num_clients, launch_pack, game_instance_path, game_client_path);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

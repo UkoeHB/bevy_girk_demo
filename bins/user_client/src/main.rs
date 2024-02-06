@@ -27,6 +27,10 @@ struct ClientCli
     /// Specify the client id (will be random if unspecified).
     #[arg(long = "id")]
     client_id: Option<u128>,
+    /// Specify the location of the game instance binary (will use the debug build directory by default).
+    game: Option<String>,
+    /// Specify the location of the game client binary (will use the debug build directory by default).
+    client: Option<String>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,7 +44,6 @@ fn get_systime_millis() -> u128
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: inject these
 const GAME_INSTANCE_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
 const GAME_CLIENT_PATH : &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
 
@@ -75,9 +78,12 @@ fn main()
 
     // cli args
     let args = ClientCli::parse();
+    tracing::trace!(?args);
 
-    // define client id
+    // unwrap args
     let client_id = args.client_id.unwrap_or_else(get_systime_millis);
+    let game_instance_path = args.game.unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
+    let game_client_path = args.client.unwrap_or_else(|| String::from(GAME_CLIENT_PATH));
 
     // set asset directory location
     #[cfg(not(target_family = "wasm"))]
@@ -111,12 +117,12 @@ fn main()
     let launcher_configs = ClientLaunchConfigs{
             local: LocalPlayerLauncherConfigNative{
                 spawner_fn           : spawner_fn.clone(),
-                game_instance_path   : String::from(GAME_INSTANCE_PATH),
-                client_instance_path : String::from(GAME_CLIENT_PATH),
+                game_instance_path   : game_instance_path.clone(),
+                client_instance_path : game_client_path.clone(),
             },
             multiplayer: MultiPlayerLauncherConfigNative{
                 spawner_fn,
-                client_instance_path   : String::from(GAME_CLIENT_PATH),
+                client_instance_path   : game_client_path,
                 client_instance_config : ClientInstanceConfig{ reconnect_interval_secs: 5u32 },
             }
         };
