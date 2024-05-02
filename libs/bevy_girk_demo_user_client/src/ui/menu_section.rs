@@ -16,7 +16,7 @@ use bevy_lunex::prelude::*;
 fn activate_new_selection<U: LunexUi>(
     In((newly_selected_button, overlay)) : In<(Entity, Widget)>,
     mut ui                               : UiUtils<U>,
-    selected_main_menu_button            : Query<(Entity, &Callback<Deselect>), (With<MainMenuButton>, With<Selected>)>,
+    selected_main_menu_button            : Query<(Entity, &bevy_kot::prelude::Callback<Deselect>), (With<MainMenuButton>, With<Selected>)>,
 ){
     // activate the selected button's overlay
     //todo: use overlay widget's embedded entity

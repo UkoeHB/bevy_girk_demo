@@ -171,7 +171,7 @@ pub(crate) struct Toggle;
 pub(crate) fn deselect_main_play_button_for_menu_button(
     mut commands              : Commands,
     selected_main_menu_button : Query<(), (With<MainMenuButton>, Added<Selected>)>,
-    selected_main_play_button : Query<&Callback<Deselect>, (With<MainPlayButton>, With<Selected>)>,
+    selected_main_play_button : Query<&bevy_kot::prelude::Callback<Deselect>, (With<MainPlayButton>, With<Selected>)>,
 ){
     if selected_main_menu_button.is_empty() { return; }
     let Ok(deselect_callback) = selected_main_play_button.get_single() else { return; };
@@ -184,7 +184,7 @@ pub(crate) fn deselect_main_play_button_for_menu_button(
 pub(crate) fn deselect_main_menu_button_for_play_button(
     mut commands              : Commands,
     selected_main_play_button : Query<(), (With<MainPlayButton>, Added<Selected>)>,
-    selected_main_menu_button : Query<&Callback<Deselect>, (With<MainMenuButton>, With<Selected>)>,
+    selected_main_menu_button : Query<&bevy_kot::prelude::Callback<Deselect>, (With<MainMenuButton>, With<Selected>)>,
 ){
     if selected_main_play_button.is_empty() { return; }
     let Ok(deselect_callback) = selected_main_menu_button.get_single() else { return; };
