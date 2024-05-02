@@ -10,7 +10,6 @@ use bevy_girk_client_instance::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-use bevy_kot_utils::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
 

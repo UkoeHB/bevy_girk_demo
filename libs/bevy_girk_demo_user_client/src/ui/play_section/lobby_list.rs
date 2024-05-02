@@ -6,9 +6,11 @@ use bevy_girk_demo_wiring_backend::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::builtin::MainUi;
+use bevy_kot_ui::*;
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -21,7 +23,7 @@ use std::vec::Vec;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn refresh_lobby_list(
-    mut rcommands  : ReactCommands,
+    mut c  : Commands,
     client         : Res<HostUserClient>,
     lobby_search   : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     lobby_page_req : ReactRes<LobbyPageRequest>,
@@ -32,14 +34,14 @@ fn refresh_lobby_list(
 
     // re-request the last-requested lobby page
     tracing::trace!("refreshing lobby list");
-    rerequest_latest_lobby_page(&mut rcommands, &client, target_entity, &lobby_page_req);
+    rerequest_latest_lobby_page(&mut c, &client, target_entity, &lobby_page_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn request_lobby_list_now(
-    mut rcommands      : ReactCommands,
+    mut c      : Commands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ReactResMut<LobbyPageRequest>,
@@ -57,15 +59,15 @@ fn request_lobby_list_now(
     let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
-    lobby_page_req.get_mut(&mut rcommands).set(req);
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    lobby_page_req.get_mut(&mut c).set(req);
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn request_lobby_list_next_newer(
-    mut rcommands      : ReactCommands,
+    mut c      : Commands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ReactResMut<LobbyPageRequest>,
@@ -107,15 +109,15 @@ fn request_lobby_list_next_newer(
     let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
-    lobby_page_req.get_mut(&mut rcommands).set(req);
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    lobby_page_req.get_mut(&mut c).set(req);
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn request_lobby_list_next_older(
-    mut rcommands      : ReactCommands,
+    mut c      : Commands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ReactResMut<LobbyPageRequest>,
@@ -157,15 +159,15 @@ fn request_lobby_list_next_older(
     let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
-    lobby_page_req.get_mut(&mut rcommands).set(req);
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    lobby_page_req.get_mut(&mut c).set(req);
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn request_lobby_list_oldest(
-    mut rcommands      : ReactCommands,
+    mut c      : Commands,
     client             : Res<HostUserClient>,
     lobby_search       : Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
     mut lobby_page_req : ReactResMut<LobbyPageRequest>,
@@ -183,8 +185,8 @@ fn request_lobby_list_oldest(
     let new_req = client.request(UserToHostRequest::LobbySearch(req.clone()));
 
     // save request
-    lobby_page_req.get_mut(&mut rcommands).set(req);
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    lobby_page_req.get_mut(&mut c).set(req);
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -192,19 +194,19 @@ fn request_lobby_list_oldest(
 
 fn setup_refresh_indicator_reactors(
     In(text_widget) : In<Widget>,
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     lobby_search    : Query<Entity, With<LobbySearch>>,
 ){
     let lobby_search_entity = lobby_search.single();
 
     // activate text when there is a pending request
     let text_widget_clone = text_widget.clone();
-    rcommands.on(entity_insertion::<PendingRequest>(lobby_search_entity),
+    c.react().on(entity_insertion::<PendingRequest>(lobby_search_entity),
             move |mut ui: UiUtils<MainUi>| ui.toggle(true, &text_widget_clone)
         );
 
     // deactivate text when there is not a pending request
-    rcommands.on(entity_removal::<PendingRequest>(lobby_search_entity),
+    c.react().on(entity_removal::<PendingRequest>(lobby_search_entity),
             move |mut ui: UiUtils<MainUi>| ui.toggle(false, &text_widget)
         );
 }
@@ -252,19 +254,19 @@ fn update_lobby_list_contents(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn open_join_lobby_window(In(lobby_list_index): In<usize>, mut rcommands: ReactCommands)
+fn open_join_lobby_window(In(lobby_list_index): In<usize>, mut c: Commands)
 {
     // activate the window
-    rcommands.send(ActivateJoinLobbyWindow{ lobby_list_index });
+    c.react().broadcast(ActivateJoinLobbyWindow{ lobby_list_index });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn open_make_lobby_window(mut rcommands: ReactCommands)
+fn open_make_lobby_window(mut c: Commands)
 {
     // activate the window
-    rcommands.send(ActivateMakeLobbyWindow);
+    c.react().broadcast(ActivateMakeLobbyWindow);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -358,7 +360,7 @@ fn add_lobby_list_subsection(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let contents = Arc::new(contents);
 
     // update contents when lobby page changes
-    ui.rcommands.on(resource_mutation::<LobbyPage>(), prep_fncall(contents, update_lobby_list_contents));
+    ui.commands().react().on(resource_mutation::<LobbyPage>(), prep_fncall(contents, update_lobby_list_contents));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -370,7 +372,7 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let text_entity = spawn_basic_text(ui, area.clone(), TextParams::center().with_width(Some(100.)), "(????-???? / ????)");
 
     // update stats when lobby page updates
-    ui.rcommands.on(resource_mutation::<LobbyPage>(),
+    ui.commands().react().on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (first, last, total) = page.stats();
@@ -391,7 +393,7 @@ fn add_clamp_now_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // disable button when displaying 'now'
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
-    ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
+    ui.commands().react().on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_now();
@@ -412,7 +414,7 @@ fn add_paginate_left_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // disable button when no newer lobbies to request
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
-    ui.rcommands.on(resource_mutation::<LobbyPage>(),
+    ui.commands().react().on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (first, _, _) = page.stats();
@@ -434,7 +436,7 @@ fn add_paginate_right_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // disable button when no older lobbies to request
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
-    ui.rcommands.on(resource_mutation::<LobbyPage>(),
+    ui.commands().react().on(resource_mutation::<LobbyPage>(),
             move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>|
             {
                 let (_, last, total) = page.stats();
@@ -456,7 +458,7 @@ fn add_clamp_oldest_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // disable button when last requested the oldest lobbies
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
 
-    ui.rcommands.on(resource_mutation::<LobbyPageRequest>(),
+    ui.commands().react().on(resource_mutation::<LobbyPageRequest>(),
             move |mut ui: UiUtils<MainUi>, page_req: ReactRes<LobbyPageRequest>|
             {
                 let enable = !page_req.is_oldest();
@@ -496,7 +498,7 @@ fn add_new_lobby_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let disable_overlay = make_overlay(ui.tree(), &button_overlay, "", false);
     ui.commands().spawn((disable_overlay.clone(), UiInteractionBarrier::<MainUi>::default()));
 
-    ui.rcommands.on(resource_mutation::<LobbyDisplay>(),
+    ui.commands().react().on(resource_mutation::<LobbyDisplay>(),
             move |mut ui: UiUtils<MainUi>, display: ReactRes<LobbyDisplay>|
             {
                 let enable = !display.is_set();
@@ -524,8 +526,8 @@ pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
     ui.div(add_make_lobby_window);
 
     // initialize UI
-    ui.rcommands.trigger_resource_mutation::<LobbyPage>();
-    ui.rcommands.trigger_resource_mutation::<LobbyPageRequest>();
+    ui.commands().react().trigger_resource_mutation::<LobbyPage>();
+    ui.commands().react().trigger_resource_mutation::<LobbyPageRequest>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

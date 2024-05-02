@@ -3,10 +3,10 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_instance::*;
 use bevy_girk_user_client_utils::*;
-use bevy_kot::prelude::*;
 
 //standard shortcuts
 
@@ -15,10 +15,10 @@ use bevy_kot::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn handle_request_connect_token(
-    mut rcommands : ReactCommands,
-    client        : Res<HostUserClient>,
-    monitor       : ReactRes<ClientMonitor>,
-    request       : Query<Entity, (With<ConnectTokenRequest>, Without<React<PendingRequest>>)>,
+    mut c   : Commands,
+    client  : Res<HostUserClient>,
+    monitor : ReactRes<ClientMonitor>,
+    request : Query<Entity, (With<ConnectTokenRequest>, Without<React<PendingRequest>>)>,
 ){
     // sanity check
     if !monitor.is_running() { tracing::warn!("ignoring connect token request from non-running client"); return; }
@@ -34,7 +34,7 @@ fn handle_request_connect_token(
     let new_req = client.request(UserToHostRequest::GetConnectToken{ id: game_id });
 
     // save request
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 
     tracing::info!(game_id, "requested new connect token from host server");
 }

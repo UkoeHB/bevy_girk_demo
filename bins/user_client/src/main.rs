@@ -95,7 +95,7 @@ fn main()
     }
 
     // launch client
-    // - todo: pass in URL and client id via CLI
+    // - todo: receive URL from HTTP server, and load the URL from an asset
     let client = host_user_client_factory().new_client(
             enfync::builtin::Handle::default(),  //automatically selects native/WASM runtime
             url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(),

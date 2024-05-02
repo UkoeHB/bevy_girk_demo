@@ -4,7 +4,7 @@ use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
+use bevy_cobweb::prelude::*;
 
 //standard shortcuts
 use std::fmt::Write;
@@ -17,18 +17,18 @@ pub(crate) fn setup_simple_pending_button_text<Tag: Component>(
         button_entity,
         default_text
     ))            : In<(Entity, &'static str)>,
-    mut rcommands : ReactCommands,
+    mut c : Commands,
     marker        : Query<Entity, With<Tag>>,
 ){
     let marker_entity = marker.single();
 
     // when a request starts
-    rcommands.on(entity_insertion::<PendingRequest>(marker_entity),
+    c.react().on(entity_insertion::<PendingRequest>(marker_entity),
             move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", "...")).unwrap()
         );
 
     // when a request completes
-    rcommands.on(entity_removal::<PendingRequest>(marker_entity),
+    c.react().on(entity_removal::<PendingRequest>(marker_entity),
             move |mut text: TextHandle| text.write(button_entity, 0, |text| write!(text, "{}", default_text)).unwrap()
         );
 }

@@ -4,8 +4,8 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
-use bevy_kot::prelude::*;
 
 //standard shortcuts
 use std::time::Duration;
@@ -65,31 +65,31 @@ fn focus_window_for_ack_request(
 //-------------------------------------------------------------------------------------------------------------------
 
 fn set_ack_request_data(
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     time            : Res<Time>,
-    mut events      : ReactEventReader<AckRequest>,
+    events          : BroadcastEvent<AckRequest>,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
-    let ack_req = events.next().unwrap();
+    let ack_req = events.read().unwrap();
     ack_request
-        .get_mut(&mut rcommands)
+        .get_mut(&mut c)
         .set(ack_req.lobby_id, time.elapsed());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_ack_request_handlers(mut rcommands: ReactCommands)
+fn setup_ack_request_handlers(mut c: Commands)
 {
-    rcommands.on(event::<AckRequest>(), set_ack_request_data);
-    rcommands.on(resource_mutation::<AckRequestData>(), focus_window_for_ack_request);
+    c.react().on(broadcast::<AckRequest>(), set_ack_request_data);
+    c.react().on(resource_mutation::<AckRequestData>(), focus_window_for_ack_request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn try_timeout_ack_request(
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     time            : Res<Time>,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
@@ -100,7 +100,7 @@ fn try_timeout_ack_request(
     // - we don't tick the timer on the first tick after an ack request was received
     // - we trigger reactions here in case listeners care about the timer
     let start_time = ack_request.ack_time;
-    let ack_request_mut = ack_request.get_mut(&mut rcommands);
+    let ack_request_mut = ack_request.get_mut(&mut c);
     let timer = &mut ack_request_mut.timer;
 
     if start_time != time.elapsed()
@@ -230,7 +230,6 @@ pub(crate) fn AckRequestPlugin(app: &mut App)
 
     app
         .insert_react_resource(AckRequestData::new(timeout, timer_buffer))
-        .add_react_event::<AckRequest>()
         .add_systems(Startup,
             (
                 setup_ack_request_handlers,

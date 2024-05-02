@@ -9,6 +9,7 @@ doctest = false
 
 [dependencies]
 bevy            = { workspace = true }
+bevy_cobweb     = { workspace = true }
 bevy_kot        = { workspace = true }
 bevy_kot_ecs    = { workspace = true }
 bevy_kot_ui     = { workspace = true }

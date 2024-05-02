@@ -4,10 +4,11 @@ use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_user_client_utils::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::{builtin::MainUi, make_overlay, UiBuilder, UiInteractionBarrier};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -17,7 +18,7 @@ use bevy_lunex::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn reconnect_game(
-    mut rcommands    : ReactCommands,
+    mut c            : Commands,
     client           : Res<HostUserClient>,
     monitor          : ReactRes<ClientMonitor>,
     starter          : ReactRes<ClientStarter>,
@@ -37,7 +38,7 @@ fn reconnect_game(
     let new_req= client.request(UserToHostRequest::GetConnectToken{ id: game_id });
 
     // save request
-    rcommands.insert(target_entity, PendingRequest::new(new_req));
+    c.react().insert(target_entity, PendingRequest::new(new_req));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -87,7 +88,7 @@ fn add_reconnect_button(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // enable button when we can reconnect
     let disable_overlay = spawn_basic_button_blocker(ui, &area, false);
-    ui.rcommands.on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
+    ui.commands().react().on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
             move |mut ui: UiUtils<MainUi>, monitor: ReactRes<ClientMonitor>, starter: ReactRes<ClientStarter>|
             {
                 ui.builder.style_stack.push();
@@ -124,7 +125,7 @@ pub(crate) fn add_game_in_progress(ui: &mut UiBuilder<MainUi>)
     ui.div_rel(window_overlay.end(""), (40., 60.), (60., 70.), add_reconnect_button);
 
     // show overlay when a game is in progress
-    ui.rcommands.on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
+    ui.commands().react().on((resource_mutation::<ClientMonitor>(), resource_mutation::<ClientStarter>()),
             move |mut ui: UiUtils<MainUi>, monitor: ReactRes<ClientMonitor>, starter: ReactRes<ClientStarter>|
             {
                 let enable = monitor.is_running() || starter.has_starter();
@@ -133,8 +134,8 @@ pub(crate) fn add_game_in_progress(ui: &mut UiBuilder<MainUi>)
         );
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<ClientMonitor>();
-    ui.rcommands.trigger_resource_mutation::<ClientStarter>();
+    ui.commands().react().trigger_resource_mutation::<ClientMonitor>();
+    ui.commands().react().trigger_resource_mutation::<ClientStarter>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

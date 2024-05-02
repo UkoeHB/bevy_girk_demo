@@ -4,9 +4,10 @@ use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::prelude::*;
 use bevy_fn_plugin::*;
+use bevy_kot_ui::{builtin::MainUi, relative_widget, UiBuilder};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -71,7 +72,7 @@ pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let text_entity = spawn_basic_text(ui, status_text, TextParams::topleft(), "Connecting...");
 
     // update text when connection status changes
-    ui.rcommands.on(resource_mutation::<ConnectionStatus>(),
+    ui.commands().react().on(resource_mutation::<ConnectionStatus>(),
             move |mut text: TextHandle, status: ReactRes<ConnectionStatus>|
             {
                 text.write(text_entity, 0, |text| write!(text, "{}", status.to_str())).unwrap();

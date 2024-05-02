@@ -4,9 +4,10 @@ use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::{builtin::MainUi, relative_widget, UiBuilder};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -16,7 +17,7 @@ use std::fmt::Write;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn send_lobby_nack(
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     client          : Res<HostUserClient>,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
@@ -31,14 +32,14 @@ fn send_lobby_nack(
     client.send(UserToHostMsg::NackPendingLobby{ id: lobby_id });
 
     // save action
-    ack_request.get_mut(&mut rcommands).set_nacked();
+    ack_request.get_mut(&mut c).set_nacked();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn send_lobby_ack(
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     client          : Res<HostUserClient>,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
@@ -53,7 +54,7 @@ fn send_lobby_ack(
     client.send(UserToHostMsg::AckPendingLobby{ id: lobby_id });
 
     // save action
-    ack_request.get_mut(&mut rcommands).set_acked();
+    ack_request.get_mut(&mut c).set_acked();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -90,7 +91,7 @@ fn add_timer(ui: &mut UiBuilder<MainUi>, area: &Widget)
         );
 
     // update the text when the ack request changes
-    ui.rcommands.on(resource_mutation::<AckRequestData>(),
+    ui.commands().react().on(resource_mutation::<AckRequestData>(),
             move |mut text: TextHandle, ack_request: ReactRes<AckRequestData>|
             {
                 let time_remaining_secs = ack_request.time_remaining_for_display().as_secs();
@@ -140,7 +141,7 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
     let window_overlay = popup_pack.window_overlay.clone();
     let reject_button_entity = popup_pack.cancel_entity;
     let accept_button_entity = popup_pack.accept_entity;
-    ui.rcommands.on(resource_mutation::<AckRequestData>(),
+    ui.commands().react().on(resource_mutation::<AckRequestData>(),
             move |mut ui: UiUtils<MainUi>, ack_request: ReactRes<AckRequestData>|
             {
                 // open/close window based on if the ack request is set
@@ -157,7 +158,7 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
         );
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<AckRequestData>();
+    ui.commands().react().trigger_resource_mutation::<AckRequestData>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

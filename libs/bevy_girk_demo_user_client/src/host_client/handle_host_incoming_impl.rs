@@ -3,12 +3,12 @@ use crate::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_user_client_utils::*;
 use bevy_girk_utils::*;
-use bevy_kot::prelude::*;
 
 //standard shortcuts
 
@@ -53,29 +53,29 @@ fn remove_failed_pending_request(
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_connection_lost(
-    mut rcommands     : ReactCommands,
+    mut c     : Commands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
     mut starter       : ReactResMut<ClientStarter>,
 ){
     // clear lobby display if hosted
-    if lobby_display.is_hosted() { lobby_display.get_mut(&mut rcommands).clear(); }
+    if lobby_display.is_hosted() { lobby_display.get_mut(&mut c).clear(); }
 
     // clear ack request
-    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
+    if ack_request.is_set() { ack_request.get_mut(&mut c).clear(); }
 
     // clear starter
     // - We clear the starter to avoid a situation where a game over/abort is not received from the host server
     //   since it's disconnected, so the starter never gets cleared. When we reconnect to the host server, we
     //   will get a fresh game start package which will be used to reconnect the game automatically (if needed).
-    if starter.has_starter() { starter.get_mut(&mut rcommands).force_clear_if(GameLocation::Hosted); }
+    if starter.has_starter() { starter.get_mut(&mut c).force_clear_if(GameLocation::Hosted); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_lobby_state_update(
     In(lobby_data)    : In<LobbyData>,
-    mut rcommands     : ReactCommands,
+    mut c     : Commands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
 ){
     let lobby_id = lobby_data.id;
@@ -89,7 +89,7 @@ pub(crate) fn handle_lobby_state_update(
     }
 
     // update lobby state
-    if let Err(_) = lobby_display.get_mut(&mut rcommands).try_set(lobby_data, LobbyType::Hosted)
+    if let Err(_) = lobby_display.get_mut(&mut c).try_set(lobby_data, LobbyType::Hosted)
     {
         tracing::error!(lobby_id, "ignoring lobby state update for invalid lobby");
         return;
@@ -100,7 +100,7 @@ pub(crate) fn handle_lobby_state_update(
 
 pub(crate) fn handle_lobby_leave(
     In(lobby_id)      : In<u64>,
-    mut rcommands     : ReactCommands,
+    mut c     : Commands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
 ){
     tracing::info!(lobby_id, "lobby leave received");
@@ -113,26 +113,26 @@ pub(crate) fn handle_lobby_leave(
     }
 
     // clear lobby state
-    if lobby_display.is_set() { lobby_display.get_mut(&mut rcommands).clear(); }
+    if lobby_display.is_set() { lobby_display.get_mut(&mut c).clear(); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_pending_lobby_ack_request(
     In(lobby_id)  : In<u64>,
-    mut rcommands : ReactCommands,
+    mut c : Commands,
 ){
     tracing::info!(lobby_id, "pending lobby ack request received");
 
     // send ack request event
-    rcommands.send(AckRequest{ lobby_id });
+    c.react().broadcast(AckRequest{ lobby_id });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_pending_lobby_ack_fail(
     In(lobby_id)    : In<u64>,
-    mut rcommands   : ReactCommands,
+    mut c   : Commands,
     mut ack_request : ReactResMut<AckRequestData>,
 ){
     tracing::info!(lobby_id, "pending lobby ack fail received");
@@ -145,7 +145,7 @@ pub(crate) fn handle_pending_lobby_ack_fail(
     }
 
     // clear ack request
-    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
+    if ack_request.is_set() { ack_request.get_mut(&mut c).clear(); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ pub(crate) fn handle_game_start(
         token,
         start,
     ))                : In<(u64, ServerConnectToken, GameStartInfo)>,
-    mut rcommands     : ReactCommands,
+    mut c     : Commands,
     mut lobby_display : ReactResMut<LobbyDisplay>,
     mut ack_request   : ReactResMut<AckRequestData>,
     mut monitor       : ReactResMut<ClientMonitor>,
@@ -166,10 +166,10 @@ pub(crate) fn handle_game_start(
     tracing::info!(lobby_id, "game start info received");
 
     // clear lobby state
-    if lobby_display.is_set() { lobby_display.get_mut(&mut rcommands).clear(); }
+    if lobby_display.is_set() { lobby_display.get_mut(&mut c).clear(); }
 
     // clear ack request
-    if ack_request.is_set() { ack_request.get_mut(&mut rcommands).clear(); }
+    if ack_request.is_set() { ack_request.get_mut(&mut c).clear(); }
 
     // update starter
     // - do this before checking the current game in case the starter was cleared due to a host server disconnect
@@ -179,7 +179,7 @@ pub(crate) fn handle_game_start(
         {
             launch_multiplayer_client(monitor, config.clone(), token, start.clone());
         };
-    starter.get_mut(&mut rcommands).set(lobby_id, GameLocation::Hosted, launcher);
+    starter.get_mut(&mut c).set(lobby_id, GameLocation::Hosted, launcher);
 
     // if we are already running this game, then send in the connect token
     // - it's likely that the game client was also disconnected, but failed to request a new connect token since the
@@ -188,24 +188,23 @@ pub(crate) fn handle_game_start(
     if (Some(lobby_id) == current_game_id) && monitor.is_running()
     {
         tracing::info!(lobby_id, "received game start for game that is already running, sending new connect token to game");
-        panic!("sending tokens into game client not yet supported");
-        //monitor.get_mut_noreact().send_token(token);
-        //return;
+        monitor.get_noreact().send_token(token);
+        return;
     }
 
     // kill the existing game client
-    let monitor = monitor.get_mut(&mut rcommands);
+    let monitor = monitor.get_mut(&mut c);
     if let Some(id) = current_game_id { monitor.kill(id); }
 
     // launch the game
-    starter.get_mut_noreact().start(monitor, token).unwrap();
+    starter.get_noreact().start(monitor, token).unwrap();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn handle_game_aborted(
     In(lobby_id)  : In<u64>,
-    mut rcommands : ReactCommands,
+    mut c : Commands,
     mut monitor   : ReactResMut<ClientMonitor>,
     mut starter   : ReactResMut<ClientStarter>,
 ){
@@ -213,10 +212,10 @@ pub(crate) fn handle_game_aborted(
 
     // force-close existing game
     //todo: display a message to user informing them a game was aborted
-    if monitor.is_running() { monitor.get_mut(&mut rcommands).kill(lobby_id); }
+    if monitor.is_running() { monitor.get_mut(&mut c).kill(lobby_id); }
 
     // clear starter
-    if starter.has_starter() { starter.get_mut(&mut rcommands).clear(lobby_id); }
+    if starter.has_starter() { starter.get_mut(&mut c).clear(lobby_id); }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -226,17 +225,17 @@ pub(crate) fn handle_game_over(
         lobby_id,
         game_over_report
     ))            : In<(u64, GameOverReport)>,
-    mut rcommands : ReactCommands,
+    mut c : Commands,
     mut starter   : ReactResMut<ClientStarter>,
 ){
     tracing::info!(lobby_id, "game over report received");
 
     // clear starter
-    if starter.has_starter() { starter.get_mut(&mut rcommands).clear(lobby_id); }
+    if starter.has_starter() { starter.get_mut(&mut c).clear(lobby_id); }
 
     // send game over report data event
     //todo: do something with the report
-    rcommands.send(game_over_report);
+    c.react().broadcast(game_over_report);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -246,18 +245,18 @@ pub(crate) fn handle_lobby_search_result(
         request_id,
         result
     ))             : In<(u64, LobbySearchResult)>,
-    mut rcommands  : ReactCommands,
+    mut c          : Commands,
     pending_search : Query<(Entity, &React<PendingRequest>), With<LobbySearch>>,
     mut lobby_page : ReactResMut<LobbyPage>,
 ){
     tracing::info!(request_id, "lobby search result received");
 
     // clear pending request
-    if !clear_pending_request(rcommands.commands(), request_id, pending_search.get_single())
+    if !clear_pending_request(&mut c, request_id, pending_search.get_single())
     { tracing::warn!(request_id, "ignoring unexpected lobby search result"); return; }
 
     // update lobby page
-    if let Err(_) = lobby_page.get_mut(&mut rcommands).try_set(result)
+    if let Err(_) = lobby_page.get_mut(&mut c).try_set(result)
     { tracing::error!("failed setting new lobby page, lobbies are invalid"); }
 }
 
@@ -265,7 +264,7 @@ pub(crate) fn handle_lobby_search_result(
 
 pub(crate) fn handle_lobby_join(
     In((request_id, lobby_data)) : In<(u64, LobbyData)>,
-    mut rcommands                : ReactCommands,
+    mut c                        : Commands,
     mut lobby_display            : ReactResMut<LobbyDisplay>,
     pending_lobby_join           : Query<(Entity, &React<PendingRequest>), Or<(With<JoinLobby>, With<MakeLobby>)>>
 ){
@@ -276,14 +275,14 @@ pub(crate) fn handle_lobby_join(
     for (entity, pending_req) in pending_lobby_join.iter()
     {
         if pending_req.id() != request_id { continue; }
-        let Some(mut entity_commands) = rcommands.commands().get_entity(entity) else { continue; };
+        let Some(mut entity_commands) = c.get_entity(entity) else { continue; };
 
         entity_commands.remove::<React<PendingRequest>>();
         break;
     }
 
     // populate lobby display
-    if let Err(_) = lobby_display.get_mut(&mut rcommands).try_set(lobby_data, LobbyType::Hosted)
+    if let Err(_) = lobby_display.get_mut(&mut c).try_set(lobby_data, LobbyType::Hosted)
     {
         tracing::error!(lobby_id, "ignoring join lobby for invalid lobby");
         return;
@@ -298,7 +297,7 @@ pub(crate) fn handle_connect_token(
         game_id,
         token
     ))             : In<(u64, u64, ServerConnectToken)>,
-    mut rcommands  : ReactCommands,
+    mut c          : Commands,
     mut monitor    : ReactResMut<ClientMonitor>,
     mut starter    : ReactResMut<ClientStarter>,
     token_request  : Query<(Entity, &React<PendingRequest>), With<ConnectTokenRequest>>,
@@ -310,8 +309,8 @@ pub(crate) fn handle_connect_token(
     if starter.game_id() != Some(game_id) { tracing::warn!("ignoring connect token for unknown game"); return; }
 
     // clear corresponding request
-    let _ = clear_pending_request(rcommands.commands(), request_id, token_request.get_single());
-    let _ = clear_pending_request(rcommands.commands(), request_id, pending_button.get_single());
+    let _ = clear_pending_request(&mut c, request_id, token_request.get_single());
+    let _ = clear_pending_request(&mut c, request_id, pending_button.get_single());
 
     // handle the token
     match monitor.is_running()
@@ -320,13 +319,13 @@ pub(crate) fn handle_connect_token(
         true =>
         {
             tracing::info!(game_id, "sending new connect token into game");
-            monitor.get_mut_noreact().send_token(token);
+            monitor.get_noreact().send_token(token);
         }
         // if not running, relaunch the game
         false if starter.has_starter() =>
         {
             tracing::info!(game_id, "restarting game with new connect token");
-            if starter.get_mut_noreact().start(monitor.get_mut(&mut rcommands), token).is_err()
+            if starter.get_noreact().start(monitor.get_mut(&mut c), token).is_err()
             { tracing::error!(game_id, "failed using starter to reconnect a game"); }
         }
         // not running and not expecting a token

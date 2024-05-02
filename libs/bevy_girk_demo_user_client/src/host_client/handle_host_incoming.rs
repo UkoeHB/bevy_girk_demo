@@ -4,7 +4,7 @@ use crate::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_kot::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_simplenet::ClientReport;
 
 //standard shortcuts
@@ -14,27 +14,27 @@ use bevy_simplenet::ClientReport;
 
 pub(crate) fn handle_connection_change(
     In(report)    : In<ClientReport>,
-    mut rcommands : ReactCommands,
+    mut c : Commands,
     mut status    : ReactResMut<ConnectionStatus>,
 ){
     match report
     {
-        ClientReport::Connected => *status.get_mut(&mut rcommands) = ConnectionStatus::Connected,
+        ClientReport::Connected => *status.get_mut(&mut c) = ConnectionStatus::Connected,
         ClientReport::Disconnected      |
         ClientReport::ClosedByServer(_) |
         ClientReport::ClosedBySelf      =>
         {
-            *status.get_mut(&mut rcommands) = ConnectionStatus::Connecting;
-            rcommands.commands().add(prep_fncall((), handle_connection_lost));
+            *status.get_mut(&mut c) = ConnectionStatus::Connecting;
+            c.add(prep_fncall((), handle_connection_lost));
         }
         ClientReport::IsDead(aborted_reqs) =>
         {
-            *status.get_mut(&mut rcommands) = ConnectionStatus::Dead;
+            *status.get_mut(&mut c) = ConnectionStatus::Dead;
             for aborted_req in aborted_reqs
             {
-                rcommands.commands().add(prep_fncall(aborted_req, handle_request_aborted));
+                c.add(prep_fncall(aborted_req, handle_request_aborted));
             }
-            rcommands.commands().add(prep_fncall((), handle_connection_lost));
+            c.add(prep_fncall((), handle_connection_lost));
         }
     }
 }

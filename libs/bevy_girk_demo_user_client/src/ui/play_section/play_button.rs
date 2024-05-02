@@ -4,8 +4,10 @@ use bevy_girk_demo_ui_prefab::*;
 
 //third-party shortcuts
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ecs::try_set_component;
+use bevy_kot_ui::{builtin::{MainUi, MouseLButtonMain}, make_overlay, toggle_ui_visibility, Deselect, InteractiveElementBuilder, Selected, UiBuilder};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -31,9 +33,9 @@ fn set_play_button_state(
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup(mut rcommands: ReactCommands)
+fn setup(mut c: Commands)
 {
-    rcommands.on(resource_mutation::<LobbyDisplay>(), set_play_button_state);
+    c.react().on(resource_mutation::<LobbyDisplay>(), set_play_button_state);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

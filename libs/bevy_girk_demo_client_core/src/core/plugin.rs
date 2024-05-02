@@ -75,7 +75,7 @@ pub enum ClientSet
 #[bevy_plugin]
 pub fn ClientCoreStartupPlugin(app: &mut App)
 {
-    app.add_state::<ClientMode>()
+    app.init_state::<ClientMode>()
         .add_systems(PreStartup,
             (
                 prestartup_check,

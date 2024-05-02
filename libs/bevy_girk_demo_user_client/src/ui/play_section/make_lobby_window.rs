@@ -6,9 +6,10 @@ use bevy_girk_demo_wiring_backend::*;
 //third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
+use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_utils::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::{builtin::*, make_overlay, relative_widget, UiBuilder};
 use bevy_lunex::prelude::*;
 
 //standard shortcuts
@@ -84,7 +85,7 @@ struct MadeLocalLobby;
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_local_lobby(
-    mut rcommands     : ReactCommands,
+    mut c     : Commands,
     client            : Res<HostUserClient>,
     make_lobby        : Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
     mut lobby_display : ReactResMut<LobbyDisplay>,
@@ -101,17 +102,17 @@ fn make_local_lobby(
     // make a local lobby
     // - note: do not log the password
     tracing::trace!(?window.member_type, ?window.config, "making a local lobby");
-    lobby_display.get_mut(&mut rcommands).set(single_player_lobby(client.id(), &window), LobbyType::Local);
+    lobby_display.get_mut(&mut c).set(single_player_lobby(client.id(), &window), LobbyType::Local);
 
     // send event for UI updates
-    rcommands.send(MadeLocalLobby);
+    c.react().broadcast(MadeLocalLobby);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn send_make_lobby_request(
-    mut rcommands : ReactCommands,
+    mut c : Commands,
     client        : Res<HostUserClient>,
     make_lobby    : Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
     mut window    : ReactResMut<MakeLobbyWindow>,
@@ -135,8 +136,8 @@ fn send_make_lobby_request(
 
     // save request
     let request = PendingRequest::new(new_req);
-    rcommands.insert(target_entity, request.clone());
-    window.get_mut_noreact().last_req = Some(request);
+    c.react().insert(target_entity, request.clone());
+    window.get_noreact().last_req = Some(request);
 }
 //-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
@@ -165,7 +166,7 @@ fn setup_window_reactors(
 
     // when activation event is detected
     let window_overlay = popup_pack.window_overlay.clone();
-    ui.rcommands.on(event::<ActivateMakeLobbyWindow>(),
+    ui.commands().react().on(broadcast::<ActivateMakeLobbyWindow>(),
             move |mut ui: UiUtils<MainUi>|
             {
                 // open window
@@ -175,7 +176,7 @@ fn setup_window_reactors(
 
     // when a local lobby is made
     let window_overlay = popup_pack.window_overlay.clone();
-    ui.rcommands.on(event::<MadeLocalLobby>(),
+    ui.commands().react().on(broadcast::<MadeLocalLobby>(),
             move |mut ui: UiUtils<MainUi>|
             {
                 // close window
@@ -185,7 +186,7 @@ fn setup_window_reactors(
 
     // when a make lobby request starts
     let accept_entity = popup_pack.accept_entity;
-    ui.rcommands.on(entity_insertion::<PendingRequest>(make_lobby_entity),
+    ui.commands().react().on(entity_insertion::<PendingRequest>(make_lobby_entity),
             move |mut text: TextHandle|
             {
                 // modify accept button text
@@ -195,7 +196,7 @@ fn setup_window_reactors(
 
     // when a make lobby request completes
     let window_overlay = popup_pack.window_overlay;
-    ui.rcommands.on(entity_removal::<PendingRequest>(make_lobby_entity),
+    ui.commands().react().on(entity_removal::<PendingRequest>(make_lobby_entity),
             move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>|
             {
                 // access the window state
@@ -216,7 +217,7 @@ fn setup_window_reactors(
                 else
                 {
                     // remove cached request, we must have failed
-                    window.get_mut_noreact().last_req = None;                    
+                    window.get_noreact().last_req = None;                    
                 }
 
                 // reset accept button text
@@ -231,7 +232,7 @@ fn setup_window_reactors(
     // disable 'make' button
     // - when disconnected and configs are non-local
     // - when in a hosted lobby or waiting for a hosted lobby request
-    ui.rcommands.on(
+    ui.commands().react().on(
             (
                 resource_mutation::<ConnectionStatus>(),
                 resource_mutation::<MakeLobbyWindow>(),
@@ -317,12 +318,12 @@ fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 {
                     true =>
                     {
-                        window.get_mut(&mut ui.builder.rcommands).config =
+                        window.get_mut(&mut ui.builder.commands()).config =
                             ClickLobbyConfig{ max_players: 1, max_watchers: 0 };
                     }
                     false =>
                     {
-                        window.get_mut(&mut ui.builder.rcommands).config =
+                        window.get_mut(&mut ui.builder.commands()).config =
                             ClickLobbyConfig{ max_players: 2, max_watchers: 1 };
                     }
                 }
@@ -375,7 +376,7 @@ fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // adjust text depending on the lobby type
     let sp_widgets = [sp_text];
     let mp_widgets = [mp_text];
-    ui.rcommands.on(resource_mutation::<MakeLobbyWindow>(),
+    ui.commands().react().on(resource_mutation::<MakeLobbyWindow>(),
             move |mut ui: UiUtils<MainUi>, window: ReactRes<MakeLobbyWindow>|
             {
                 match window.is_single_player()
@@ -421,7 +422,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
     ui.commands().add(move |world: &mut World| syscall(world, (popup_pack, accept_text), setup_window_reactors));
 
     // initialize ui
-    ui.rcommands.trigger_resource_mutation::<MakeLobbyWindow>();
+    ui.commands().react().trigger_resource_mutation::<MakeLobbyWindow>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -429,9 +430,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 #[bevy_plugin]
 pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
 {
-    app.insert_react_resource(MakeLobbyWindow::default())
-        .add_react_event::<MadeLocalLobby>()
-        .add_react_event::<ActivateMakeLobbyWindow>();
+    app.insert_react_resource(MakeLobbyWindow::default());
 }
 
 //-------------------------------------------------------------------------------------------------------------------

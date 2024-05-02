@@ -2,9 +2,9 @@
 use bevy_girk_demo_wiring_backend::*;
 
 //third-party shortcuts
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
-use bevy_kot::prelude::*;
 
 //standard shortcuts
 

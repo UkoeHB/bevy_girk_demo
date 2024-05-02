@@ -18,7 +18,7 @@ fn handle_player_click_button(
     In(player_entity) : In<Entity>,
     mut players       : Query<&mut PlayerScore, With<PlayerId>>,
 ){
-    let Ok(player_score) = players.get_component_mut::<PlayerScore>(player_entity)
+    let Ok(player_score) = players.get_mut(player_entity)
     else { tracing::error!("handle player click button: unknown player entity"); return; };
 
     player_score.into_inner().increment();

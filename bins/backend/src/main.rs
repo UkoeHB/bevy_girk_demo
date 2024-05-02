@@ -13,7 +13,6 @@ use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
-use bevy_kot_utils::*;
 
 //standard shortcuts
 use std::net::Ipv6Addr;
