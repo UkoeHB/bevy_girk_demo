@@ -1,11 +1,7 @@
-//local shortcuts
+use std::collections::HashSet;
 
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-
-//standard shortcuts
-use std::collections::HashSet;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +16,7 @@ impl WatcherMap
 {
     pub fn new(watchers: HashSet<ClientId>) -> WatcherMap
     {
-        WatcherMap{ watchers }
+        WatcherMap { watchers }
     }
 
     pub fn is_watcher(&self, client_id: ClientId) -> bool

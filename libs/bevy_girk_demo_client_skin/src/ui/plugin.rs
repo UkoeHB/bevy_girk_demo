@@ -1,21 +1,14 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_ui_prefab::*;
-
-//third-party shortcuts
-use bevy_kot::prelude::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_fn_plugin::bevy_plugin;
+use bevy_girk_demo_ui_prefab::*;
+use bevy_kot::prelude::*;
 //use bevy_girk_client_fw::*;
 use bevy_lunex::prelude::*;
+
+use crate::*;
 //use bevy_lunex_ui::prelude::LunexUiSystemSet2D;
 
-//standard shortcuts
-
-
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn add_backdrop(ui: &mut UiBuilder<MainUi>, area: &Widget)
@@ -24,7 +17,6 @@ fn add_backdrop(ui: &mut UiBuilder<MainUi>, area: &Widget)
     spawn_plain_box(ui, area.clone());
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn build_ui(mut ui: UiBuilder<MainUi>)
@@ -45,17 +37,22 @@ fn build_ui(mut ui: UiBuilder<MainUi>)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn setup_ui(mut commands: Commands, window: Query<Entity, (With<Window>, With<PrimaryWindow>)>)
 {
     // prepare 2D camera
-    commands.spawn(
-            Camera2dBundle{ transform: Transform{ translation: Vec3 { x: 0., y: 0., z: 1000. }, ..default() }, ..default() }
-        );
+    commands.spawn(Camera2dBundle {
+        transform: Transform { translation: Vec3 { x: 0., y: 0., z: 1000. }, ..default() },
+        ..default()
+    });
 
     // make lunex cursor
-    commands.spawn((Cursor::new(), Transform::default(), Visibility::default(), MainMouseCursor));
+    commands.spawn((
+        Cursor::new(),
+        Transform::default(),
+        Visibility::default(),
+        MainMouseCursor,
+    ));
 
     // add new ui tree to ecs
     commands.insert_resource(StyleStackRes::<MainUi>::default());
@@ -65,7 +62,6 @@ fn setup_ui(mut commands: Commands, window: Query<Entity, (With<Window>, With<Pr
     commands.entity(window).insert(tree.bundle());
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]

@@ -1,16 +1,12 @@
-//local shortcuts
-use crate::*;
+use std::time::Duration;
 
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 
-//standard shortcuts
-use std::time::Duration;
+use crate::*;
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Default, Debug)]
@@ -19,40 +15,41 @@ enum AckFocusState
     #[default]
     None,
     Start,
-    Halfway
+    Halfway,
 }
 
 fn focus_window_for_ack_request(
-    mut state   : Local<AckFocusState>,
-    time        : Res<Time>,
-    ack_request : ReactRes<AckRequestData>,
-    mut window  : Query<&mut Window, With<PrimaryWindow>>
-){
+    mut state: Local<AckFocusState>,
+    time: Res<Time>,
+    ack_request: ReactRes<AckRequestData>,
+    mut window: Query<&mut Window, With<PrimaryWindow>>,
+)
+{
     // try to reset
-    if !ack_request.is_set()
-    {
+    if !ack_request.is_set() {
         *state = AckFocusState::None;
         return;
     }
 
     // focus the window when the request timer starts, and when it is half-way done
-    match *state
-    {
-        AckFocusState::None =>
-        {
+    match *state {
+        AckFocusState::None => {
             // focus when request was just set
             *state = AckFocusState::Start;
         }
-        AckFocusState::Start =>
-        {
+        AckFocusState::Start => {
             // focus when timer moves to halfway point
-            let elapsed_since_request = time.elapsed().saturating_sub(ack_request.ack_time).as_millis();
-            if elapsed_since_request < (ack_request.display_duration().as_millis() / 2) { return; }
+            let elapsed_since_request = time
+                .elapsed()
+                .saturating_sub(ack_request.ack_time)
+                .as_millis();
+            if elapsed_since_request < (ack_request.display_duration().as_millis() / 2) {
+                return;
+            }
 
             *state = AckFocusState::Halfway;
         }
-        AckFocusState::Halfway =>
-        {
+        AckFocusState::Halfway => {
             // no more focusing, wait for reset
             return;
         }
@@ -62,14 +59,14 @@ fn focus_window_for_ack_request(
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn set_ack_request_data(
-    mut c   : Commands,
-    time            : Res<Time>,
-    events          : BroadcastEvent<AckRequest>,
-    mut ack_request : ReactResMut<AckRequestData>,
-){
+    mut c: Commands,
+    time: Res<Time>,
+    events: BroadcastEvent<AckRequest>,
+    mut ack_request: ReactResMut<AckRequestData>,
+)
+{
     let ack_req = events.read().unwrap();
     ack_request
         .get_mut(&mut c)
@@ -77,24 +74,23 @@ fn set_ack_request_data(
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn setup_ack_request_handlers(mut c: Commands)
 {
-    c.react().on(broadcast::<AckRequest>(), set_ack_request_data);
-    c.react().on(resource_mutation::<AckRequestData>(), focus_window_for_ack_request);
+    c.react()
+        .on(broadcast::<AckRequest>(), set_ack_request_data);
+    c.react()
+        .on(resource_mutation::<AckRequestData>(), focus_window_for_ack_request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
-fn try_timeout_ack_request(
-    mut c   : Commands,
-    time            : Res<Time>,
-    mut ack_request : ReactResMut<AckRequestData>,
-){
+fn try_timeout_ack_request(mut c: Commands, time: Res<Time>, mut ack_request: ReactResMut<AckRequestData>)
+{
     // check if there is a pending ack request
-    if !ack_request.is_set() { return; }
+    if !ack_request.is_set() {
+        return;
+    }
 
     // update the request timer
     // - we don't tick the timer on the first tick after an ack request was received
@@ -103,20 +99,20 @@ fn try_timeout_ack_request(
     let ack_request_mut = ack_request.get_mut(&mut c);
     let timer = &mut ack_request_mut.timer;
 
-    if start_time != time.elapsed()
-    {
+    if start_time != time.elapsed() {
         timer.tick(time.delta());
     }
 
     // check if the timer has expired
-    if !timer.finished() { return; }
+    if !timer.finished() {
+        return;
+    }
 
     // clear the ack request
     tracing::trace!("resetting ack request after timeout");
     ack_request_mut.clear();
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Caches the current pending ack request (if there is one).
@@ -143,7 +139,7 @@ impl AckRequestData
 {
     pub(crate) fn new(timeout_duration: Duration, timer_buffer: Duration) -> Self
     {
-        Self{
+        Self {
             current: None,
             timer: Timer::new(timeout_duration, TimerMode::Once),
             timer_buffer,
@@ -175,8 +171,8 @@ impl AckRequestData
     pub(crate) fn clear(&mut self)
     {
         self.current = None;
-        self.nacked  = false;
-        self.acked   = false;
+        self.nacked = false;
+        self.acked = false;
     }
 
     pub(crate) fn get(&self) -> Option<u64>
@@ -228,19 +224,9 @@ pub(crate) fn AckRequestPlugin(app: &mut App)
     let timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
     let timer_buffer = Duration::from_millis(timer_configs.ack_request_timer_buffer_ms);
 
-    app
-        .insert_react_resource(AckRequestData::new(timeout, timer_buffer))
-        .add_systems(Startup,
-            (
-                setup_ack_request_handlers,
-            )
-        )
-        .add_systems(PreUpdate,
-            (
-                try_timeout_ack_request,
-            )
-        )
-        ;
+    app.insert_react_resource(AckRequestData::new(timeout, timer_buffer))
+        .add_systems(Startup, (setup_ack_request_handlers,))
+        .add_systems(PreUpdate, (try_timeout_ack_request,));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

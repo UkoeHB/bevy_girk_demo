@@ -1,15 +1,10 @@
-//local shortcuts
-use bevy_girk_demo_wiring_backend::*;
+use std::vec::Vec;
 
-//third-party shortcuts
 use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
+use bevy_girk_demo_wiring_backend::*;
 
-//standard shortcuts
-use std::vec::Vec;
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Caches the currently-displayed lobby page.
@@ -33,15 +28,14 @@ impl LobbyPage
         // extract lobby contents
         let mut temp = Vec::with_capacity(new_page.lobbies.len());
 
-        for lobby_data in new_page.lobbies
-        {
+        for lobby_data in new_page.lobbies {
             temp.push(ClickLobbyContents::try_from(lobby_data)?);
         }
 
         // update the page
-        self.current     = temp;
+        self.current = temp;
         self.num_younger = new_page.num_younger;
-        self.total       = new_page.total;
+        self.total = new_page.total;
 
         Ok(())
     }
@@ -68,7 +62,13 @@ impl LobbyPage
     }
 }
 
-impl Default for LobbyPage { fn default() -> Self { Self{ current: Vec::default(), num_younger: 0, total: 0 } } }
+impl Default for LobbyPage
+{
+    fn default() -> Self
+    {
+        Self { current: Vec::default(), num_younger: 0, total: 0 }
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ impl LobbyPageRequest
 {
     pub(crate) fn new(request: LobbySearchRequest) -> Self
     {
-        Self{ last: request }
+        Self { last: request }
     }
 
     pub(crate) fn set(&mut self, request: LobbySearchRequest)
@@ -100,18 +100,16 @@ impl LobbyPageRequest
 
     pub(crate) fn is_now(&self) -> bool
     {
-        match self.last
-        {
-            LobbySearchRequest::PageOlder{ youngest_id, num: _ } => youngest_id == u64::MAX,
+        match self.last {
+            LobbySearchRequest::PageOlder { youngest_id, num: _ } => youngest_id == u64::MAX,
             _ => false,
         }
     }
 
     pub(crate) fn is_oldest(&self) -> bool
     {
-        match self.last
-        {
-            LobbySearchRequest::PageNewer{ oldest_id, num: _ } => oldest_id == 0u64,
+        match self.last {
+            LobbySearchRequest::PageNewer { oldest_id, num: _ } => oldest_id == 0u64,
             _ => false,
         }
     }
@@ -122,13 +120,11 @@ impl LobbyPageRequest
 #[bevy_plugin]
 pub(crate) fn LobbyPagePlugin(app: &mut App)
 {
-    app
-        .insert_react_resource(LobbyPage::default())
-        .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder{
-            youngest_id : u64::MAX,
-            num         : LOBBY_LIST_SIZE as u16,
-        }))
-        ;
+    app.insert_react_resource(LobbyPage::default())
+        .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder {
+            youngest_id: u64::MAX,
+            num: LOBBY_LIST_SIZE as u16,
+        }));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

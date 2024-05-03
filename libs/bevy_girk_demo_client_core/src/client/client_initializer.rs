@@ -1,12 +1,7 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

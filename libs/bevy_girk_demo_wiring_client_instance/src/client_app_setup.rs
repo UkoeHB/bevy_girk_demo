@@ -1,22 +1,13 @@
-//local shortcuts]
+use bevy::prelude::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_client_skin::*;
-
-//third-party shortcuts
-use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_kot_utils::*;
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Prepare the core of a click game client.
-pub fn prepare_client_core(
-    client_app  : &mut App,
-    initializer : ClientInitializer
-) -> Sender<PlayerClientInput>
+pub fn prepare_client_core(client_app: &mut App, initializer: ClientInitializer) -> Sender<PlayerClientInput>
 {
     // player input channel
     let (player_input_sender, player_input_receiver) = new_channel::<PlayerClientInput>();

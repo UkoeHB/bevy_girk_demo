@@ -1,11 +1,6 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -22,16 +17,19 @@ pub struct ClickGameContext
 impl ClickGameContext
 {
     /// New game context
-    pub fn new(
-        seed            : u128,
-        duration_config : GameDurationConfig,
-    ) -> ClickGameContext 
+    pub fn new(seed: u128, duration_config: GameDurationConfig) -> ClickGameContext
     {
-        ClickGameContext{ seed, duration_config }
+        ClickGameContext { seed, duration_config }
     }
 
-    pub fn seed(&self) -> u128                           { self.seed }
-    pub fn duration_config(&self) -> &GameDurationConfig { &self.duration_config }
+    pub fn seed(&self) -> u128
+    {
+        self.seed
+    }
+    pub fn duration_config(&self) -> &GameDurationConfig
+    {
+        &self.duration_config
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

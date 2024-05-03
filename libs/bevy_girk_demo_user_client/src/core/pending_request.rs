@@ -1,10 +1,4 @@
-//local shortcuts
-
-//third-party shortcuts
 use bevy_cobweb::prelude::*;
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +16,10 @@ impl PendingRequest
 impl std::ops::Deref for PendingRequest
 {
     type Target = bevy_simplenet::RequestSignal;
-    fn deref(&self) -> &bevy_simplenet::RequestSignal { &self.0 }
+    fn deref(&self) -> &bevy_simplenet::RequestSignal
+    {
+        &self.0
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

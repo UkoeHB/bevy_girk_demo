@@ -1,17 +1,10 @@
-//module tree
+use std::time::Duration;
 
-//local shortcuts\
-use bevy_girk_demo_wiring_client_instance::*;
-
-//third-party shortcuts
 use bevy_girk_client_instance::*;
+use bevy_girk_demo_wiring_client_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 
-//standard shortcuts
-use std::time::Duration;
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Parser, Debug)]
@@ -22,7 +15,6 @@ struct GameClientCli
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn main()
 {
@@ -30,7 +22,8 @@ fn main()
     //todo: log to file instead (use CLI configs?)
     let filter = tracing_subscriber::EnvFilter::builder()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
-        .from_env().unwrap()
+        .from_env()
+        .unwrap()
         .add_directive("bevy=warn".parse().unwrap())
         .add_directive("bevy_app=warn".parse().unwrap())
         .add_directive("bevy_core=warn".parse().unwrap())
@@ -49,7 +42,8 @@ fn main()
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let mut factory = ClientFactory::new(ClickClientFactory{ protocol_id, resend_time: Duration::from_millis(100) });
+    let mut factory =
+        ClientFactory::new(ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) });
 
     // run the client
     let args = GameClientCli::parse();

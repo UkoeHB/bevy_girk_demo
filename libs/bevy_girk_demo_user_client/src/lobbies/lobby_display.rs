@@ -1,13 +1,7 @@
-//local shortcuts
-use bevy_girk_demo_wiring_backend::*;
-
-//third-party shortcuts
 use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
-
-//standard shortcuts
-
+use bevy_girk_demo_wiring_backend::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -26,22 +20,22 @@ pub(crate) enum LobbyType
 #[derive(ReactResource, Debug)]
 pub(crate) struct LobbyDisplay
 {
-    current    : Option<ClickLobbyContents>,
-    lobby_type : Option<LobbyType>,
+    current: Option<ClickLobbyContents>,
+    lobby_type: Option<LobbyType>,
 }
 
 impl LobbyDisplay
 {
     pub(crate) fn set(&mut self, contents: ClickLobbyContents, lobby_type: LobbyType)
     {
-        self.current    = Some(contents);
+        self.current = Some(contents);
         self.lobby_type = Some(lobby_type);
     }
 
     /// Returns `Err` if lobby contents cannot be extracted from the lobby data.
     pub(crate) fn try_set(&mut self, new_lobby: LobbyData, lobby_type: LobbyType) -> Result<(), ()>
     {
-        self.current    = Some(ClickLobbyContents::try_from(new_lobby)?);
+        self.current = Some(ClickLobbyContents::try_from(new_lobby)?);
         self.lobby_type = Some(lobby_type);
 
         Ok(())
@@ -57,10 +51,9 @@ impl LobbyDisplay
 
     pub(crate) fn lobby_id(&self) -> Option<u64>
     {
-        match &self.current
-        {
+        match &self.current {
             Some(data) => Some(data.id),
-            None       => None,
+            None => None,
         }
     }
 
@@ -81,33 +74,35 @@ impl LobbyDisplay
 
     pub(crate) fn is_local(&self) -> bool
     {
-        match self.lobby_type
-        {
+        match self.lobby_type {
             Some(LobbyType::Local) => true,
-            _                      => false,
+            _ => false,
         }
     }
 
     pub(crate) fn is_hosted(&self) -> bool
     {
-        match self.lobby_type
-        {
+        match self.lobby_type {
             Some(LobbyType::Hosted) => true,
-            _                      => false,
+            _ => false,
         }
     }
 }
 
-impl Default for LobbyDisplay { fn default() -> Self { Self{ current: None, lobby_type: None } } }
+impl Default for LobbyDisplay
+{
+    fn default() -> Self
+    {
+        Self { current: None, lobby_type: None }
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
 #[bevy_plugin]
 pub(crate) fn LobbyDisplayPlugin(app: &mut App)
 {
-    app
-        .insert_react_resource(LobbyDisplay::default())
-        ;
+    app.insert_react_resource(LobbyDisplay::default());
 }
 
 //-------------------------------------------------------------------------------------------------------------------

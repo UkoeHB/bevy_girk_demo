@@ -1,12 +1,9 @@
-//local shortcuts
-use crate::*;
+use std::collections::{HashMap, HashSet};
 
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 
-//standard shortcuts
-use std::collections::{HashMap, HashSet};
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

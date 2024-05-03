@@ -1,15 +1,9 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy_fn_plugin::bevy_plugin;
 
-//standard shortcuts
+use crate::*;
 
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Initialize the bevy engine.
@@ -18,16 +12,14 @@ fn BevyEnginePlugin(app: &mut App)
 {
     // prepare bevy plugins
     let bevy_plugins = bevy::DefaultPlugins
-        .set(
-            WindowPlugin{
-                primary_window: Some(Window{
-                    title        : "BEVY_GIRK: CLICK DEMO".into(),
-                    window_theme : Some(WindowTheme::Dark),
-                    ..Default::default()
-                }),
+        .set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "BEVY_GIRK: CLICK DEMO".into(),
+                window_theme: Some(WindowTheme::Dark),
                 ..Default::default()
-            }
-        )
+            }),
+            ..Default::default()
+        })
         .build();
 
     // reduce input lag on native targets
@@ -43,7 +35,6 @@ fn BevyEnginePlugin(app: &mut App)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 /// Plugin for setting up a click demo game client skin.
 ///
@@ -52,12 +43,10 @@ fn BevyEnginePlugin(app: &mut App)
 #[bevy_plugin]
 pub fn ClickClientSkinPlugin(app: &mut App)
 {
-    app
-        .add_plugins(bevy_kot::prelude::ReactPlugin)
+    app.add_plugins(bevy_kot::prelude::ReactPlugin)
         .add_plugins(BevyEnginePlugin)
         .add_plugins(UiPlugin)
-        .add_plugins(LoadingSimPlugin)
-        ;
+        .add_plugins(LoadingSimPlugin);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

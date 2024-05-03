@@ -1,44 +1,40 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_game_core::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_client_fw::*;
+use bevy_girk_demo_game_core::*;
 use bevy_kot_ecs::*;
 
-//standard shortcuts
+use crate::*;
 
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Use current game mode to update client mode.
 fn update_client_mode(
-    In(current_game_mode)       : In<GameMode>,
-    client_initialization_state : Res<State<ClientInitializationState>>,
-    current_client_mode         : Res<State<ClientMode>>,
-    mut next_client_mode        : ResMut<NextState<ClientMode>>
-){
+    In(current_game_mode): In<GameMode>,
+    client_initialization_state: Res<State<ClientInitializationState>>,
+    current_client_mode: Res<State<ClientMode>>,
+    mut next_client_mode: ResMut<NextState<ClientMode>>,
+)
+{
     // do not update game mode if we are in the process of initializing the client
-    if *client_initialization_state != ClientInitializationState::Done { return; }
+    if *client_initialization_state != ClientInitializationState::Done {
+        return;
+    }
 
     // update game mode
-    let new_client_mode =
-        match current_game_mode
-        {
-            GameMode::Init     => ClientMode::Init,
-            GameMode::Prep     => ClientMode::Prep,
-            GameMode::Play     => ClientMode::Play,
-            GameMode::GameOver => ClientMode::GameOver,
-        };
+    let new_client_mode = match current_game_mode {
+        GameMode::Init => ClientMode::Init,
+        GameMode::Prep => ClientMode::Prep,
+        GameMode::Play => ClientMode::Play,
+        GameMode::GameOver => ClientMode::GameOver,
+    };
 
-    if new_client_mode == **current_client_mode { return; }
+    if new_client_mode == **current_client_mode {
+        return;
+    }
     next_client_mode.set(new_client_mode);
     tracing::info!(?new_client_mode, "new client mode");
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Handle current game mode.

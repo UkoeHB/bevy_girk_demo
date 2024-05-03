@@ -1,13 +1,7 @@
-//local shortcuts
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
-use serde::{Serialize, Deserialize};
-
-//standard shortcuts
-
+use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +16,10 @@ impl GameRand
         GameRand(Rand64::new("bevy_girk_demo", seed))
     }
 
-    pub fn next(&mut self) -> u64 { self.0.next() }
+    pub fn next(&mut self) -> u64
+    {
+        self.0.next()
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -53,7 +50,7 @@ pub enum GameMode
     Init,
     Prep,
     Play,
-    GameOver
+    GameOver,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

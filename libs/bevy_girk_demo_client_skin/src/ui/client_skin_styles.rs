@@ -1,13 +1,8 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_ui_prefab::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -21,7 +16,7 @@ impl Default for GameClientBackdrop
 {
     fn default() -> Self
     {
-        Self{ plain_box : PlainBox{ img: BACKDROP } }
+        Self { plain_box: PlainBox { img: BACKDROP } }
     }
 }
 
@@ -45,16 +40,16 @@ impl Default for GameInitializingStyle
 {
     fn default() -> Self
     {
-        Self{
-            background_img   : BOX,
-            background_color : Color::DARK_GRAY,
-            text             : basic_text_default_light_style(),
+        Self {
+            background_img: BOX,
+            background_color: Color::DARK_GRAY,
+            text: basic_text_default_light_style(),
 
-            loading_bar_box_img   : BOX,
-            loading_bar_box_color : Color::WHITE,
+            loading_bar_box_img: BOX,
+            loading_bar_box_color: Color::WHITE,
 
-            loading_bar_img   : FILM,
-            loading_bar_color : Color::BLACK,
+            loading_bar_img: FILM,
+            loading_bar_color: Color::BLACK,
         }
     }
 }
@@ -71,7 +66,7 @@ impl Default for GameScoreboardStyle
 {
     fn default() -> Self
     {
-        Self{ text: basic_text_default_light_style() }
+        Self { text: basic_text_default_light_style() }
     }
 }
 
@@ -87,14 +82,14 @@ impl Default for GameClickerStyle
 {
     fn default() -> Self
     {
-        Self{
-            button: BasicButton{
+        Self {
+            button: BasicButton {
                 default_img: MISC_BUTTON,
                 pressed_img: MISC_BUTTON,
                 default_img_color: Color::hsl(360., 1., 0.30),
                 pressed_img_color: Color::hsl(360., 1., 0.20),
                 text: basic_button_default_text_style(),
-            }
+            },
         }
     }
 }
@@ -113,10 +108,10 @@ impl Default for GameOverStyle
 {
     fn default() -> Self
     {
-        Self{
-            background_img   : FILM,
-            background_color : Color::WHITE,
-            text             : basic_text_default_light_style(),
+        Self {
+            background_img: FILM,
+            background_color: Color::WHITE,
+            text: basic_text_default_light_style(),
         }
     }
 }
@@ -126,12 +121,12 @@ impl Default for GameOverStyle
 #[derive(StyleBundle, Default, Debug)]
 pub(crate) struct ClientSkinStyles
 {
-    prefabs          : BasicPrefabStyles,
-    backdrop         : GameClientBackdrop,
-    game_in_progress : GameInitializingStyle,
-    game_scoreboard  : GameScoreboardStyle,
-    game_clicker     : GameClickerStyle,
-    game_over        : GameOverStyle,
+    prefabs: BasicPrefabStyles,
+    backdrop: GameClientBackdrop,
+    game_in_progress: GameInitializingStyle,
+    game_scoreboard: GameScoreboardStyle,
+    game_clicker: GameClickerStyle,
+    game_over: GameOverStyle,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

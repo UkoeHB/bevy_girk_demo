@@ -1,18 +1,12 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_ui_prefab::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
+use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
-//standard shortcuts
+use crate::*;
 
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Resource, Debug)]
@@ -22,7 +16,6 @@ struct GameOverOverlay
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn activate_game_over_overlay(mut ui: UiUtils<MainUi>, overlay: Res<GameOverOverlay>)
 {
@@ -30,13 +23,16 @@ fn activate_game_over_overlay(mut ui: UiUtils<MainUi>, overlay: Res<GameOverOver
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn add_game_over(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // prep overlay
     let overlay = make_overlay(ui.tree(), area, "", false);
-    overlay.fetch_mut(ui.tree()).unwrap().get_container_mut().set_render_depth(Modifier::Set(999.));
+    overlay
+        .fetch_mut(ui.tree())
+        .unwrap()
+        .get_container_mut()
+        .set_render_depth(Modifier::Set(999.));
 
     // style
     let style = ui.style::<GameOverStyle>();
@@ -44,16 +40,17 @@ pub(crate) fn add_game_over(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // add screen
     let barrier = relative_widget(ui.tree(), overlay.end(""), (-10., 110.), (-10., 110.));
     let barrier_img = ImageElementBundle::new(
-            &barrier,
-            ImageParams::center()
-                .with_width(Some(100.))
-                .with_height(Some(100.))
-                .with_color(style.background_color),
-            ui.asset_server.load(style.background_img.0),
-            style.background_img.1
-        );
+        &barrier,
+        ImageParams::center()
+            .with_width(Some(100.))
+            .with_height(Some(100.))
+            .with_color(style.background_color),
+        ui.asset_server.load(style.background_img.0),
+        style.background_img.1,
+    );
     ui.commands().spawn(barrier_img);
-    ui.commands().spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
+    ui.commands()
+        .spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
 
     // add text
     let text_style = style.text.clone();
@@ -66,7 +63,7 @@ pub(crate) fn add_game_over(ui: &mut UiBuilder<MainUi>, area: &Widget)
     });
 
     // insert overlay resource
-    ui.commands().insert_resource(GameOverOverlay{ overlay });
+    ui.commands().insert_resource(GameOverOverlay { overlay });
 }
 
 //-------------------------------------------------------------------------------------------------------------------

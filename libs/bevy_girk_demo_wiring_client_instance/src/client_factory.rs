@@ -1,23 +1,20 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_wiring_game_instance::*;
+use std::time::Duration;
 
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_client_instance::*;
+use bevy_girk_demo_wiring_game_instance::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use bevy_girk_wiring::*;
 
-//standard shortcuts
-use std::time::Duration;
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Client factory for standard click games.
 ///
-/// Note: If the connection type is `InMemory`, then you must manually insert the in-memory client transport into the
-///       client app.
+/// Note: If the connection type is `InMemory`, then you must manually insert the in-memory client transport into
+/// the       client app.
 #[derive(Debug)]
 pub struct ClickClientFactory
 {
@@ -36,9 +33,9 @@ impl ClientFactoryImpl for ClickClientFactory
         let client_start_pack = deser_msg::<ClickClientStartPack>(&start_info.serialized_start_data).unwrap();
 
         // girk client config
-        let config = GirkClientConfig{
-            client_fw_config : client_start_pack.client_fw_config,
-            resend_time      : self.resend_time,
+        let config = GirkClientConfig {
+            client_fw_config: client_start_pack.client_fw_config,
+            resend_time: self.resend_time,
             connect_pack,
         };
 

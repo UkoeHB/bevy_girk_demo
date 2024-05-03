@@ -1,19 +1,14 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
 use bevy_replicon_attributes::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Increment the number of game ticks elapsed.
-pub(crate) fn advance_game_tick(mut game_tick : ResMut<GameTick>)
+pub(crate) fn advance_game_tick(mut game_tick: ResMut<GameTick>)
 {
     *game_tick.0 += 1;
 }
@@ -21,7 +16,7 @@ pub(crate) fn advance_game_tick(mut game_tick : ResMut<GameTick>)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Increment the number of prep ticks elapsed.
-pub(crate) fn advance_prep_tick(mut prep_tick : ResMut<PrepTick>)
+pub(crate) fn advance_prep_tick(mut prep_tick: ResMut<PrepTick>)
 {
     *prep_tick.0 += 1;
 }
@@ -29,7 +24,7 @@ pub(crate) fn advance_prep_tick(mut prep_tick : ResMut<PrepTick>)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Increment the number of play ticks elapsed.
-pub(crate) fn advance_play_tick(mut play_tick : ResMut<PlayTick>)
+pub(crate) fn advance_play_tick(mut play_tick: ResMut<PlayTick>)
 {
     *play_tick.0 += 1;
 }
@@ -37,7 +32,7 @@ pub(crate) fn advance_play_tick(mut play_tick : ResMut<PlayTick>)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Increment the number of game-over ticks elapsed.
-pub(crate) fn advance_game_over_tick(mut game_over_tick : ResMut<GameOverTick>)
+pub(crate) fn advance_game_over_tick(mut game_over_tick: ResMut<GameOverTick>)
 {
     *game_over_tick.0 += 1;
 }
@@ -46,17 +41,20 @@ pub(crate) fn advance_game_over_tick(mut game_over_tick : ResMut<GameOverTick>)
 
 /// Check the game duration conditions and update the game mode.
 pub(crate) fn update_game_mode(
-    game_ctx           : Res<ClickGameContext>,
-    game_tick          : Res<GameTick>,
-    current_game_mode  : Res<State<GameMode>>,
-    mut next_game_mode : ResMut<NextState<GameMode>>
-){
+    game_ctx: Res<ClickGameContext>,
+    game_tick: Res<GameTick>,
+    current_game_mode: Res<State<GameMode>>,
+    mut next_game_mode: ResMut<NextState<GameMode>>,
+)
+{
     // get expected mode based on elapsed ticks
     let duration_config = game_ctx.duration_config();
-    let new_game_mode   = duration_config.expected_mode(**game_tick);
+    let new_game_mode = duration_config.expected_mode(**game_tick);
 
     // update the game mode
-    if new_game_mode == **current_game_mode { return; }
+    if new_game_mode == **current_game_mode {
+        return;
+    }
     next_game_mode.set(new_game_mode);
     tracing::info!(?new_game_mode, "new game mode");
 }
@@ -73,57 +71,47 @@ pub(crate) fn get_current_game_mode(current_game_mode: Res<State<GameMode>>) -> 
 
 /// Notify a single client of the current game mode.
 pub(crate) fn notify_game_mode_single(
-    In(client_id)     : In<ClientId>,
-    current_game_mode : Res<State<GameMode>>,
-    mut sender        : GameMessageSender,
-    attributes        : ClientAttributes,
-){
+    In(client_id): In<ClientId>,
+    current_game_mode: Res<State<GameMode>>,
+    mut sender: GameMessageSender,
+    attributes: ClientAttributes,
+)
+{
     sender.send(
-            &attributes,
-            GameMsg::CurrentGameMode(**current_game_mode),
-            vis!(Client(client_id)),
-        );
+        &attributes,
+        GameMsg::CurrentGameMode(**current_game_mode),
+        vis!(Client(client_id)),
+    );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Notify all clients of the current game mode.
 pub(crate) fn notify_game_mode_all(
-    current_game_mode : Res<State<GameMode>>,
-    mut sender        : GameMessageSender,
-    attributes        : ClientAttributes,
-){
-    sender.send(
-            &attributes,
-            GameMsg::CurrentGameMode(**current_game_mode),
-            vis!(Global),
-        );
+    current_game_mode: Res<State<GameMode>>,
+    mut sender: GameMessageSender,
+    attributes: ClientAttributes,
+)
+{
+    sender.send(&attributes, GameMsg::CurrentGameMode(**current_game_mode), vis!(Global));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn set_game_end_flag(
-    game_tick         : Res<GameTick>,
-    players           : Query<(&PlayerId, &PlayerScore)>,
-    mut game_end_flag : ResMut<GameEndFlag>,
-){
+    game_tick: Res<GameTick>,
+    players: Query<(&PlayerId, &PlayerScore)>,
+    mut game_end_flag: ResMut<GameEndFlag>,
+)
+{
     // collect player reports
-    let player_reports =
-        players
-            .iter()
-            .map(
-                |(&player_id, &score)|
-                {
-                    ClickPlayerReport{ client_id: player_id.id, score }
-                }
-            )
-            .collect();
+    let player_reports = players
+        .iter()
+        .map(|(&player_id, &score)| ClickPlayerReport { client_id: player_id.id, score })
+        .collect();
 
     // build game over report
-    let game_over_report = ClickGameOverReport{
-            final_game_tick: **game_tick,
-            player_reports,
-        };
+    let game_over_report = ClickGameOverReport { final_game_tick: **game_tick, player_reports };
 
     // serialize it
     let game_over_report_final = GameOverReport::new(ser_msg(&game_over_report));

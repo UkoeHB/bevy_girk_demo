@@ -8,30 +8,24 @@
 //!
 //! INTERFACE: for client core
 //! - plugin GameReplicationPlugin must be added to the client core app
-//!
 
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
-use bevy::{prelude::*, app::PluginGroupBuilder};
+use bevy::app::PluginGroupBuilder;
+use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_game_fw::*;
 
-//standard shortcuts
+use crate::*;
 
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Validate resources that should exist before game startup.
 fn prestartup_check(world: &World)
 {
-    if !world.contains_resource::<ClickGameInitializer>()
-    { panic!("ClickGameInitializer is missing on startup!"); }
+    if !world.contains_resource::<ClickGameInitializer>() {
+        panic!("ClickGameInitializer is missing on startup!");
+    }
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Game startup plugin.
@@ -39,17 +33,10 @@ fn prestartup_check(world: &World)
 pub fn GameStartupPlugin(app: &mut App)
 {
     app.init_state::<GameMode>()
-        .add_systems(PreStartup,
-            (
-                prestartup_check,
-            ).chain()
-        )
-        .add_systems(Startup,
-            (
-                setup_game_state,
-                setup_game_message_buffer,
-                setup_game_input_handler,
-            ).chain()
+        .add_systems(PreStartup, (prestartup_check,).chain())
+        .add_systems(
+            Startup,
+            (setup_game_state, setup_game_message_buffer, setup_game_input_handler).chain(),
         );
 }
 
@@ -65,7 +52,7 @@ pub enum GameSet
     Prep,
     Play,
     GameOver,
-    End
+    End,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -77,60 +64,57 @@ pub enum GameSet
 pub fn GameTickPlugin(app: &mut App)
 {
     // GAME Tick systems (after initialization).
-    app.configure_sets(Update,
-            GameSet::PostInit
-                .run_if(not(in_state(GameFwMode::Init)))
-        );
+    app.configure_sets(Update, GameSet::PostInit.run_if(not(in_state(GameFwMode::Init))));
 
     // GAME Prep systems.
-    app.configure_sets(Update,
-                GameSet::Prep
-                    .run_if(in_state(GameFwMode::Game))
-                    .run_if(in_state(GameMode::Prep))
-            );
+    app.configure_sets(
+        Update,
+        GameSet::Prep
+            .run_if(in_state(GameFwMode::Game))
+            .run_if(in_state(GameMode::Prep)),
+    );
 
     // GAME Play systems.
-    app.configure_sets(Update,
-                GameSet::Play
-                    .run_if(in_state(GameFwMode::Game))
-                    .run_if(in_state(GameMode::Play))
-            );
+    app.configure_sets(
+        Update,
+        GameSet::Play
+            .run_if(in_state(GameFwMode::Game))
+            .run_if(in_state(GameMode::Play)),
+    );
 
     // GAME GameOver systems.
-    // - This will only run in the span between entering 'game over' and the GameFwMode moving to 'End', which is controlled
-    //   by `GameFwConfig::max_end_ticks()`.
+    // - This will only run in the span between entering 'game over' and the GameFwMode moving to 'End', which is
+    //   controlled by `GameFwConfig::max_end_ticks()`.
     //todo: allow GameOver to last indefinitely?
-    app.configure_sets(Update,
-                GameSet::GameOver
-                    .run_if(in_state(GameFwMode::Game))
-                    .run_if(in_state(GameMode::GameOver))
-            );
-
+    app.configure_sets(
+        Update,
+        GameSet::GameOver
+            .run_if(in_state(GameFwMode::Game))
+            .run_if(in_state(GameMode::GameOver)),
+    );
 
     // ADMIN
-    app.add_systems(Update,
-            (
-                // determine which game mode the previous tick was in and set it
-                update_game_mode.in_set(GameSet::PostInit),
-                apply_state_transition::<GameMode>.in_set(GameSet::PostInit),
-                // elapse the previous tick
-                advance_game_tick.in_set(GameSet::PostInit),
-                advance_prep_tick.in_set(GameSet::Prep),
-                advance_play_tick.in_set(GameSet::Play),
-                advance_game_over_tick.in_set(GameSet::GameOver),
-            ).chain().in_set(GameFwSet::Admin)
-        );
+    app.add_systems(
+        Update,
+        (
+            // determine which game mode the previous tick was in and set it
+            update_game_mode.in_set(GameSet::PostInit),
+            apply_state_transition::<GameMode>.in_set(GameSet::PostInit),
+            // elapse the previous tick
+            advance_game_tick.in_set(GameSet::PostInit),
+            advance_prep_tick.in_set(GameSet::Prep),
+            advance_play_tick.in_set(GameSet::Play),
+            advance_game_over_tick.in_set(GameSet::GameOver),
+        )
+            .chain()
+            .in_set(GameFwSet::Admin),
+    );
 
     // Respond to state transitions
     app.add_systems(OnEnter(GameMode::Init), notify_game_mode_all);
     app.add_systems(OnEnter(GameMode::Prep), notify_game_mode_all);
     app.add_systems(OnEnter(GameMode::Play), notify_game_mode_all);
-    app.add_systems(OnEnter(GameMode::GameOver),
-            (
-                notify_game_mode_all,
-                set_game_end_flag,
-            )
-        );
+    app.add_systems(OnEnter(GameMode::GameOver), (notify_game_mode_all, set_game_end_flag));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

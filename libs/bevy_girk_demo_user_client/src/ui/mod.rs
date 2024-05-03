@@ -1,4 +1,3 @@
-//module tree
 mod ack_request_window;
 mod game_in_progress;
 mod info;
@@ -8,7 +7,6 @@ mod plugin;
 mod user_client_styles;
 mod utils;
 
-//API exports
 pub(crate) use crate::ui::ack_request_window::*;
 pub(crate) use crate::ui::game_in_progress::*;
 pub(crate) use crate::ui::info::*;

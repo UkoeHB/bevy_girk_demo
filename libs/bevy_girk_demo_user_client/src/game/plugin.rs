@@ -1,13 +1,8 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_user_client_utils::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

@@ -1,13 +1,7 @@
-//local shortcuts
-use bevy_girk_demo_game_core::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_demo_game_core::*;
 use bevy_girk_game_fw::*;
 use serde::{Deserialize, Serialize};
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -37,18 +31,24 @@ pub struct ClientContext
 impl ClientContext
 {
     /// New context
-    pub fn new(
-        client_id       : ClientId,
-        client_type     : ClientType,
-        duration_config : GameDurationConfig,
-    ) -> ClientContext 
+    pub fn new(client_id: ClientId, client_type: ClientType, duration_config: GameDurationConfig)
+        -> ClientContext
     {
-        ClientContext{ client_id, client_type, duration_config }
+        ClientContext { client_id, client_type, duration_config }
     }
 
-    pub fn id(&self) -> ClientId                         { self.client_id }
-    pub fn client_type(&self) -> ClientType              { self.client_type }
-    pub fn duration_config(&self) -> &GameDurationConfig { &self.duration_config }
+    pub fn id(&self) -> ClientId
+    {
+        self.client_id
+    }
+    pub fn client_type(&self) -> ClientType
+    {
+        self.client_type
+    }
+    pub fn duration_config(&self) -> &GameDurationConfig
+    {
+        &self.duration_config
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

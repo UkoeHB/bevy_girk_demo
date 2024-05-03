@@ -1,12 +1,7 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_kot_ui::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -21,19 +16,13 @@ impl Default for BasicText
 {
     fn default() -> Self
     {
-        Self{
-            color: Color::BLACK,
-            font: BASIC_FONT,
-        }
+        Self { color: Color::BLACK, font: BASIC_FONT }
     }
 }
 
 pub fn basic_text_default_light_style() -> BasicText
 {
-    BasicText{
-            color: Color::WHITE,
-            font: BASIC_FONT,
-        }
+    BasicText { color: Color::WHITE, font: BASIC_FONT }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -48,9 +37,7 @@ impl Default for PlainBox
 {
     fn default() -> Self
     {
-        Self{
-            img: BOX,
-        }
+        Self { img: BOX }
     }
 }
 
@@ -66,9 +53,7 @@ impl Default for PlainOutline
 {
     fn default() -> Self
     {
-        Self{
-            img: OUTLINE,
-        }
+        Self { img: OUTLINE }
     }
 }
 
@@ -90,7 +75,7 @@ impl Default for BasicButton
 {
     fn default() -> Self
     {
-        Self{
+        Self {
             default_img: MISC_BUTTON,
             pressed_img: MISC_BUTTON,
             default_img_color: Color::hsl(202., 0.37, 0.37),
@@ -118,7 +103,7 @@ impl Default for BasicButtonAvailability
 {
     fn default() -> Self
     {
-        Self{
+        Self {
             active: basic_button_default_text_style().color,
             inactive: Color::GRAY,
         }
@@ -161,13 +146,13 @@ impl Default for BasicPopup
 {
     fn default() -> Self
     {
-        Self{
+        Self {
             button: BasicButton::default(),
             background: FILM,
             border: PlainOutline::default(),
             backdrop: EMPTY,
             backdrop_color: Color::AZURE,
-            proportions: Vec2{ x: 80.0, y: 80.0 },
+            proportions: Vec2 { x: 80.0, y: 80.0 },
             content_percent: 82.0,
             button_spacing: 15.0,
             button_gap: 31.0,

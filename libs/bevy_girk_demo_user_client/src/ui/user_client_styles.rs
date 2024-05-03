@@ -1,13 +1,8 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_ui_prefab::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
+use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -21,7 +16,7 @@ impl Default for UserClientBackdropStyle
 {
     fn default() -> Self
     {
-        Self{ backdrop_box : PlainBox{ img: CLIENT_BACKDROP } }
+        Self { backdrop_box: PlainBox { img: CLIENT_BACKDROP } }
     }
 }
 
@@ -46,7 +41,7 @@ impl Default for PlayButtonStyle
 {
     fn default() -> Self
     {
-        Self{ 
+        Self {
             default_img: MENU_BAR_BUTTON,
             pressed_img: MENU_BAR_BUTTON,
             default_img_color_play: Color::hsl(94., 1., 0.35),
@@ -76,7 +71,7 @@ impl Default for MenuButtonStyle
 {
     fn default() -> Self
     {
-        Self{ 
+        Self {
             default_img: MENU_BAR_BUTTON,
             pressed_img: MENU_BAR_BUTTON,
             default_img_color: Color::hsl(32., 1., 0.35),
@@ -98,7 +93,7 @@ impl Default for LobbyDisplayStyle
 {
     fn default() -> Self
     {
-        Self{ backdrop_box : PlainBox{ img: LOBBY_BACKDROP } }
+        Self { backdrop_box: PlainBox { img: LOBBY_BACKDROP } }
     }
 }
 
@@ -114,7 +109,7 @@ impl Default for LobbyListStyle
 {
     fn default() -> Self
     {
-        Self{ backdrop_box : PlainBox{ img: LOBBY_BACKDROP } }
+        Self { backdrop_box: PlainBox { img: LOBBY_BACKDROP } }
     }
 }
 
@@ -123,23 +118,23 @@ impl Default for LobbyListStyle
 #[derive(Style, Clone, Debug)]
 pub(crate) struct GameInProgressStyle
 {
-    pub(crate) background_img         : (&'static str, Vec2),
-    pub(crate) background_color       : Color,
-    pub(crate) text                   : BasicText,
-    pub(crate) reconnect_button       : BasicButton,
-    pub(crate) reconnect_button_avail : BasicButtonAvailability,
+    pub(crate) background_img: (&'static str, Vec2),
+    pub(crate) background_color: Color,
+    pub(crate) text: BasicText,
+    pub(crate) reconnect_button: BasicButton,
+    pub(crate) reconnect_button_avail: BasicButtonAvailability,
 }
 
 impl Default for GameInProgressStyle
 {
     fn default() -> Self
     {
-        Self{
-            background_img         : BOX,
-            background_color       : Color::BLACK,
-            text                   : basic_text_default_light_style(),
-            reconnect_button       : BasicButton::default(),
-            reconnect_button_avail : BasicButtonAvailability::default(),
+        Self {
+            background_img: BOX,
+            background_color: Color::BLACK,
+            text: basic_text_default_light_style(),
+            reconnect_button: BasicButton::default(),
+            reconnect_button_avail: BasicButtonAvailability::default(),
         }
     }
 }
@@ -149,13 +144,13 @@ impl Default for GameInProgressStyle
 #[derive(StyleBundle, Default, Debug)]
 pub(crate) struct UserClientStyles
 {
-    prefabs          : BasicPrefabStyles,
-    client_backdrop  : UserClientBackdropStyle,
-    play_button      : PlayButtonStyle,
-    menu_buttons     : MenuButtonStyle,
-    lobby_display    : LobbyDisplayStyle,
-    lobby_list       : LobbyListStyle,
-    game_in_progress : GameInProgressStyle,
+    prefabs: BasicPrefabStyles,
+    client_backdrop: UserClientBackdropStyle,
+    play_button: PlayButtonStyle,
+    menu_buttons: MenuButtonStyle,
+    lobby_display: LobbyDisplayStyle,
+    lobby_list: LobbyListStyle,
+    game_in_progress: GameInProgressStyle,
 }
 
 impl UserClientStyles

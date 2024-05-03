@@ -1,13 +1,8 @@
-//local shortcuts
-use crate::*;
-
-//third-party shortcuts
 use bevy_girk_utils::*;
 use bevy_replicon::prelude::EventType;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -17,7 +12,7 @@ pub enum RejectionReason
 {
     ModeMismatch,
     Invalid,
-    None
+    None,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -26,7 +21,11 @@ pub enum RejectionReason
 #[derive(Debug, Serialize, Deserialize)]
 pub enum GameMsg
 {
-    RequestRejected{ reason: RejectionReason, request: ClientRequest },
+    RequestRejected
+    {
+        reason: RejectionReason,
+        request: ClientRequest,
+    },
     CurrentGameMode(GameMode),
 }
 
@@ -34,10 +33,9 @@ impl IntoEventType for GameMsg
 {
     fn into_event_type(&self) -> EventType
     {
-        match &self
-        {
-            Self::RequestRejected{..} => SendUnordered.into(),
-            Self::CurrentGameMode(_)  => SendOrdered.into(),
+        match &self {
+            Self::RequestRejected { .. } => SendUnordered.into(),
+            Self::CurrentGameMode(_) => SendOrdered.into(),
         }
     }
 }

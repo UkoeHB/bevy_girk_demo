@@ -1,11 +1,7 @@
-//local shortcuts
+use std::collections::HashMap;
 
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-
-//standard shortcuts
-use std::collections::HashMap;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +16,7 @@ impl PlayerMap
 {
     pub fn new(client_to_entity: HashMap<ClientId, Entity>) -> PlayerMap
     {
-        PlayerMap{ client_to_entity }
+        PlayerMap { client_to_entity }
     }
 
     pub fn is_player(&self, client_id: ClientId) -> bool

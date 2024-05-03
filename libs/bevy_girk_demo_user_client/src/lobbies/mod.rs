@@ -1,4 +1,3 @@
-//module tree
 mod ack_request;
 mod lobby_display;
 mod lobby_page;
@@ -6,7 +5,6 @@ mod plugin;
 mod tags;
 mod utils;
 
-//API exports
 pub(crate) use crate::lobbies::ack_request::*;
 pub(crate) use crate::lobbies::lobby_display::*;
 pub(crate) use crate::lobbies::lobby_page::*;

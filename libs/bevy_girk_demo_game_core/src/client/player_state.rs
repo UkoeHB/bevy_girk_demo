@@ -1,6 +1,3 @@
-//local shortcuts
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_kot_ecs::*;
@@ -8,16 +5,13 @@ use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
 
-//standard shortcuts
-
-
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player id component (wraps the player's client id).
 #[derive(Component, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerId
 {
-    pub id: ClientId
+    pub id: ClientId,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -31,17 +25,25 @@ pub struct PlayerName
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
+#[derive(
+    Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug,
+)]
 pub struct PlayerScore
 {
     /// Note: This is only `pub` for testing purposes.
-    pub score: u32
+    pub score: u32,
 }
 
 impl PlayerScore
 {
-    pub(crate) fn increment(&mut self) { self.score += 1; }
-    pub fn score(&self) -> u32 { self.score }
+    pub(crate) fn increment(&mut self)
+    {
+        self.score += 1;
+    }
+    pub fn score(&self) -> u32
+    {
+        self.score
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

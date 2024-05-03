@@ -1,13 +1,8 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_game_core::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_girk_client_fw::*;
+use bevy_girk_demo_game_core::*;
 
-//standard shortcuts
-
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -30,7 +25,9 @@ pub(crate) fn setup_client_request_buffer(mut commands: Commands)
 /// Initializes the client state.
 pub(crate) fn setup_client_state(world: &mut World)
 {
-    let initializer = world.remove_resource::<ClientInitializer>().expect("initializer missing");
+    let initializer = world
+        .remove_resource::<ClientInitializer>()
+        .expect("initializer missing");
     world.insert_resource(initializer.context);
 }
 

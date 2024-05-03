@@ -1,19 +1,13 @@
-//local shortcuts
-use crate::*;
-use bevy_girk_demo_ui_prefab::*;
-
-//third-party shortcuts
 use bevy::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_client_fw::*;
+use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_game_fw::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
-//standard shortcuts
+use crate::*;
 
-
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Resource, Debug)]
@@ -24,14 +18,12 @@ struct InitializingOverlay
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn activate_initializing_overlay(mut ui: UiUtils<MainUi>, overlay: Res<InitializingOverlay>)
 {
     ui.toggle(true, &overlay.overlay);
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 fn deactivate_initializing_overlay(mut ui: UiUtils<MainUi>, overlay: Res<InitializingOverlay>)
@@ -40,13 +32,13 @@ fn deactivate_initializing_overlay(mut ui: UiUtils<MainUi>, overlay: Res<Initial
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
 
 fn update_loading_bar(
-    mut ui   : UiBuilder<MainUi>,
-    overlay  : Res<InitializingOverlay>,
-    progress : Query<&GameInitProgress>,
-){
+    mut ui: UiBuilder<MainUi>,
+    overlay: Res<InitializingOverlay>,
+    progress: Query<&GameInitProgress>,
+)
+{
     let progress = progress
         .get_single()
         .map(|p| *p)
@@ -55,23 +47,30 @@ fn update_loading_bar(
         .min(1.0);
 
     // set bar width equal to the progress
-    let Ok(bar_branch) = overlay.loading_bar.fetch_mut(ui.tree())
-    else { tracing::error!("loading bar missing in ui tree"); return; };
+    let Ok(bar_branch) = overlay.loading_bar.fetch_mut(ui.tree()) else {
+        tracing::error!("loading bar missing in ui tree");
+        return;
+    };
 
-    let LayoutPackage::Relative(layout) = bar_branch.get_container_mut().get_layout_mut()
-    else { tracing::error!("loading bar not relative layout"); return; };
+    let LayoutPackage::Relative(layout) = bar_branch.get_container_mut().get_layout_mut() else {
+        tracing::error!("loading bar not relative layout");
+        return;
+    };
 
     layout.relative_2.x = progress * 100.;
 }
 
-//-------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // prep overlay
     let overlay = make_overlay(ui.tree(), area, "", false);
-    overlay.fetch_mut(ui.tree()).unwrap().get_container_mut().set_render_depth(Modifier::Set(750.));
+    overlay
+        .fetch_mut(ui.tree())
+        .unwrap()
+        .get_container_mut()
+        .set_render_depth(Modifier::Set(750.));
 
     // style
     let style = ui.style::<GameInitializingStyle>();
@@ -79,16 +78,17 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // add screen
     let barrier = relative_widget(ui.tree(), overlay.end(""), (-10., 110.), (-10., 110.));
     let barrier_img = ImageElementBundle::new(
-            &barrier,
-            ImageParams::center()
-                .with_width(Some(100.))
-                .with_height(Some(100.))
-                .with_color(style.background_color),
-            ui.asset_server.load(style.background_img.0),
-            style.background_img.1
-        );
+        &barrier,
+        ImageParams::center()
+            .with_width(Some(100.))
+            .with_height(Some(100.))
+            .with_color(style.background_color),
+        ui.asset_server.load(style.background_img.0),
+        style.background_img.1,
+    );
     ui.commands().spawn(barrier_img);
-    ui.commands().spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
+    ui.commands()
+        .spawn((barrier, UiInteractionBarrier::<MainUi>::default()));
 
     // add text
     let text_style = style.text.clone();
@@ -103,33 +103,34 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // add loading bar box
     let bar_box = relative_widget(ui.tree(), overlay.end(""), (30., 70.), (50., 70.));
     let bar_box_img = ImageElementBundle::new(
-            &bar_box,
-            ImageParams::center()
-                .with_width(Some(100.))
-                .with_height(Some(100.))
-                //.with_depth(0.1)
-                .with_color(style.loading_bar_box_color),
-            ui.asset_server.load(style.loading_bar_box_img.0),
-            style.loading_bar_box_img.1
-        );
+        &bar_box,
+        ImageParams::center()
+            .with_width(Some(100.))
+            .with_height(Some(100.))
+            //.with_depth(0.1)
+            .with_color(style.loading_bar_box_color),
+        ui.asset_server.load(style.loading_bar_box_img.0),
+        style.loading_bar_box_img.1,
+    );
     ui.commands().spawn(bar_box_img);
 
     // add loading bar
     let loading_bar_frame = relative_widget(ui.tree(), bar_box.end(""), (0.5, 99.5), (0.5, 99.5));
     let loading_bar = relative_widget(ui.tree(), loading_bar_frame.end(""), (0., 0.), (0., 100.));
     let loading_bar_img = ImageElementBundle::new(
-            &loading_bar,
-            ImageParams::center()
-                .with_width(Some(100.))
-                .with_height(Some(100.))
-                .with_color(style.loading_bar_color),
-            ui.asset_server.load(style.loading_bar_img.0),
-            style.loading_bar_img.1
-        );
+        &loading_bar,
+        ImageParams::center()
+            .with_width(Some(100.))
+            .with_height(Some(100.))
+            .with_color(style.loading_bar_color),
+        ui.asset_server.load(style.loading_bar_img.0),
+        style.loading_bar_img.1,
+    );
     ui.commands().spawn(loading_bar_img);
 
     // insert overlay resource
-    ui.commands().insert_resource(InitializingOverlay{ overlay, loading_bar });
+    ui.commands()
+        .insert_resource(InitializingOverlay { overlay, loading_bar });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -139,10 +140,9 @@ pub(crate) fn UiInitializingPlugin(app: &mut App)
 {
     app.add_systems(OnEnter(ClientFwMode::Connecting), activate_initializing_overlay)
         .add_systems(OnExit(ClientFwMode::Init), deactivate_initializing_overlay)
-        .add_systems(Update,
-            update_loading_bar
-                .in_set(ClientFwSet::End)
-                //.in_set(ClientSet::InitCore)
+        .add_systems(
+            Update,
+            update_loading_bar.in_set(ClientFwSet::End), //.in_set(ClientSet::InitCore)
         );
 }
 

@@ -1,10 +1,4 @@
-//local shortcuts
-
-//third-party shortcuts
 use bevy_cobweb::prelude::*;
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -20,11 +14,10 @@ impl ConnectionStatus
 {
     pub(crate) fn to_str(&self) -> &'static str
     {
-        match self
-        {
+        match self {
             ConnectionStatus::Connecting => "Connecting...",
-            ConnectionStatus::Connected  => "Connected",
-            ConnectionStatus::Dead       => "DEAD",
+            ConnectionStatus::Connected => "Connected",
+            ConnectionStatus::Dead => "DEAD",
         }
     }
 }

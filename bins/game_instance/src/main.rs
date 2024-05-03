@@ -1,14 +1,6 @@
-//module tree
-
-//local shortcuts
 use bevy_girk_demo_wiring_game_instance::*;
-
-//third-party shortcuts
 use bevy_girk_game_instance::*;
 use clap::Parser;
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +10,8 @@ fn main()
     //todo: log to file instead (use env::arg configs?)
     let filter = tracing_subscriber::EnvFilter::builder()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
-        .from_env().unwrap();
+        .from_env()
+        .unwrap();
     tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)

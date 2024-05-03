@@ -1,10 +1,4 @@
-//local shortcuts
 use bevy_girk_demo_game_core::*;
-
-//third-party shortcuts
-
-//standard shortcuts
-
 
 //-------------------------------------------------------------------------------------------------------------------
 
