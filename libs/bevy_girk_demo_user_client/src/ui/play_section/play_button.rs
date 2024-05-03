@@ -168,9 +168,7 @@ pub(crate) fn deselect_main_play_button_for_menu_button(
     if selected_main_menu_button.is_empty() {
         return;
     }
-    let Ok(deselect_callback) = selected_main_play_button.get_single() else {
-        return;
-    };
+    let Ok(deselect_callback) = selected_main_play_button.get_single() else { return };
     commands.add(deselect_callback.clone());
 }
 
@@ -189,9 +187,7 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
     if selected_main_play_button.is_empty() {
         return;
     }
-    let Ok(deselect_callback) = selected_main_menu_button.get_single() else {
-        return;
-    };
+    let Ok(deselect_callback) = selected_main_menu_button.get_single() else { return };
     commands.add(deselect_callback.clone());
 }
 

@@ -9,9 +9,7 @@ use crate::*;
 
 fn process_player_inputs(world: &mut World, handler: impl Fn(&mut World, PlayerClientInput))
 {
-    let Some(player_inputs) = world.remove_resource::<Receiver<PlayerClientInput>>() else {
-        return;
-    };
+    let Some(player_inputs) = world.remove_resource::<Receiver<PlayerClientInput>>() else { return };
 
     while let Some(input) = player_inputs.try_recv() {
         if world.resource::<ClientContext>().client_type() != ClientType::Player {
