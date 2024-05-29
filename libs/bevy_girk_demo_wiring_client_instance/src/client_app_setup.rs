@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_client_skin::*;
-use bevy_girk_game_fw::*;
 use bevy_kot_utils::*;
+use bevy_replicon::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

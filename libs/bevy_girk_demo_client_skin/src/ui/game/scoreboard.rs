@@ -2,11 +2,13 @@ use std::collections::{BTreeSet, HashMap};
 use std::fmt::Write;
 
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_game_core::*;
 use bevy_girk_demo_ui_prefab::*;
-use bevy_kot::prelude::*;
+use bevy_kot_ui::builtin::*;
+use bevy_kot_ui::{relative_widget, UiBuilder};
 use bevy_lunex::prelude::*;
 
 use crate::*;
@@ -97,13 +99,16 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
     let scoreboard = relative_widget(ui.tree(), area.end(""), (10., 90.), (5., 95.));
 
     // dynamically add player when player is inserted
-    ui.rcommands.on(
+    ui.commands().react().on(
         (insertion::<PlayerScore>(), insertion::<PlayerName>()),
-        move |In(player_entity): In<Entity>,
+        move |score_event: InsertionEvent<PlayerScore>,
+              name_event: InsertionEvent<PlayerName>,
               mut ui: UiBuilder<MainUi>,
               mut tracker: ReactResMut<GameScoreboardTracker>,
               ctx: Res<ClientContext>,
               players: Query<(&PlayerId, &React<PlayerName>, &React<PlayerScore>)>| {
+            let player_entity = score_event.read().or_else(|| name_event.read()).unwrap();
+
             // access player
             // - this requires insertion of all components, but components are inserted one at a time, so this will
             //   always fail until all are present
@@ -148,7 +153,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
             }
 
             // update score display value when PlayerScore is mutated
-            let revoke_token = ui.rcommands.on(
+            let revoke_token = ui.commands().react().on_revokable(
                 entity_mutation::<PlayerScore>(player_entity),
                 move |mut ui: UiUtils<MainUi>,
                       players: Query<(&React<PlayerName>, &React<PlayerScore>), With<PlayerId>>,
@@ -168,7 +173,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
                     // update tracker
                     tracker
-                        .get_mut(&mut ui.builder.rcommands)
+                        .get_mut(&mut ui.builder.commands())
                         .update_score(player_entity, **score);
                 },
             );
@@ -179,7 +184,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 // remove entry from tracker
                 // - the placement entry returned is the 'last' position in the scoreboard
                 let Some(placement_entry) = tracker
-                    .get_mut(&mut ui.builder.rcommands)
+                    .get_mut(&mut ui.builder.commands())
                     .pop_entry(player_entity)
                 else {
                     tracing::warn!(?player_entity, "dead player is missing from scoreboard tracker");
@@ -189,15 +194,16 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                 // clean up ui
                 ui.remove_widget(&placement_entry);
                 ui.remove_widget(&score_entry_clone.clone());
-                ui.builder.rcommands.revoke(revoke_token.clone());
+                ui.builder.commands().react().revoke(revoke_token.clone());
             };
-            ui.rcommands
-                .once(entity_removal::<PlayerScore>(player_entity), cleanup.clone());
-            ui.rcommands.on_despawn(player_entity, cleanup).unwrap();
+            ui.commands().react().on(
+                (despawn(player_entity), entity_removal::<PlayerScore>(player_entity)),
+                cleanup,
+            );
 
             // add entry to tracker
             tracker
-                .get_mut(&mut ui.rcommands)
+                .get_mut(&mut ui.commands())
                 .add(player_entity, placement_entry, score_entry, **score);
 
             // end style
@@ -206,7 +212,7 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
     );
 
     // update score positions when the tracker is modified
-    ui.rcommands.on(
+    ui.commands().react().on(
         resource_mutation::<GameScoreboardTracker>(),
         |mut ui: UiUtils<MainUi>, tracker: ReactRes<GameScoreboardTracker>| {
             // iterate up from the lowest score

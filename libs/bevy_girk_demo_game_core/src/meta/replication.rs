@@ -1,14 +1,16 @@
 use std::io::Cursor;
 
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
-use bevy_kot_ecs::*;
 use bevy_replicon::bincode;
-use bevy_replicon::bincode::*;
+use bevy_replicon::core::ctx::WriteCtx;
+use bevy_replicon::core::replication_registry::command_fns::default_remove;
+use bevy_replicon::core::replication_registry::rule_fns::RuleFns;
 use bevy_replicon::prelude::*;
-use bevy_replicon::replicon_core::replication_rules::*;
 use bevy_replicon_repair::*;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 
 use crate::*;
 
@@ -16,31 +18,53 @@ use crate::*;
 
 fn update_react_component<C: ReactComponent>(
     In((component, entity)): In<(C, Entity)>,
-    mut rcommands: ReactCommands,
+    mut c: Commands,
     mut query: Query<&mut React<C>>,
 )
 {
     let Ok(mut existing) = query.get_mut(entity) else {
-        rcommands.insert(entity, component);
+        c.react().insert(entity, component);
         return;
     };
-    *existing.get_mut(&mut rcommands) = component;
+    *existing.get_mut(&mut c) = component;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn deserialize_react_component<C: Component + ReactComponent + DeserializeOwned>(
-    entity: &mut EntityWorldMut,
-    _entity_map: &mut ServerEntityMap,
+fn write_react_component<C: Component + ReactComponent + DeserializeOwned>(
+    ctx: &mut WriteCtx,
+    rule_fns: &RuleFns<C>,
+    entity: &mut EntityMut,
     cursor: &mut Cursor<&[u8]>,
-    _tick: RepliconTick,
 ) -> bincode::Result<()>
 {
-    let component: C = DefaultOptions::new().deserialize_from(cursor)?;
+    let component: C = rule_fns.deserialize(ctx, cursor)?;
     let entity_id = entity.id();
-    entity.world_scope(move |world| syscall(world, (component, entity_id), update_react_component));
+    ctx.commands
+        .add(move |world: &mut World| syscall(world, (component, entity_id), update_react_component));
 
     Ok(())
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+//todo: move to bevy_girk
+trait ReplicateRepairReactExt
+{
+    fn replicate_repair_react<C>(&mut self) -> &mut Self
+    where
+        C: Component + ReactComponent + Serialize + DeserializeOwned;
+}
+
+impl ReplicateRepairReactExt for App
+{
+    fn replicate_repair_react<C>(&mut self) -> &mut Self
+    where
+        C: Component + ReactComponent + Serialize + DeserializeOwned,
+    {
+        self.set_command_fns::<C>(write_react_component::<C>, default_remove::<React<C>>)
+            .replicate_repair_with::<C>(RuleFns::<C>::default(), repair_component::<React<C>>)
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -52,18 +76,8 @@ fn deserialize_react_component<C: Component + ReactComponent + DeserializeOwned>
 pub fn GameReplicationPlugin(app: &mut App)
 {
     app.replicate_repair::<PlayerId>()
-        .replicate_repair_with::<PlayerName>(
-            serialize_component::<PlayerName>,
-            deserialize_react_component::<PlayerName>,
-            remove_component::<React<PlayerName>>,
-            repair_component::<React<PlayerName>>,
-        )
-        .replicate_repair_with::<PlayerScore>(
-            serialize_component::<PlayerScore>,
-            deserialize_react_component::<PlayerScore>,
-            remove_component::<React<PlayerScore>>,
-            repair_component::<React<PlayerScore>>,
-        );
+        .replicate_repair_react::<PlayerName>()
+        .replicate_repair_react::<PlayerScore>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

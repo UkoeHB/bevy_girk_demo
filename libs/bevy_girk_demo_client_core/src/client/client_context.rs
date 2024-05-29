@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_girk_demo_game_core::*;
-use bevy_girk_game_fw::*;
+use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------

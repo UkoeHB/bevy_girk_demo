@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
+use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 
 use crate::*;

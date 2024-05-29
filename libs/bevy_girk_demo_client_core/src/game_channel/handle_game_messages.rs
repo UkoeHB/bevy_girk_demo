@@ -1,8 +1,8 @@
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_girk_client_fw::*;
 use bevy_girk_demo_game_core::*;
 use bevy_girk_game_fw::*;
-use bevy_kot_ecs::*;
 
 use crate::*;
 

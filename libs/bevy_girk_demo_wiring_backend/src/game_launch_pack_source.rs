@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_wiring_game_instance::*;
-use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
+use bevy_replicon::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use rand::seq::SliceRandom;
 #[cfg(not(target_family = "wasm"))]
@@ -34,7 +34,7 @@ fn make_player_init_data(
     client_id: ClientId,
 ) -> ClickClientInitDataForGame
 {
-    let init = ClickClientInit::Player { client_id, player_name: format!("player{}", client_id) };
+    let init = ClickClientInit::Player { client_id, player_name: format!("player{}", client_id.get()) };
 
     ClickClientInitDataForGame { env, user_id, init }
 }
@@ -99,12 +99,12 @@ pub fn get_launch_pack(
     let mut client_init_data = Vec::with_capacity(num_players + num_watchers);
 
     for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate() {
-        let client_id = ClientId::from_raw(idx as u64);
+        let client_id = ClientId::new(idx as u64);
         client_init_data.push(make_player_init_data(*env, *player_user_id, client_id));
     }
 
     for (idx, (env, watcher_user_id)) in lobby_contents.watchers.iter().enumerate() {
-        let client_id = ClientId::from_raw((idx + num_players) as u64);
+        let client_id = ClientId::new((idx + num_players) as u64);
         client_init_data.push(make_watcher_init_data(*env, *watcher_user_id, client_id));
     }
 

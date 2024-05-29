@@ -44,6 +44,7 @@ fn BevyEnginePlugin(app: &mut App)
 pub fn ClickClientSkinPlugin(app: &mut App)
 {
     app.add_plugins(bevy_kot::prelude::ReactPlugin)
+        .add_plugins(bevy_cobweb::prelude::ReactPlugin)
         .add_plugins(BevyEnginePlugin)
         .add_plugins(UiPlugin)
         .add_plugins(LoadingSimPlugin);

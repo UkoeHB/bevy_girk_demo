@@ -2,12 +2,39 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_fn_plugin::*;
 use bevy_girk_demo_ui_prefab::*;
-use bevy_kot_ecs::try_set_component;
 use bevy_kot_ui::builtin::{MainUi, MouseLButtonMain};
 use bevy_kot_ui::{make_overlay, toggle_ui_visibility, Deselect, InteractiveElementBuilder, Selected, UiBuilder};
 use bevy_lunex::prelude::*;
 
 use crate::*;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Try to set the value of a component on an entity.
+///
+/// Returns `true` if the component was added-to or updated on the entity.
+/// - Returns `false` if the value wouldn't change.
+/// - Does not trigger change detection unless the component is added or modified.
+fn try_set_component<C: Component + Eq>(world: &mut World, entity: Entity, component: C) -> bool
+{
+    // try to get the entity
+    let Some(mut entity_mut) = world.get_entity_mut(entity) else {
+        return false;
+    };
+
+    // get or insert the value
+    let Some(mut existing_component) = entity_mut.get_mut::<C>() else {
+        entity_mut.insert(component);
+        return true;
+    };
+
+    // update if value is new
+    if *(existing_component.bypass_change_detection()) == component {
+        return false;
+    }
+    *existing_component = component;
+    true
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -168,7 +195,9 @@ pub(crate) fn deselect_main_play_button_for_menu_button(
     if selected_main_menu_button.is_empty() {
         return;
     }
-    let Ok(deselect_callback) = selected_main_play_button.get_single() else { return };
+    let Ok(deselect_callback) = selected_main_play_button.get_single() else {
+        return;
+    };
     commands.add(deselect_callback.clone());
 }
 
@@ -187,7 +216,9 @@ pub(crate) fn deselect_main_menu_button_for_play_button(
     if selected_main_play_button.is_empty() {
         return;
     }
-    let Ok(deselect_callback) = selected_main_menu_button.get_single() else { return };
+    let Ok(deselect_callback) = selected_main_menu_button.get_single() else {
+        return;
+    };
     commands.add(deselect_callback.clone());
 }
 

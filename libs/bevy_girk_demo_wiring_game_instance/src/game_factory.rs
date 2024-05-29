@@ -10,6 +10,7 @@ use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use bevy_girk_wiring::*;
+use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
 
@@ -154,7 +155,7 @@ fn get_game_start_infos(
         start_infos.push(GameStartInfo {
             game_id,
             user_id: *user_id,
-            client_id: client_id.raw(),
+            client_id: client_id.get(),
             serialized_start_data: ser_msg(&client_start_pack),
         });
     }

@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy_girk_game_fw::*;
-use bevy_kot_ecs::*;
+use bevy_cobweb::prelude::*;
 use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
@@ -59,7 +58,7 @@ pub struct PlayerState
     /// Current player score
     pub score: PlayerScore,
     /// Players are replicated
-    pub replicate: Replication,
+    pub replicate: Replicated,
     /// Players have a visibility condition.
     pub visibility: VisibilityCondition,
 }

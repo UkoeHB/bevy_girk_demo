@@ -10,6 +10,7 @@ doctest = false
 [dependencies]
 bevy           = { version = "0.13", default-features = false }
 bevy_kot_utils = { workspace = true }
+bevy_replicon  = { workspace = true }
 serde          = { workspace = true }
 serde_json     = { workspace = true }
 tracing        = { workspace = true }

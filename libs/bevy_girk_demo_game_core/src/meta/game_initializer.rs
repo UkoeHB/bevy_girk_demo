@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
-use bevy_girk_game_fw::*;
+use bevy_replicon::prelude::*;
 
 use crate::*;
 

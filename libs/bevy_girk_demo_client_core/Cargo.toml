@@ -9,9 +9,10 @@ doctest = false
 
 [dependencies]
 bevy           = { version = "0.13", default-features = false }
+bevy_cobweb    = { workspace = true }
 bevy_fn_plugin = { workspace = true }
-bevy_kot_ecs   = { workspace = true }
 bevy_kot_utils = { workspace = true }
+bevy_replicon  = { workspace = true }
 serde          = { workspace = true }
 tracing        = { workspace = true }
 
