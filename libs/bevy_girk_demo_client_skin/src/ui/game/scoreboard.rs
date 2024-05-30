@@ -7,6 +7,7 @@ use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_game_core::*;
 use bevy_girk_demo_ui_prefab::*;
+use bevy_girk_game_fw::*;
 use bevy_kot_ui::builtin::*;
 use bevy_kot_ui::{relative_widget, UiBuilder};
 use bevy_lunex::prelude::*;
@@ -93,6 +94,18 @@ impl GameScoreboardTracker
 
 //-------------------------------------------------------------------------------------------------------------------
 
+#[derive(Debug, Copy, Clone)]
+struct NewPlayer(Entity);
+
+fn watch_for_new_players(mut c: Commands, new_players: Query<Entity, Added<PlayerId>>)
+{
+    for new_player in new_players.iter() {
+        c.react().broadcast(NewPlayer(new_player));
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // scoreboard section
@@ -100,19 +113,19 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // dynamically add player when player is inserted
     ui.commands().react().on(
-        (insertion::<PlayerScore>(), insertion::<PlayerName>()),
-        move |score_event: InsertionEvent<PlayerScore>,
-              name_event: InsertionEvent<PlayerName>,
+        broadcast::<NewPlayer>(),
+        move |event: BroadcastEvent<NewPlayer>,
               mut ui: UiBuilder<MainUi>,
               mut tracker: ReactResMut<GameScoreboardTracker>,
               ctx: Res<ClientContext>,
               players: Query<(&PlayerId, &React<PlayerName>, &React<PlayerScore>)>| {
-            let player_entity = score_event.read().or_else(|| name_event.read()).unwrap();
+            let NewPlayer(player_entity) = event.read().unwrap().clone();
 
             // access player
             // - this requires insertion of all components, but components are inserted one at a time, so this will
             //   always fail until all are present
             let Ok((id, name, score)) = players.get(player_entity) else {
+                tracing::error!("new player is missing all player components");
                 return;
             };
 
@@ -249,7 +262,13 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 #[bevy_plugin]
 pub(crate) fn UiGameScoreboardPlugin(app: &mut App)
 {
-    app.init_react_resource::<GameScoreboardTracker>();
+    app.init_react_resource::<GameScoreboardTracker>()
+        .add_systems(
+            Update,
+            watch_for_new_players
+                .in_set(GameFwSet::Start)
+                .in_set(GameSet::Play),
+        );
 }
 
 //-------------------------------------------------------------------------------------------------------------------

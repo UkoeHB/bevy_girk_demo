@@ -44,10 +44,11 @@ pub fn GameStartupPlugin(app: &mut App)
 
 /// System sets that contain tick game logic. These don't run during initialization.
 ///
-/// These sets are modal.
+/// These sets are modal. Use [`GameFwSet`] for ordinal control.
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSet
 {
+    /// Runs in [`Update`] when not in [`GameFwModeInit`].
     PostInit,
     Prep,
     Play,
