@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_client_fw::*;
 use iyes_progress::*;
 
@@ -44,25 +43,29 @@ fn initialization_timer(time: Res<Time>, start: Res<LoadingStartTime>) -> Progre
 /// Plugin for simulating loading delay when initializing the app.
 ///
 /// The timer starts when the client connects.
-#[bevy_plugin]
-pub(crate) fn LoadingSimPlugin(app: &mut App)
+pub(crate) struct LoadingSimPlugin;
+
+impl Plugin for LoadingSimPlugin
 {
-    app.insert_resource(LoadingStartTime(Duration::default()))
-        .add_systems(
-            Update,
-            no_progress
-                .track_progress()
-                .run_if(in_state(ClientFwMode::Connecting))
-                .in_set(ClientFwLoadingSet),
-        )
-        .add_systems(
-            Update,
-            initialization_timer
-                .track_progress()
-                .run_if(not(in_state(ClientFwMode::Connecting)))
-                .in_set(ClientFwLoadingSet),
-        )
-        .add_systems(OnEnter(ClientFwMode::Syncing), reset_loading_time_start);
+    fn build(&self, app: &mut App)
+    {
+        app.insert_resource(LoadingStartTime(Duration::default()))
+            .add_systems(
+                Update,
+                no_progress
+                    .track_progress()
+                    .run_if(in_state(ClientFwMode::Connecting))
+                    .in_set(ClientFwLoadingSet),
+            )
+            .add_systems(
+                Update,
+                initialization_timer
+                    .track_progress()
+                    .run_if(not(in_state(ClientFwMode::Connecting)))
+                    .in_set(ClientFwLoadingSet),
+            )
+            .add_systems(OnEnter(ClientFwMode::Syncing), reset_loading_time_start);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

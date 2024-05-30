@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
@@ -68,10 +67,14 @@ pub(crate) fn add_game_over(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameOverPlugin(app: &mut App)
+pub struct UiGameOverPlugin;
+
+impl Plugin for UiGameOverPlugin
 {
-    app.add_systems(OnEnter(ClientMode::GameOver), activate_game_over_overlay);
+    fn build(&self, app: &mut App)
+    {
+        app.add_systems(OnEnter(ClientMode::GameOver), activate_game_over_overlay);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

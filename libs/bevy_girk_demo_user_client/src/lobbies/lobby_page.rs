@@ -1,7 +1,7 @@
 use std::vec::Vec;
 
+use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_wiring_backend::*;
 
@@ -117,14 +117,18 @@ impl LobbyPageRequest
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn LobbyPagePlugin(app: &mut App)
+pub(crate) struct LobbyPagePlugin;
+
+impl Plugin for LobbyPagePlugin
 {
-    app.insert_react_resource(LobbyPage::default())
-        .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder {
-            youngest_id: u64::MAX,
-            num: LOBBY_LIST_SIZE as u16,
-        }));
+    fn build(&self, app: &mut App)
+    {
+        app.insert_react_resource(LobbyPage::default())
+            .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder {
+                youngest_id: u64::MAX,
+                num: LOBBY_LIST_SIZE as u16,
+            }));
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

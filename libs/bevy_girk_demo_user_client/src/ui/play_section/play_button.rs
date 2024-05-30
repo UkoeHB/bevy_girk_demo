@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot_ui::builtin::{MainUi, MouseLButtonMain};
 use bevy_kot_ui::{make_overlay, toggle_ui_visibility, Deselect, InteractiveElementBuilder, Selected, UiBuilder};
@@ -290,18 +289,22 @@ pub(crate) fn add_play_button(ui: &mut UiBuilder<MainUi>, button: &Widget, area_
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiPlayButtonPlugin(app: &mut App)
+pub(crate) struct UiPlayButtonPlugin;
+
+impl Plugin for UiPlayButtonPlugin
 {
-    app.add_systems(Startup, setup).add_systems(
-        PreUpdate,
-        (
-            deselect_main_play_button_for_menu_button,
-            deselect_main_menu_button_for_play_button,
-            apply_deferred,
-        )
-            .chain(),
-    );
+    fn build(&self, app: &mut App)
+    {
+        app.add_systems(Startup, setup).add_systems(
+            PreUpdate,
+            (
+                deselect_main_play_button_for_menu_button,
+                deselect_main_menu_button_for_play_button,
+                apply_deferred,
+            )
+                .chain(),
+        );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

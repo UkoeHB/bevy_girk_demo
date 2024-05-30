@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
@@ -16,7 +15,11 @@ pub(crate) fn add_disconnector(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameDisconnectorPlugin(_app: &mut App) {}
+pub(crate) struct UiGameDisconnectorPlugin;
+
+impl Plugin for UiGameDisconnectorPlugin
+{
+    fn build(&self, _app: &mut App) {}
+}
 
 //-------------------------------------------------------------------------------------------------------------------

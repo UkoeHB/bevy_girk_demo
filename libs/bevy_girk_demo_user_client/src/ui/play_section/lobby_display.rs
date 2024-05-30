@@ -4,7 +4,6 @@ use std::vec::Vec;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -661,11 +660,15 @@ pub(crate) fn add_lobby_display(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiLobbyDisplayPlugin(app: &mut App)
+pub(crate) struct UiLobbyDisplayPlugin;
+
+impl Plugin for UiLobbyDisplayPlugin
 {
-    app.insert_react_resource(PlayerListPage(0))
-        .insert_react_resource(WatcherListPage(0));
+    fn build(&self, app: &mut App)
+    {
+        app.insert_react_resource(PlayerListPage(0))
+            .insert_react_resource(WatcherListPage(0));
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
+use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_wiring_backend::*;
 
@@ -99,10 +99,14 @@ impl Default for LobbyDisplay
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn LobbyDisplayPlugin(app: &mut App)
+pub(crate) struct LobbyDisplayPlugin;
+
+impl Plugin for LobbyDisplayPlugin
 {
-    app.insert_react_resource(LobbyDisplay::default());
+    fn build(&self, app: &mut App)
+    {
+        app.insert_react_resource(LobbyDisplay::default());
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

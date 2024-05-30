@@ -6,7 +6,6 @@ use std::vec::Vec;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -531,36 +530,42 @@ pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiLobbyListPlugin(app: &mut App)
-{
-    let timer_configs = app.world.resource::<TimerConfigs>();
-    let lobby_list_refresh = Duration::from_millis(timer_configs.lobby_list_refresh_ms);
+pub(crate) struct UiLobbyListPlugin;
 
-    app.add_plugins(UiJoinLobbyWindowPlugin)
-        .add_plugins(UiMakeLobbyWindowPlugin)
-        .add_systems(
-            PreUpdate,
-            (refresh_lobby_list, apply_deferred)
-                .chain()
-                // refresh the list automatically if:
-                // - in play section
-                // - connected to host
-                //todo: not in game
-                // - on timer OR just connected to host (note: test timer first to avoid double-refresh when timer
-                //   is saturated) OR the lobby display was just changed OR the user just toggled to the play
-                //   section
-                .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| !play_section.is_empty())
-                .run_if(|status: ReactRes<ConnectionStatus>| *status == ConnectionStatus::Connected)
-                .run_if(
-                    on_timer(lobby_list_refresh)
-                        .or_else(|status: ReactRes<ConnectionStatus>| status.is_changed())
-                        .or_else(|display: ReactRes<LobbyDisplay>| display.is_changed())
-                        .or_else(|play_section: Query<(), (Added<Selected>, With<MainPlayButton>)>| {
-                            !play_section.is_empty()
-                        }),
-                ),
-        );
+impl Plugin for UiLobbyListPlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        let timer_configs = app.world.resource::<TimerConfigs>();
+        let lobby_list_refresh = Duration::from_millis(timer_configs.lobby_list_refresh_ms);
+
+        app.add_plugins(UiJoinLobbyWindowPlugin)
+            .add_plugins(UiMakeLobbyWindowPlugin)
+            .add_systems(
+                PreUpdate,
+                (refresh_lobby_list, apply_deferred)
+                    .chain()
+                    // refresh the list automatically if:
+                    // - in play section
+                    // - connected to host
+                    //todo: not in game
+                    // - on timer OR just connected to host (note: test timer first to avoid double-refresh when
+                    //   timer is saturated) OR the lobby display was just changed OR the user just toggled to the
+                    //   play section
+                    .run_if(|play_section: Query<(), (With<Selected>, With<MainPlayButton>)>| {
+                        !play_section.is_empty()
+                    })
+                    .run_if(|status: ReactRes<ConnectionStatus>| *status == ConnectionStatus::Connected)
+                    .run_if(
+                        on_timer(lobby_list_refresh)
+                            .or_else(|status: ReactRes<ConnectionStatus>| status.is_changed())
+                            .or_else(|display: ReactRes<LobbyDisplay>| display.is_changed())
+                            .or_else(|play_section: Query<(), (Added<Selected>, With<MainPlayButton>)>| {
+                                !play_section.is_empty()
+                            }),
+                    ),
+            );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

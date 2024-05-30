@@ -2,7 +2,6 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot_ui::builtin::MainUi;
@@ -160,7 +159,11 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiAckLobbyWindowPlugin(_app: &mut App) {}
+pub(crate) struct UiAckLobbyWindowPlugin;
+
+impl Plugin for UiAckLobbyWindowPlugin
+{
+    fn build(&self, _app: &mut App) {}
+}
 
 //-------------------------------------------------------------------------------------------------------------------

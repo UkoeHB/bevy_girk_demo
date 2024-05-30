@@ -2,7 +2,6 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -282,10 +281,14 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUi>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiJoinLobbyWindowPlugin(app: &mut App)
+pub(crate) struct UiJoinLobbyWindowPlugin;
+
+impl Plugin for UiJoinLobbyWindowPlugin
 {
-    app.insert_react_resource(JoinLobbyWindow::default());
+    fn build(&self, app: &mut App)
+    {
+        app.insert_react_resource(JoinLobbyWindow::default());
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

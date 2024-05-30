@@ -1,4 +1,4 @@
-use bevy_fn_plugin::*;
+use bevy::prelude::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
@@ -26,12 +26,16 @@ pub(crate) fn add_play_section(ui: &mut UiBuilder<MainUi>, play_button: &Widget,
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiPlaySectionPlugin(app: &mut App)
+pub(crate) struct UiPlaySectionPlugin;
+
+impl Plugin for UiPlaySectionPlugin
 {
-    app.add_plugins(UiPlayButtonPlugin)
-        .add_plugins(UiLobbyDisplayPlugin)
-        .add_plugins(UiLobbyListPlugin);
+    fn build(&self, app: &mut App)
+    {
+        app.add_plugins(UiPlayButtonPlugin)
+            .add_plugins(UiLobbyDisplayPlugin)
+            .add_plugins(UiLobbyListPlugin);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

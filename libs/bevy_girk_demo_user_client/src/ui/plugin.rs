@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use bevy_fn_plugin::bevy_plugin;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
@@ -90,23 +89,27 @@ fn setup_ui(mut commands: Commands, window: Query<Entity, (With<Window>, With<Pr
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiPlugin(app: &mut App)
+pub(crate) struct UiPlugin;
+
+impl Plugin for UiPlugin
 {
-    app
-        .add_plugins(LunexUiPlugin2D::<MainUi>::new())
-        .register_interaction_source(MouseLButtonMain::default())
-        .add_systems(PreStartup, setup_ui)
-        .add_systems(Startup, build_ui)
+    fn build(&self, app: &mut App)
+    {
+        app
+            .add_plugins(LunexUiPlugin2D::<MainUi>::new())
+            .register_interaction_source(MouseLButtonMain::default())
+            .add_systems(PreStartup, setup_ui)
+            .add_systems(Startup, build_ui)
 
-        // ui plugins
-        .add_plugins(UiConnectionStatusPlugin)
-        .add_plugins(UiPlaySectionPlugin)
-        .add_plugins(UiAckLobbyWindowPlugin)
-        .add_plugins(UiGameInProgressPlugin)
+            // ui plugins
+            .add_plugins(UiConnectionStatusPlugin)
+            .add_plugins(UiPlaySectionPlugin)
+            .add_plugins(UiAckLobbyWindowPlugin)
+            .add_plugins(UiGameInProgressPlugin)
 
-        //.add_plugins(UIDebugOverlayPlugin)  //DEBUG ONLY
-        ;
+            //.add_plugins(UIDebugOverlayPlugin)  //DEBUG ONLY
+            ;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

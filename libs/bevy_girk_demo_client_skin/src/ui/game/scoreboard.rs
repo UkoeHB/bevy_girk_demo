@@ -3,7 +3,6 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_game_core::*;
 use bevy_girk_demo_ui_prefab::*;
@@ -259,16 +258,20 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameScoreboardPlugin(app: &mut App)
+pub(crate) struct UiGameScoreboardPlugin;
+
+impl Plugin for UiGameScoreboardPlugin
 {
-    app.init_react_resource::<GameScoreboardTracker>()
-        .add_systems(
-            Update,
-            watch_for_new_players
-                .in_set(GameFwSet::Start)
-                .in_set(GameSet::Play),
-        );
+    fn build(&self, app: &mut App)
+    {
+        app.init_react_resource::<GameScoreboardTracker>()
+            .add_systems(
+                Update,
+                watch_for_new_players
+                    .in_set(GameFwSet::Start)
+                    .in_set(GameSet::Play),
+            );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

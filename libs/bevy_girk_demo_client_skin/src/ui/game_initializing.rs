@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_client_fw::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_game_fw::*;
@@ -135,15 +134,19 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiInitializingPlugin(app: &mut App)
+pub struct UiInitializingPlugin;
+
+impl Plugin for UiInitializingPlugin
 {
-    app.add_systems(OnEnter(ClientFwMode::Connecting), activate_initializing_overlay)
-        .add_systems(OnExit(ClientFwMode::Init), deactivate_initializing_overlay)
-        .add_systems(
-            Update,
-            update_loading_bar.in_set(ClientFwSet::End), //.in_set(ClientSet::InitCore)
-        );
+    fn build(&self, app: &mut App)
+    {
+        app.add_systems(OnEnter(ClientFwMode::Connecting), activate_initializing_overlay)
+            .add_systems(OnExit(ClientFwMode::Init), deactivate_initializing_overlay)
+            .add_systems(
+                Update,
+                update_loading_bar.in_set(ClientFwSet::End), //.in_set(ClientSet::InitCore)
+            );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

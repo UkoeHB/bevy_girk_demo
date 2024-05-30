@@ -2,7 +2,6 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot_ui::builtin::MainUi;
@@ -89,7 +88,11 @@ pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiConnectionStatusPlugin(_app: &mut App) {}
+pub(crate) struct UiConnectionStatusPlugin;
+
+impl Plugin for UiConnectionStatusPlugin
+{
+    fn build(&self, _app: &mut App) {}
+}
 
 //-------------------------------------------------------------------------------------------------------------------

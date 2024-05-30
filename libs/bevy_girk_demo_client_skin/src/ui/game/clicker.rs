@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_client_core::*;
 use bevy_girk_demo_game_core::*;
 use bevy_girk_demo_ui_prefab::*;
@@ -23,7 +22,11 @@ pub(crate) fn add_game_clicker(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameClickerPlugin(_app: &mut App) {}
+pub struct UiGameClickerPlugin;
+
+impl Plugin for UiGameClickerPlugin
+{
+    fn build(&self, _app: &mut App) {}
+}
 
 //-------------------------------------------------------------------------------------------------------------------

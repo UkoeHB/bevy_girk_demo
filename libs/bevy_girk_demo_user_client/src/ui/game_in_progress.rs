@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_user_client_utils::*;
@@ -163,7 +162,11 @@ pub(crate) fn add_game_in_progress(ui: &mut UiBuilder<MainUi>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameInProgressPlugin(_app: &mut App) {}
+pub(crate) struct UiGameInProgressPlugin;
+
+impl Plugin for UiGameInProgressPlugin
+{
+    fn build(&self, _app: &mut App) {}
+}
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-use bevy_fn_plugin::*;
+use bevy::prelude::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
 
@@ -16,13 +16,17 @@ pub(crate) fn add_game(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGamePlugin(app: &mut App)
+pub(crate) struct UiGamePlugin;
+
+impl Plugin for UiGamePlugin
 {
-    app.add_plugins(UiGameHeaderPlugin)
-        .add_plugins(UiGameScoreboardPlugin)
-        .add_plugins(UiGameClickerPlugin)
-        .add_plugins(UiGameDisconnectorPlugin);
+    fn build(&self, app: &mut App)
+    {
+        app.add_plugins(UiGameHeaderPlugin)
+            .add_plugins(UiGameScoreboardPlugin)
+            .add_plugins(UiGameClickerPlugin)
+            .add_plugins(UiGameDisconnectorPlugin);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

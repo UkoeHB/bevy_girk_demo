@@ -2,7 +2,6 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -416,10 +415,14 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiMakeLobbyWindowPlugin(app: &mut App)
+pub(crate) struct UiMakeLobbyWindowPlugin;
+
+impl Plugin for UiMakeLobbyWindowPlugin
 {
-    app.insert_react_resource(MakeLobbyWindow::default());
+    fn build(&self, app: &mut App)
+    {
+        app.insert_react_resource(MakeLobbyWindow::default());
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

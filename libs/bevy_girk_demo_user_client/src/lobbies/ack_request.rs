@@ -3,7 +3,6 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_cobweb::prelude::*;
-use bevy_fn_plugin::bevy_plugin;
 
 use crate::*;
 
@@ -217,16 +216,20 @@ pub(crate) struct AckRequest
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn AckRequestPlugin(app: &mut App)
-{
-    let timer_configs = app.world.resource::<TimerConfigs>();
-    let timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
-    let timer_buffer = Duration::from_millis(timer_configs.ack_request_timer_buffer_ms);
+pub(crate) struct AckRequestPlugin;
 
-    app.insert_react_resource(AckRequestData::new(timeout, timer_buffer))
-        .add_systems(Startup, (setup_ack_request_handlers,))
-        .add_systems(PreUpdate, (try_timeout_ack_request,));
+impl Plugin for AckRequestPlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        let timer_configs = app.world.resource::<TimerConfigs>();
+        let timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
+        let timer_buffer = Duration::from_millis(timer_configs.ack_request_timer_buffer_ms);
+
+        app.insert_react_resource(AckRequestData::new(timeout, timer_buffer))
+            .add_systems(Startup, (setup_ack_request_handlers,))
+            .add_systems(PreUpdate, (try_timeout_ack_request,));
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

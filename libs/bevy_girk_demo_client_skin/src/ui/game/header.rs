@@ -1,7 +1,6 @@
 use std::fmt::Write;
 
 use bevy::prelude::*;
-use bevy_fn_plugin::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
@@ -64,10 +63,14 @@ pub(crate) fn add_game_header(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[bevy_plugin]
-pub(crate) fn UiGameHeaderPlugin(app: &mut App)
+pub struct UiGameHeaderPlugin;
+
+impl Plugin for UiGameHeaderPlugin
 {
-    app.add_plugins(FpsTrackerPlugin);
+    fn build(&self, app: &mut App)
+    {
+        app.add_plugins(FpsTrackerPlugin);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
