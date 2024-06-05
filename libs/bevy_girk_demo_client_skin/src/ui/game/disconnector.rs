@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
-use bevy_renet::renet::RenetClient;
+use bevy_renet2::renet2::RenetClient;
 
 //-------------------------------------------------------------------------------------------------------------------
 

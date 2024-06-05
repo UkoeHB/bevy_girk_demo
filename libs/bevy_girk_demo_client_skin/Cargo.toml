@@ -16,7 +16,7 @@ bevy_kot_ui     = { workspace = true }
 bevy_lunex      = { workspace = true }
 bevy_lunex_core = { workspace = true }
 bevy_lunex_ui   = { workspace = true }
-bevy_renet      = { workspace = true }
+bevy_renet2     = { workspace = true, features = ["native_transport"] }
 bevy_replicon   = { workspace = true }
 iyes_progress   = { workspace = true }
 tracing         = { workspace = true }

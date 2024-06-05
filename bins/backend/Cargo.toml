@@ -8,6 +8,9 @@ name    = "backend"
 test    = false
 doctest = false
 
+[features]
+dev = ["bevy/dynamic_linking"]
+
 [dependencies]
 bevy               = { version = "0.13", default-features = false }
 bevy_kot_utils     = { workspace = true }

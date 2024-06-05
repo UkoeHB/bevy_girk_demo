@@ -8,6 +8,9 @@ name    = "game_client"
 test    = false
 doctest = false
 
+[features]
+dev = ["bevy/dynamic_linking"]
+
 [dependencies]
 bevy               = { workspace = true, default-features = true }
 clap               = { workspace = true, features = [ "derive" ] }
