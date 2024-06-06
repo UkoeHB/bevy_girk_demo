@@ -9,7 +9,7 @@ test    = false
 doctest = false
 
 [features]
-dev = ["bevy/dynamic_linking"]
+dev = ["bevy/dynamic_linking", "bevy/file_watcher"]
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }
