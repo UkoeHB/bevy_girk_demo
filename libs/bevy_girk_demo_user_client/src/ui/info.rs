@@ -2,6 +2,7 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot_ui::builtin::MainUi;
@@ -79,9 +80,8 @@ pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // update text when connection status changes
     ui.commands().react().on(
         resource_mutation::<ConnectionStatus>(),
-        move |mut text: TextHandle, status: ReactRes<ConnectionStatus>| {
-            text.write(text_entity, 0, |text| write!(text, "{}", status.to_str()))
-                .unwrap();
+        move |mut text: TextEditor, status: ReactRes<ConnectionStatus>| {
+            text.write(text_entity, |text| write!(text, "{}", status.to_str()));
         },
     );
 }

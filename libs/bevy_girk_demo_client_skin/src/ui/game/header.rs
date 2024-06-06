@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
 use bevy::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot::prelude::*;
 use bevy_lunex::prelude::*;
@@ -41,15 +42,14 @@ fn add_fps(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // update text when fps changes
     ui.rcommands.on(
         resource_mutation::<FpsTracker>(),
-        move |mut text: TextHandle, fps_tracker: ReactRes<FpsTracker>| {
+        move |mut text: TextEditor, fps_tracker: ReactRes<FpsTracker>| {
             // only refresh once per second
             if fps_tracker.current_time().as_secs() <= fps_tracker.previous_time().as_secs() {
                 return;
             }
 
             // refresh text
-            text.write(text_entity, 0, |text| write!(text, "FPS: {}", fps_tracker.fps()))
-                .unwrap();
+            text.write(text_entity, |text| write!(text, "FPS: {}", fps_tracker.fps()));
         },
     );
 }

@@ -177,11 +177,9 @@ pub(crate) fn add_game_scoreboard(ui: &mut UiBuilder<MainUi>, area: &Widget)
                     };
 
                     // update score
-                    ui.text
-                        .write(score_text_entity, 0, |text| {
-                            write!(text, SCORE_FMT!(), name.name, score.score())
-                        })
-                        .unwrap();
+                    ui.text.write(score_text_entity, |text| {
+                        write!(text, SCORE_FMT!(), name.name, score.score())
+                    });
 
                     // update tracker
                     tracker

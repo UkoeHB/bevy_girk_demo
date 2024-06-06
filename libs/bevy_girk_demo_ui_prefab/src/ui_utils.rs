@@ -1,5 +1,6 @@
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_kot_ui::*;
 use bevy_lunex::prelude::*;
 
@@ -65,68 +66,13 @@ pub fn write_ui_text(world: &mut World, text_entity: Entity, writer: impl FnOnce
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Helper system param for accessing text components.
-#[derive(SystemParam)]
-pub struct TextHandle<'w, 's>
-{
-    text: Query<'w, 's, &'static mut Text>,
-}
-
-impl<'w, 's> TextHandle<'w, 's>
-{
-    /// Get the text on a text section on an entity.
-    ///
-    /// Returns `Err` if the text section could not be found or the text is empty.
-    pub fn text(&mut self, text_entity: Entity, section: usize) -> Result<&mut String, ()>
-    {
-        let Ok(text) = self.text.get_mut(text_entity) else {
-            return Err(());
-        };
-        let Some(section) = text.into_inner().sections.get_mut(section) else {
-            return Err(());
-        };
-        Ok(&mut section.value)
-    }
-
-    /// Overwrite the text on a text section on an entity.
-    ///
-    /// Returns `Err` if the text section could not be accessed or if the writer fails.
-    pub fn write<E>(
-        &mut self,
-        text_entity: Entity,
-        section: usize,
-        writer: impl FnOnce(&mut String) -> Result<(), E>,
-    ) -> Result<(), ()>
-    {
-        let text = self.text(text_entity, section)?;
-        text.clear();
-        (writer)(text).map_err(|_| ())
-    }
-
-    /// Get the style on a text section on an entity.
-    ///
-    /// Returns `Err` if the text section could not be found or the text is empty.
-    pub fn style(&mut self, text_entity: Entity, section: usize) -> Result<&mut TextStyle, ()>
-    {
-        let Ok(text) = self.text.get_mut(text_entity) else {
-            return Err(());
-        };
-        let Some(section) = text.into_inner().sections.get_mut(section) else {
-            return Err(());
-        };
-        Ok(&mut section.style)
-    }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Helper system param for interacting with a `UiTree`.
 //todo: handle multiple uis (pass in UI entity)?
 #[derive(SystemParam)]
 pub struct UiUtils<'w, 's, Ui: LunexUi>
 {
     pub builder: UiBuilder<'w, 's, Ui>,
-    pub text: TextHandle<'w, 's>,
+    pub text: TextEditor<'w, 's>,
 }
 
 impl<'w, 's, Ui: LunexUi> UiUtils<'w, 's, Ui>
@@ -209,7 +155,7 @@ impl<'w, 's, Ui: LunexUi> UiUtils<'w, 's, Ui>
         branch.set_visibility(!enable);
 
         // get text
-        let Ok(text_style) = self.text.style(text_entity, 0) else {
+        let Some(text_style) = self.text.style(text_entity) else {
             tracing::error!("text entity is missing in toggle button availability");
             return;
         };

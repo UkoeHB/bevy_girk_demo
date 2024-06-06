@@ -2,6 +2,7 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -97,10 +98,9 @@ fn setup_window_reactors(
     let accept_entity = popup_pack.accept_entity;
     ui.commands().react().on(
         entity_insertion::<PendingRequest>(join_lobby_entity),
-        move |mut text: TextHandle| {
+        move |mut text: TextEditor| {
             // modify accept button text
-            text.write(accept_entity, 0, |text| write!(text, "{}", "..."))
-                .unwrap();
+            text.write(accept_entity, |text| write!(text, "{}", "..."));
         },
     );
 
@@ -132,8 +132,7 @@ fn setup_window_reactors(
 
             // reset accept button text
             ui.text
-                .write(accept_entity, 0, |text| write!(text, "{}", accept_text))
-                .unwrap();
+                .write(accept_entity, |text| write!(text, "{}", accept_text));
         },
     );
 }
@@ -160,17 +159,15 @@ fn add_subtitle(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // update the text when the window changes
     ui.commands().react().on(
         resource_mutation::<JoinLobbyWindow>(),
-        move |mut text: TextHandle, window: ReactRes<JoinLobbyWindow>| {
+        move |mut text: TextEditor, window: ReactRes<JoinLobbyWindow>| {
             if let Some(lobby_contents) = &window.contents {
                 let id = lobby_contents.id % 1_000_000u64;
                 let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                text.write(text_entity, 0, |text| {
+                text.write(text_entity, |text| {
                     write!(text, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id)
-                })
-                .unwrap();
+                });
             } else {
-                text.write(text_entity, 0, |text| write!(text, "{}", default_text))
-                    .unwrap();
+                text.write(text_entity, |text| write!(text, "{}", default_text));
             }
         },
     );

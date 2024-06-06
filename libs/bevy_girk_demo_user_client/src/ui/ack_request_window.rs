@@ -2,6 +2,7 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_kot_ui::builtin::MainUi;
@@ -90,10 +91,9 @@ fn add_timer(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // update the text when the ack request changes
     ui.commands().react().on(
         resource_mutation::<AckRequestData>(),
-        move |mut text: TextHandle, ack_request: ReactRes<AckRequestData>| {
+        move |mut text: TextEditor, ack_request: ReactRes<AckRequestData>| {
             let time_remaining_secs = ack_request.time_remaining_for_display().as_secs();
-            text.write(text_entity, 0, |text| write!(text, "{}", time_remaining_secs))
-                .unwrap();
+            text.write(text_entity, |text| write!(text, "{}", time_remaining_secs));
         },
     );
 }

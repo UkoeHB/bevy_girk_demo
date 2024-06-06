@@ -4,6 +4,7 @@ use std::vec::Vec;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_demo_ui_prefab::*;
 use bevy_girk_demo_wiring_backend::*;
@@ -203,7 +204,7 @@ fn start_current_lobby(
 fn update_list_contents<ListPage: ListPageTrait>(
     In((content_entities, new_page)): In<(Arc<Vec<Entity>>, usize)>,
     mut c: Commands,
-    mut text_handle: TextHandle,
+    mut text_editor: TextEditor,
     lobby: ReactRes<LobbyDisplay>,
     mut member_list_page: ReactResMut<ListPage>,
 )
@@ -224,10 +225,11 @@ fn update_list_contents<ListPage: ListPageTrait>(
         let member_number = first_idx + idx + 1;
 
         // clear entry
-        let Ok(text) = text_handle.text(*content_entity, 0) else {
+        let Some(section) = text_editor.section(*content_entity, 0) else {
             tracing::error!("text entity is missing for list contents");
             return;
         };
+        let text = &mut section.value;
         text.clear();
 
         // check if the entry corresponds to a member slot
@@ -324,17 +326,15 @@ fn add_lobby_display_summary_box(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // update the text when the lobby display changes
     ui.commands().react().on(
         resource_mutation::<LobbyDisplay>(),
-        move |mut text: TextHandle, display: ReactRes<LobbyDisplay>| {
+        move |mut text: TextEditor, display: ReactRes<LobbyDisplay>| {
             if let Some(lobby_contents) = display.get() {
                 let id = lobby_contents.id % 1_000_000u64;
                 let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                text.write(text_entity, 0, |text| {
+                text.write(text_entity, |text| {
                     write!(text, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id)
-                })
-                .unwrap();
+                });
             } else {
-                text.write(text_entity, 0, |text| write!(text, "{}", default_text))
-                    .unwrap();
+                text.write(text_entity, |text| write!(text, "{}", default_text));
             }
         },
     );
@@ -364,17 +364,15 @@ fn add_display_list_header<ListPage: ListPageTrait>(ui: &mut UiBuilder<MainUi>, 
     // update the text when the lobby display changes
     ui.commands().react().on(
         resource_mutation::<LobbyDisplay>(),
-        move |mut text: TextHandle, display: ReactRes<LobbyDisplay>| {
+        move |mut text: TextEditor, display: ReactRes<LobbyDisplay>| {
             if let Some(lobby_contents) = display.get() {
                 let num_members = lobby_contents.num(member_type);
                 let max_members = lobby_contents.max(member_type);
-                text.write(text_entity, 0, |text| {
+                text.write(text_entity, |text| {
                     write!(text, "{}: {}/{}", tag, num_members, max_members)
-                })
-                .unwrap();
+                });
             } else {
-                text.write(text_entity, 0, |text| write!(text, "{}", default_text))
-                    .unwrap();
+                text.write(text_entity, |text| write!(text, "{}", default_text));
             }
         },
     );

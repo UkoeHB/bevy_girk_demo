@@ -228,7 +228,7 @@ fn update_lobby_list_contents(
         let Some(entry) = entry else {
             continue;
         };
-        let _ = ui.text.write(*content_entity, 0, |text| {
+        ui.text.write(*content_entity, |text| {
             write!(
                             text,
                             "Lobby: {:0>6}, Owner: {:0>6}, Players: {}/{}, Watchers: {}/{}",
@@ -375,8 +375,7 @@ fn add_lobby_list_stats(ui: &mut UiBuilder<MainUi>, area: &Widget)
         move |mut ui: UiUtils<MainUi>, page: ReactRes<LobbyPage>| {
             let (first, last, total) = page.stats();
             ui.text
-                .write(text_entity, 0, |text| write!(text, "({}-{} / {})", first, last, total))
-                .unwrap();
+                .write(text_entity, |text| write!(text, "({}-{} / {})", first, last, total));
         },
     );
 }

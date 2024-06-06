@@ -2,7 +2,7 @@ use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_girk_demo_ui_prefab::*;
+use bevy_cobweb_ui::prelude::*;
 
 use crate::*;
 
@@ -20,18 +20,16 @@ pub(crate) fn setup_simple_pending_button_text<Tag: Component>(
     // when a request starts
     c.react().on(
         entity_insertion::<PendingRequest>(marker_entity),
-        move |mut text: TextHandle| {
-            text.write(button_entity, 0, |text| write!(text, "{}", "..."))
-                .unwrap()
+        move |mut text: TextEditor| {
+            text.write(button_entity, |text| write!(text, "{}", "..."));
         },
     );
 
     // when a request completes
     c.react().on(
         entity_removal::<PendingRequest>(marker_entity),
-        move |mut text: TextHandle| {
-            text.write(button_entity, 0, |text| write!(text, "{}", default_text))
-                .unwrap()
+        move |mut text: TextEditor| {
+            text.write(button_entity, |text| write!(text, "{}", default_text));
         },
     );
 }
