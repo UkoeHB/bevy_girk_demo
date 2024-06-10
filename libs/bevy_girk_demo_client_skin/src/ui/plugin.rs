@@ -77,7 +77,7 @@ impl Plugin for UiPlugin
             .add_systems(Startup, build_ui)
 
             // ui plugins
-            .add_plugins(UiInitializingPlugin)
+            .add_plugins(UiLoadingPlugin)
             .add_plugins(UiGamePlugin)
             .add_plugins(UiGameOverPlugin)
 

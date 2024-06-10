@@ -134,9 +134,9 @@ pub(crate) fn add_game_initializing(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub struct UiInitializingPlugin;
+pub struct UiLoadingPlugin;
 
-impl Plugin for UiInitializingPlugin
+impl Plugin for UiLoadingPlugin
 {
     fn build(&self, app: &mut App)
     {
