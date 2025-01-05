@@ -1,0 +1,40 @@
+{
+
+"#specs": {
+    "structure": {
+        "@text_margin": {"top": {"Px": 10.0}, "bottom": {"Px": 10.0}, "left": {"Px": 18.0}, "right": {"Px": 18.0}},
+        "@text_size": 30.0,
+        "!text_extra": "Entry point for inserting custom loadables to the text entity.",
+        "*": {
+            "core": {
+
+                "text": {
+                    "FlexStyle": {
+                        "flex": {"margin": "@text_margin"}
+                    },
+                    "TextLine": {"size": "@text_size"},
+                    "!text_extra": ""
+                }
+            }
+        }
+    },
+
+    "core_theme(#spec:imported_file::core_theme)": {
+        "@bg_color": "..bg color override..",
+        "@br_color": "..new br color parameter..",
+        "!extra": {
+            "Animated<BrColor>": {
+                "..use @br_color to bring in new parameter.."
+            }
+        }
+    }
+},
+
+"structure(#spec:structure)": { },
+
+"theme": {
+    "core(#spec:core_theme)": { },
+    "text(#spec:imported_file::text_theme)": { }
+}
+
+}

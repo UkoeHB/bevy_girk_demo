@@ -2,14 +2,14 @@ use std::net::Ipv6Addr;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use bevy_girk_client_instance::*;
-use bevy_girk_demo_game_core::*;
-use bevy_girk_demo_wiring_backend::*;
-use bevy_girk_demo_wiring_game_instance::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
+use game_core::*;
+use wiring_backend::*;
+use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

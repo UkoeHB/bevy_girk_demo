@@ -12,11 +12,11 @@ doctest = false
 dev = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy               = { version = "0.13", default-features = false }
+bevy               = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 
 bevy_girk_game_instance = { workspace = true }
 
-bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }

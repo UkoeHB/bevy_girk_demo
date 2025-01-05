@@ -16,112 +16,36 @@ members  = [
     "tests"
 ]
 
-[workspace.dependencies.bevy]
-version = "0.13"
-default-features = false
-features = [
-    # Bevy functionality:
-    "bevy_asset",         # Assets management
-    "bevy_scene",         # Scenes management
-    #"bevy_gilrs",         # Gamepad input support
-    #"bevy_audio",         # Builtin audio
-    "bevy_winit",         # Window management
-    "animation",          # Animation support
-    "x11",                # Linux: Support X11 windowing system
-    "file_watcher",       # Asset hot-reloading
-    #"render",             # Graphics Rendering
-    "multi-threaded",     # Allow multi-threaded system execution
-
-    ## "render" contents
-    "bevy_render",        # Rendering framework core
-    "bevy_core_pipeline", # Common rendering abstractions
-    "bevy_sprite",        # 2D (sprites) rendering
-    #"bevy_pbr",           # 3D (physically-based) rendering
-    #"bevy_gizmos"         # For rendering gizmos
-    #"bevy_gltf",          # GLTF 3D assets format support
-    "bevy_text",          # Text/font rendering
-    #"bevy_ui",            # UI toolkit
-
-    # File formats:
-    "png",
-    #"hdr",
-    #"vorbis",
-
-    # Additional Bevy functionality:
-    "wayland",              # Linux: Support Wayland windowing system
-    "subpixel_glyph_atlas", # Subpixel antialiasing for text/fonts
-    "serialize",            # Support for `serde` Serialize/Deserialize
-    #"bevy_dynamic_plugin",  # Support for loading of `DynamicPlugin`s  (must use --features bevy/dynamic_linking)
-    #"tonemapping_luts"      # Tonemapping lookup for KTX2 files
-    #"accesskit_unix"        # AccessKit on Unix backends
-    #"bevy_ci_testing"       # Support automated testing in CI
-
-    # File formats:
-    #"ktx2", # preferred format for GPU textures
-    #"dds",
-    #"jpeg",
-    #"bmp",
-    #"tga",
-    #"basis-universal",
-    #"zstd", # needed if using zstd in KTX2 files
-    #"flac",
-    #"mp3",
-    #"wav",
-
-    # Tracing for performance analysis:
-    #"trace",         # Enable tracing for performance measurement
-    #"wgpu_trace",    # WGPU/rendering tracing
-    #"trace_tracy",   # Tracing using `tracy`
-    #"trace_chrome",  # Tracing using the Chrome format
-    #"detailed_trace" # Event tracing
-    #"zlib"           # For KTX2 supercompression
-
-    # Development/Debug features:
-    #"dynamic_linking",       # Dynamic linking for faster compile-times (better to set this feature in the command-line)
-]
-
 [workspace.dependencies]
-bevy_cobweb = { version = "0.6" }
-#bevy_kot             = { version = "0.11" }
-#bevy_kot_ecs         = { version = "0.11" }
-#bevy_kot_misc        = { version = "0.11" }
-#bevy_kot_ui          = { version = "0.11" }
-#bevy_kot_utils       = { version = "0.11" }
-bevy_kot = { git = "https://github.com/UkoeHB/bevy_kot", rev = "132597a" }
-#bevy_kot_ecs = { git = "https://github.com/UkoeHB/bevy_kot", rev = "132597a" }
-bevy_kot_misc = { git = "https://github.com/UkoeHB/bevy_kot", rev = "132597a" }
-bevy_kot_ui = { git = "https://github.com/UkoeHB/bevy_kot", rev = "132597a" }
-bevy_kot_utils = { git = "https://github.com/UkoeHB/bevy_kot", rev = "132597a" }
+bevy = { version = "0.15", default-features = false }
+bevy_cobweb = { version = "0.14" }
+bevy_cobweb_ui = { version = "0.7" }
+#bevy_cobweb_ui = { rev = "49eb699", git = "https://github.com/UkoeHB/bevy_cobweb_ui" }
 
-bevy_cobweb_ui = { rev = "2053242", git = "https://github.com/UkoeHB/bevy_cobweb_ui" }
-
-bevy_framepace       = { version = "0.15" }
-#bevy_lunex           = { version = "0.0.9" }
-#bevy_lunex_core      = { version = "0.0.9" }
-#bevy_lunex_ui        = { version = "0.0.9" }
-bevy_lunex = { git = "https://github.com/UkoeHB/bevy-lunex", rev = "2749231" }
-bevy_lunex_core = { git = "https://github.com/UkoeHB/bevy-lunex", rev = "2749231" }
-bevy_lunex_ui = { git = "https://github.com/UkoeHB/bevy-lunex", rev = "2749231" }
-bevy_renet2 = { git = "https://github.com/UkoeHB/renet2", rev = "fe91d62", package = "bevy_renet2" }
-bevy_replicon  = { version = ">=0.26.2" }
+bevy_framepace = { version = "0.18" }
+bevy_renet2 = { version = "0.1.0", package = "bevy_renet2" }
+renet2 = { version = "0.1.0", package = "renet2" }
+renetcode2 = { version = "0.1.0", package = "renetcode2" }
+renet2_netcode = { version = "0.1.0", package = "renet2_netcode" }
+bevy_replicon = { version = "0.29" }
 #bevy_replicon  = { git = "https://github.com/UkoeHB/bevy_replicon", rev = "2971100" }
-bevy_replicon_attributes = { version = "0.5" }
+bevy_replicon_attributes = { version = "0.8" }
 #bevy_replicon_attributes = { git = "https://github.com/UkoeHB/bevy_replicon_attributes", rev = "0f19340" }
-bevy_replicon_repair = { version = ">=0.8.3" }
-#bevy_replicon_repair = { git = "https://github.com/UkoeHB/bevy_replicon_repair", rev = "b0ee869" }
-bevy_simplenet       = { version = "0.11", default-features = false }
-iyes_progress        = { version = "0.11" , features = [ "assets" ] }
+bevy_simplenet = { version = "0.14", default-features = false }
+iyes_progress = { version = "0.13" , features = [ "assets" ] }
 
-bevy_girk_backend_public    = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_client_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_client_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_game_fw           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_game_hub_server   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_game_instance     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_host_server       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_user_client_utils = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_utils             = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
-bevy_girk_wiring            = { git = "https://github.com/UkoeHB/bevy_girk", rev = "6e844b6" }
+bevy_girk_backend_public    = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_client_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_client_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_game_fw           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_game_hub_server   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_game_instance     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_host_server       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_user_client_utils = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_utils             = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_wiring_common     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_wiring_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
+bevy_girk_wiring_client     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "3bbe943" }
 
 clap               = { version = "4.4", default-features = false, features = [ "std" ] }
 enfync             = { version = "0.1", default-features = false }

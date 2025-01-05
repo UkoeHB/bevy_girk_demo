@@ -3,14 +3,14 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_girk_demo_game_core::*;
-use bevy_girk_demo_wiring_backend::*;
-use bevy_girk_demo_wiring_game_instance::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
+use game_core::*;
+use wiring_backend::*;
+use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -189,7 +189,7 @@ fn main()
         .add_directive("bevy_girk_host_server=trace".parse().unwrap())
         .add_directive("bevy_girk_game_hub_server=trace".parse().unwrap())
         .add_directive("bevy_girk_wiring=trace".parse().unwrap())
-        .add_directive("bevy_girk_demo_game_core=trace".parse().unwrap())
+        .add_directive("game_core=trace".parse().unwrap())
         .add_directive("bevy_girk_game_fw=trace".parse().unwrap());
     tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)

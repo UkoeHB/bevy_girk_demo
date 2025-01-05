@@ -12,12 +12,12 @@ doctest = false
 dev = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy               = { version = "0.13", default-features = false }
-bevy_kot_utils     = { workspace = true }
+bevy               = { workspace = true }
+bevy_cobweb        = { workspace = true }
 bevy_simplenet     = { workspace = true }
 enfync             = { workspace = true }
-renet              = { version  = "0.0.15" }
-renetcode          = { version  = "0.0.11" }
+renet2             = { workspace = true }
+renetcode2         = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 url                = { workspace = true }
@@ -29,6 +29,6 @@ bevy_girk_game_instance   = { workspace = true }
 bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-bevy_girk_demo_game_core            = { path = "../../libs/bevy_girk_demo_game_core" }
-bevy_girk_demo_wiring_backend       = { path = "../../libs/bevy_girk_demo_wiring_backend" }
-bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }
+game_core            = { path = "../../libs/game_core" }
+wiring_backend       = { path = "../../libs/wiring_backend" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }

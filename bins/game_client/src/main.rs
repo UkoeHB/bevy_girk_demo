@@ -1,9 +1,9 @@
 use std::time::Duration;
 
 use bevy_girk_client_instance::*;
-use bevy_girk_demo_wiring_client_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
+use wiring_client_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

@@ -8,6 +8,8 @@ group_imports = "StdExternalCrate"
 
 use_field_init_shorthand = true
 skip_macro_invocations = ["*"]
+format_macro_matchers = false
+format_macro_bodies = false # There is a diagnostic bug: https://github.com/rust-lang/rustfmt/pull/6075
 
 comment_width = 115
 wrap_comments = true
@@ -19,6 +21,6 @@ array_width = 100
 chain_width = 60
 #fn_call_width = 60
 single_line_if_else_max_width = 50
-#single_line_let_else_max_width = 115
+single_line_let_else_max_width = 115
 struct_lit_width = 60
 struct_variant_width = 60

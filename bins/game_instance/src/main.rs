@@ -1,6 +1,6 @@
-use bevy_girk_demo_wiring_game_instance::*;
 use bevy_girk_game_instance::*;
 use clap::Parser;
+use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

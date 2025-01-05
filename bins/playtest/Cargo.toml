@@ -12,8 +12,8 @@ doctest = false
 dev = ["bevy/dynamic_linking"]
 
 [dependencies]
-bevy               = { version = "0.13", default-features = false }
-bevy_kot_utils     = { workspace = true }
+bevy               = { workspace = true }
+bevy_cobweb        = { workspace = true }
 bevy_simplenet     = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
 enfync             = { workspace = true }
@@ -25,6 +25,6 @@ bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-bevy_girk_demo_game_core            = { path = "../../libs/bevy_girk_demo_game_core" }
-bevy_girk_demo_wiring_backend       = { path = "../../libs/bevy_girk_demo_wiring_backend" }
-bevy_girk_demo_wiring_game_instance = { path = "../../libs/bevy_girk_demo_wiring_game_instance" }
+game_core            = { path = "../../libs/game_core" }
+wiring_backend       = { path = "../../libs/wiring_backend" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }

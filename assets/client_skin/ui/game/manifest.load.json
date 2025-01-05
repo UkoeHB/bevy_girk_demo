@@ -1,0 +1,11 @@
+{
+
+"#manifest": {
+    "client_skin/game/frame.load.json": "skin.game.frame",
+    "client_skin/game/clicker.load.json": "skin.game.clicker",
+    "client_skin/game/disconnector.load.json": "skin.game.disconnector",
+    "client_skin/game/header.load.json": "skin.game.header",
+    "client_skin/game/scoreboard.load.json": "skin.game.scoreboard",
+}
+
+}

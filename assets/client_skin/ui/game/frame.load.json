@@ -1,0 +1,44 @@
+{
+
+"#constants": {
+    "frame_bg_color": {"Hsla": {"hue": 191.0, "saturation": 0.63, "lightness": 0.63, "alpha": 1.0}}
+},
+
+"#c: Root-level frame for the client skin. Sets sections for content and the app's background color.":0,
+"frame": {
+    "FlexStyle": {
+        "dims": {"width": {"Vw": 100.0}, "height": {"Vh": 100.0}},
+        "content": {"justify_main": "SpaceEvenly", "justify_cross": "Center"}
+    },
+    "BgColor": ["$frame_bg_color"],
+
+    "#c: Header section.":0,
+    "header": {
+        "AbsoluteStyle": {
+            "dims": {"width": {"Percent": 100.0}, "height": {"Percent": 10.0}, "left": {"Percent": 0.0}, "top": {"Percent": 0.0}},
+        }
+    },
+
+    "#c: Scoreboard section.":0,
+    "scoreboard": {
+        "AbsoluteStyle": {
+            "dims": {"width": {"Percent": 100.0}, "height": {"Percent": 55.0}, "left": {"Percent": 0.0}, "top": {"Percent": 10.0}},
+        }
+    },
+
+    "#c: Clicker section.":0,
+    "clicker": {
+        "AbsoluteStyle": {
+            "dims": {"width": {"Percent": 100.0}, "height": {"Percent": 35.0}, "left": {"Percent": 0.0}, "top": {"Percent": 65.0}},
+        }
+    },
+
+    "#c: Disconnector section.":0,
+    "disconnector": {
+        "AbsoluteStyle": {
+            "dims": {"width": {"Percent": 10.0}, "height": {"Percent": 5.0}, "left": {"Percent": 3.0}, "top": {"Percent": 90.0}},
+        }
+    },
+}
+
+}
