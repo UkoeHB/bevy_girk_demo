@@ -1,11 +1,19 @@
 mod client;
 mod client_channel;
-mod core;
+mod game_rand;
 mod meta;
-mod misc_utils;
+mod plugin;
+mod sets;
+mod setup;
+mod states;
+mod ticks;
 
-pub use crate::client::*;
-pub use crate::client_channel::*;
-pub use crate::core::*;
-pub use crate::meta::*;
-pub use crate::misc_utils::*;
+pub use client::*;
+pub use client_channel::*;
+pub use game_rand::*;
+pub use meta::*;
+pub use plugin::*;
+pub use sets::*;
+pub use setup::*;
+pub use states::*;
+pub use ticks::*;

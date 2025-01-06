@@ -8,29 +8,25 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_misc_resources(world: &mut World, game_context: &ClickGameContext)
+/// Initializes the game framework.
+fn setup_fw_reqs(mut commands: Commands)
 {
-    world.insert_resource::<GameRand>(GameRand::new(game_context.seed()));
-    world.insert_resource::<GameTick>(GameTick::default());
-    world.insert_resource::<PrepTick>(PrepTick::default());
-    world.insert_resource::<PlayTick>(PlayTick::default());
-    world.insert_resource::<GameOverTick>(GameOverTick::default());
+    commands.insert_resource(GameMessageType::new::<GameMsg>());
+    commands.insert_resource(ClientRequestHandler::new(handle_client_request));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Initializes the state of clients.
-pub(crate) fn setup_game_state(world: &mut World)
+/// Sets up the game with injected initialization data.
+fn setup_game(world: &mut World)
 {
     // extract initializer
     let initializer = world
         .remove_resource::<ClickGameInitializer>()
-        .expect("initializer missing");
+        .expect("ClickGameInitializer missing on startup");
 
-    // misc resources
-    setup_misc_resources(world, &initializer.game_context);
-
-    // game context
+    // resources
+    world.insert_resource::<GameRand>(GameRand::new(initializer.game_context.seed()));
     world.insert_resource(initializer.game_context);
 
     // players
@@ -56,18 +52,14 @@ pub(crate) fn setup_game_state(world: &mut World)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Initializes the game message buffer.
-pub(crate) fn setup_game_message_buffer(mut commands: Commands)
-{
-    commands.insert_resource(GameMessageType::new::<GameMsg>());
-}
+pub(crate) struct GameSetupPlugin;
 
-//-------------------------------------------------------------------------------------------------------------------
-
-/// Initializes the game input handler.
-pub(crate) fn setup_game_input_handler(mut commands: Commands)
+impl Plugin for GameSetupPlugin
 {
-    commands.insert_resource(ClientRequestHandler::new(handle_client_request));
+    fn build(&self, app: &mut App)
+    {
+        app.add_systems(Startup, (setup_fw_reqs, setup_game));
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

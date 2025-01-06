@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring::*;
+use bevy_girk_wiring_common::*;
 use wiring_game_instance::*;
 
 use crate::*;
@@ -24,30 +24,56 @@ pub struct ClickClientFactory
 
 impl ClientFactoryImpl for ClickClientFactory
 {
-    fn new_client(&mut self, token: ServerConnectToken, start_info: GameStartInfo) -> Result<(App, u64), ()>
-    {
-        // new connect pack
-        let connect_pack = RenetClientConnectPack::new(self.protocol_id, token).unwrap();
+    type Data = ClientStarter;
 
-        // extract client startup pack
-        let client_start_pack = deser_msg::<ClickClientStartPack>(&start_info.serialized_start_data).unwrap();
+    fn add_plugins(&mut self, app: &mut App)
+    {
+        // girk client config
+        let config = GirkClientStartupConfig{
+            resend_time: self.resend_time,
+        };
+
+        // set up client app
+        prepare_girk_client_app(client_app, config);
+        client_app
+            .add_plugins(ClientCorePlugins)
+            .add_plugins(ClickClientSkinPlugin);
+    }
+
+    fn setup_game(&mut self, world: &mut World, token: ServerConnectToken, start_info: ClientStartInfo<ClientStarter>)
+    {
+        let connect_pack = match ClientConnectPack::new(self.protocol_id, token) {
+            Ok(connect) => connect,
+            Err(err) => {
+                tracing::error!("failed obtaining ClientConnectPack for {}: {err:?}", type_name::<Self>());
+                return;
+            }
+        };
 
         // girk client config
-        let config = GirkClientConfig {
-            client_fw_config: client_start_pack.client_fw_config,
-            resend_time: self.resend_time,
+        let config = GirkClientConfig{
+            client_fw_config: start_info.data.client_fw_config,
             connect_pack,
         };
 
         // set up client app
-        let mut client_app = App::new();
-
-        prepare_girk_client_app(&mut client_app, config);
-        let client_id = client_start_pack.client_initializer.context.id();
-        let player_input_sender = prepare_client_core(&mut client_app, client_start_pack.client_initializer);
+        setup_girk_client_game(world, config);
+        let client_id = start_info.client_id;
+        let player_input_sender = prepare_client_core(&mut client_app, start_info.data.initializer);
         prepare_client_skin(&mut client_app, client_id, player_input_sender);
 
-        Ok((client_app, self.protocol_id))
+        match start_info.data.initializer
+        {
+            ClientInitializer::Player(player_initializer) =>
+            {
+                self.player_id    = Some(player_initializer.player_context.id());
+                self.player_input = Some(setup_client_game_core(world, player_initializer));
+            }
+            ClientInitializer::Watcher => ()
+        }
+
+        // Enter the game.
+        world.resource_mut::<NextState<ClientInstanceState>>().set(ClientInstanceState::Game);
     }
 }
 

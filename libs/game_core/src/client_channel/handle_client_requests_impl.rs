@@ -11,34 +11,29 @@ use crate::*;
 //todo: consider converting this to an event, which can be responded to in a 'player click' plugin
 fn handle_player_click_button(In(player_entity): In<Entity>, mut players: Query<&mut PlayerScore, With<PlayerId>>)
 {
-    let Ok(player_score) = players.get_mut(player_entity) else {
+    let Ok(mut player_score) = players.get_mut(player_entity) else {
         tracing::error!("handle player click button: unknown player entity");
         return;
     };
 
-    player_score.into_inner().increment();
+    player_score.increment();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) fn notify_request_rejected(
     In((client_id, request, reason)): In<(ClientId, ClientRequest, RejectionReason)>,
-    mut sender: GameMessageSender,
-    attributes: ClientAttributes,
+    mut sender: GameSender,
 )
 {
-    sender.send(
-        &attributes,
-        GameMsg::RequestRejected { reason, request },
-        vis!(Client(client_id)),
-    );
+    sender.send_to_client(GameMsg::RequestRejected { reason, request }, client_id.get());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_game_mode_request(In(client_id): In<ClientId>, world: &mut World)
+pub(crate) fn handle_game_state_request(In(client_id): In<ClientId>, world: &mut World)
 {
-    syscall(world, client_id, notify_game_mode_single);
+    world.syscall(client_id, notify_game_state_single);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -46,7 +41,7 @@ pub(crate) fn handle_game_mode_request(In(client_id): In<ClientId>, world: &mut 
 pub(crate) fn handle_player_input(In((player_entity, input)): In<(Entity, PlayerInput)>, world: &mut World)
 {
     match input {
-        PlayerInput::ClickButton => syscall(world, player_entity, handle_player_click_button),
+        PlayerInput::ClickButton => world.syscall(player_entity, handle_player_click_button),
     }
 }
 

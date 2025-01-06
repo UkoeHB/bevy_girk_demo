@@ -74,9 +74,9 @@ pub struct ClickLobbyContents
     pub config: ClickLobbyConfig,
 
     /// Players in this lobby.
-    pub players: Vec<(bevy_simplenet::EnvType, u128)>,
+    pub players: Vec<(ConnectionType, u128)>,
     /// Watchers in this lobby.
-    pub watchers: Vec<(bevy_simplenet::EnvType, u128)>,
+    pub watchers: Vec<(ConnectionType, u128)>,
 }
 
 impl ClickLobbyContents
@@ -128,8 +128,8 @@ impl TryFrom<LobbyData> for ClickLobbyContents
         let mut watchers = Vec::default();
         for (user_id, member_data) in data.members.iter() {
             match ClickLobbyMemberType::try_from(member_data.color)? {
-                ClickLobbyMemberType::Player => players.push((member_data.env, *user_id)),
-                ClickLobbyMemberType::Watcher => watchers.push((member_data.env, *user_id)),
+                ClickLobbyMemberType::Player => players.push((member_data.connection, *user_id)),
+                ClickLobbyMemberType::Watcher => watchers.push((member_data.connection, *user_id)),
             }
         }
 

@@ -1,9 +1,13 @@
-mod client;
-mod core;
 mod game_channel;
 mod player_inputs;
+mod plugin;
+mod sets;
+mod setup;
+mod states;
 
-pub use crate::client::*;
-pub use crate::core::*;
-pub(crate) use crate::game_channel::*;
-pub use crate::player_inputs::*;
+pub(crate) use game_channel::*;
+pub use player_inputs::*;
+pub use plugin::*;
+pub use sets::*;
+pub(crate) use setup::*;
+pub use states::*;

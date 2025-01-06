@@ -29,7 +29,7 @@ impl IntoChannelKind for PlayerInput
 pub enum ClientRequest
 {
     /// Request the current game mode.
-    GetGameMode,
+    GetGameState,
     /// Player input.
     PlayerInput(PlayerInput),
 }
@@ -39,7 +39,7 @@ impl IntoChannelKind for ClientRequest
     fn into_event_type(&self) -> ChannelKind
     {
         match &self {
-            Self::GetGameMode => SendOrdered.into(),
+            Self::GetGameState => SendOrdered.into(),
             Self::PlayerInput(input) => input.into_event_type(),
         }
     }

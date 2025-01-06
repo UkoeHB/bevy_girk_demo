@@ -147,8 +147,8 @@ fn send_make_lobby_request(
 fn make_a_lobby(world: &mut World)
 {
     match world.react_resource::<MakeLobbyWindow>().is_single_player() {
-        true => syscall(world, (), make_local_lobby),
-        false => syscall(world, (), send_make_lobby_request),
+        true => world.syscall((), make_local_lobby),
+        false => world.syscall((), send_make_lobby_request),
     }
 }
 
@@ -404,7 +404,7 @@ pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
 
     // setup window reactors
     ui.commands()
-        .add(move |world: &mut World| syscall(world, (popup_pack, accept_text), setup_window_reactors));
+        .add(move |world: &mut World| world.syscall((popup_pack, accept_text), setup_window_reactors));
 
     // initialize ui
     ui.commands()

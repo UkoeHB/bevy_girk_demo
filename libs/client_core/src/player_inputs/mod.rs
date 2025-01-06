@@ -1,7 +1,5 @@
-mod handle_player_client_inputs;
-mod player_client_inputs;
+mod handle_player_inputs;
 mod plugin;
 
-pub(crate) use crate::player_inputs::handle_player_client_inputs::*;
-pub use crate::player_inputs::player_client_inputs::*;
-pub(crate) use crate::player_inputs::plugin::*;
+pub(crate) use handle_player_inputs::*;
+pub use plugin::*;

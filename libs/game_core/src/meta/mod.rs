@@ -4,8 +4,8 @@ mod game_initializer;
 mod game_over_report;
 mod replication;
 
-pub use crate::meta::game_context::*;
-pub use crate::meta::game_duration_config::*;
-pub use crate::meta::game_initializer::*;
-pub use crate::meta::game_over_report::*;
-pub use crate::meta::replication::*;
+pub use game_context::*;
+pub use game_duration_config::*;
+pub use game_initializer::*;
+pub use game_over_report::*;
+pub use replication::*;

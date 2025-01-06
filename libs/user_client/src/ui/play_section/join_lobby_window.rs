@@ -268,7 +268,7 @@ pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUi>)
 
     // setup window reactors
     ui.commands()
-        .add(move |world: &mut World| syscall(world, (popup_pack, accept_text), setup_window_reactors));
+        .add(move |world: &mut World| world.syscall((popup_pack, accept_text), setup_window_reactors));
 
     // initialize ui
     ui.commands()

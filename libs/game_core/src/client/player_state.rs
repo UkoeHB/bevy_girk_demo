@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player id component (wraps the player's client id).
-#[derive(Component, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Component, Default, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerId
 {
     pub id: ClientId,
@@ -61,6 +61,20 @@ pub struct PlayerState
     pub replicate: Replicated,
     /// Players have a visibility condition.
     pub visibility: VisibilityCondition,
+}
+
+impl Default for PlayerState
+{
+    fn default() -> Self
+    {
+        Self{
+            id: Default::default(),
+            name: Default::default(),
+            score: Default::default(),
+            replicate: Default::default(),
+            visibility: vis![Global],
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

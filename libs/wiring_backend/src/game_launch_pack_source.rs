@@ -29,27 +29,27 @@ fn get_protocol_id() -> u64
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_player_init_data(
-    env: bevy_simplenet::EnvType,
+    connection: ConnectionType,
     user_id: u128,
     client_id: ClientId,
-) -> ClickClientInitDataForGame
+) -> ClientGameInit
 {
-    let init = ClickClientInit::Player { client_id, player_name: format!("player{}", client_id.get()) };
+    let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id.get()) };
 
-    ClickClientInitDataForGame { env, user_id, init }
+    ClientGameInit { connection, user_id, client_id, client_type }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_watcher_init_data(
-    env: bevy_simplenet::EnvType,
+    connection: ConnectionType,
     user_id: u128,
     client_id: ClientId,
-) -> ClickClientInitDataForGame
+) -> ClientGameInit
 {
-    let init = ClickClientInit::Watcher { client_id };
+    let client_type = ClientTypeInfo::Watcher;
 
-    ClickClientInitDataForGame { env, user_id, init }
+    ClientGameInit { connection, user_id, client_id, client_type }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -98,18 +98,18 @@ pub fn get_launch_pack(
     // make init data for the clients
     let mut client_init_data = Vec::with_capacity(num_players + num_watchers);
 
-    for (idx, (env, player_user_id)) in lobby_contents.players.iter().enumerate() {
+    for (idx, (connection, player_user_id)) in lobby_contents.players.iter().enumerate() {
         let client_id = ClientId::new(idx as u64);
-        client_init_data.push(make_player_init_data(*env, *player_user_id, client_id));
+        client_init_data.push(make_player_init_data(*connection, *player_user_id, client_id));
     }
 
-    for (idx, (env, watcher_user_id)) in lobby_contents.watchers.iter().enumerate() {
+    for (idx, (connection, watcher_user_id)) in lobby_contents.watchers.iter().enumerate() {
         let client_id = ClientId::new((idx + num_players) as u64);
-        client_init_data.push(make_watcher_init_data(*env, *watcher_user_id, client_id));
+        client_init_data.push(make_watcher_init_data(*connection, *watcher_user_id, client_id));
     }
 
     // launch pack
-    let data = ClickLaunchPackData { config: game_factory_config, clients: client_init_data };
+    let data = LaunchData { config: game_factory_config, clients: client_init_data };
     Ok(GameLaunchPack::new(lobby_contents.id, ser_msg(&data)))
 }
 

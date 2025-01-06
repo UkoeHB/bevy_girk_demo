@@ -288,7 +288,7 @@ fn add_lobby_list_refresh_indicator(ui: &mut UiBuilder<MainUi>, area: &Widget)
 
     // setup reactors
     ui.commands()
-        .add(move |world: &mut World| syscall(world, overlay, setup_refresh_indicator_reactors));
+        .add(move |world: &mut World| world.syscall(overlay, setup_refresh_indicator_reactors));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

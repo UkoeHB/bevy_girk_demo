@@ -59,8 +59,8 @@ pub(crate) fn handle_client_instance_reports(world: &mut World)
         .next_report()
     {
         match report {
-            ClientInstanceReport::RequestConnectToken => syscall(world, (), handle_request_connect_token),
-            ClientInstanceReport::Aborted(game_id) => syscall(world, game_id, handle_client_aborted),
+            ClientInstanceReport::RequestConnectToken => world.syscall((), handle_request_connect_token),
+            ClientInstanceReport::Aborted(game_id) => world.syscall(game_id, handle_client_aborted),
         }
     }
 }

@@ -63,7 +63,7 @@ pub(crate) fn add_info_section(ui: &mut UiBuilder<MainUi>, area: &Widget)
     // text widget
     let layout_helper_clone = layout_helper.clone();
     ui.commands()
-        .add(move |world: &mut World| syscall(world, layout_helper, setup_client_id_display));
+        .add(move |world: &mut World| world.syscall(layout_helper, setup_client_id_display));
 
     // attach status to bottom of client id
     let offshoot = relative_widget(ui.tree(), layout_helper_clone.end(""), (0., 100.), (19., 119.));

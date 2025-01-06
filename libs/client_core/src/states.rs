@@ -1,14 +1,16 @@
-use game_core::*;
+use bevy::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Inputs that may come from a player client.
-#[derive(Debug)]
-pub enum PlayerClientInput
+/// Client core mode
+#[derive(SubStates, Debug, Default, Eq, PartialEq, Hash, Copy, Clone)]
+#[source(ClientInstanceState = ClientInstanceState::Game)]
+pub enum ClientState
 {
+    #[default]
     Init,
     Prep,
-    Play(PlayerInput),
+    Play,
     GameOver,
 }
 
