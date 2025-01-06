@@ -67,7 +67,7 @@ impl Default for PlayerState
 {
     fn default() -> Self
     {
-        Self{
+        Self {
             id: Default::default(),
             name: Default::default(),
             score: Default::default(),

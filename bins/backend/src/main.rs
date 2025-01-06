@@ -70,7 +70,7 @@ fn make_hub_server_configs() -> GameHubServerStartupPack
 fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> ClickGameFactoryConfig
 {
     // versioning
-    //todo: use hasher directly
+    //todo: use hasher directly?
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
@@ -109,7 +109,7 @@ fn make_test_host_server(configs: HostServerStartupPack) -> (App, url::Url, url:
 {
     // host-hub server
     let host_hub_server = host_hub_server_factory().new_server(
-        enfync::builtin::native::TokioHandle::default(),
+        enfync::builtin::native::TokioHandle::adopt_or_default(),
         "127.0.0.1:0",
         bevy_simplenet::AcceptorConfig::Default,
         bevy_simplenet::Authenticator::None,
@@ -119,7 +119,7 @@ fn make_test_host_server(configs: HostServerStartupPack) -> (App, url::Url, url:
 
     // host-user server
     let host_user_server = host_user_server_factory().new_server(
-        enfync::builtin::native::TokioHandle::default(),
+        enfync::builtin::native::TokioHandle::adopt_or_default(),
         "127.0.0.1:48888",
         bevy_simplenet::AcceptorConfig::Default,
         bevy_simplenet::Authenticator::None,
@@ -139,7 +139,7 @@ fn make_test_host_server(configs: HostServerStartupPack) -> (App, url::Url, url:
 fn make_test_host_hub_client_with_id(client_id: u128, hub_server_url: url::Url) -> HostHubClient
 {
     host_hub_client_factory().new_client(
-        enfync::builtin::native::TokioHandle::default(),
+        enfync::builtin::native::TokioHandle::adopt_or_default(),
         hub_server_url,
         bevy_simplenet::AuthRequest::None { client_id },
         bevy_simplenet::ClientConfig::default(),
@@ -159,8 +159,10 @@ fn make_test_game_hub_server(
     let (command_sender, command_receiver) = new_channel::<GameHubCommand>();
     let host_hub_client = make_test_host_hub_client_with_id(0u128, hub_server_url);
     let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(game_factory_config));
-    let game_factory = GameFactory::new(ClickGameFactory);
-    let game_launcher = GameInstanceLauncher::new(GameInstanceLauncherLocal::new(game_factory));
+    let game_launcher = GameInstanceLauncher::new(GameInstanceLauncherProcess::new(
+        GAME_INSTANCE_PATH,
+        enfync::builtin::TokioHandle::adopt_or_default(),
+    ));
 
     // server app
     let server_app = make_game_hub_server(
@@ -173,6 +175,11 @@ fn make_test_game_hub_server(
 
     (command_sender, server_app)
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+
+//todo: also make it available via CLI
+const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
 
 //-------------------------------------------------------------------------------------------------------------------
 

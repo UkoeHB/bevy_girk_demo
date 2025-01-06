@@ -40,12 +40,7 @@ impl Plugin for GameSetsPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            .configure_sets(
-                Update,
-                GameSet::PostInit
-                    .run_if(not(in_state(GameFwState::Init)))
-            )
+        app.configure_sets(Update, GameSet::PostInit.run_if(not(in_state(GameFwState::Init))))
             .configure_sets(
                 Update,
                 GameSet::Prep
@@ -58,8 +53,8 @@ impl Plugin for GameSetsPlugin
                     .run_if(in_state(GameFwState::Game))
                     .run_if(in_state(GameState::Play)),
             )
-            // - This will only run in the span between entering 'game over' and the GameFwState moving to 'End', which
-            //   is controlled by `GameFwConfig::max_end_ticks()`.
+            // - This will only run in the span between entering 'game over' and the GameFwState moving to 'End',
+            //   which is controlled by `GameFwConfig::max_end_ticks()`.
             //todo: allow GameOver to last indefinitely?
             .configure_sets(
                 Update,
@@ -67,14 +62,7 @@ impl Plugin for GameSetsPlugin
                     .run_if(in_state(GameFwState::Game))
                     .run_if(in_state(GameState::GameOver)),
             )
-            .configure_sets(
-                Update,
-                (
-                    GameLogicSet::Admin,
-                    GameLogicSet::Update
-                )
-                    .chain()
-            );
+            .configure_sets(Update, (GameLogicSet::Admin, GameLogicSet::Update).chain());
     }
 }
 

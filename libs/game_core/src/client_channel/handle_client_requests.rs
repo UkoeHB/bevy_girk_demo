@@ -35,12 +35,10 @@ pub(crate) fn handle_client_request(world: &mut World, id: ClientId, req: Client
 
     match req {
         ClientRequest::GetGameState => world.syscall(id, handle_game_state_request),
-        ClientRequest::PlayerInput(i) => {
-            match state {
-                GameState::Play => player_syscall(world, id, req, i, handle_player_input),
-                _ => reject(world),
-            }
-        }
+        ClientRequest::PlayerInput(i) => match state {
+            GameState::Play => player_syscall(world, id, req, i, handle_player_input),
+            _ => reject(world),
+        },
     }
 }
 

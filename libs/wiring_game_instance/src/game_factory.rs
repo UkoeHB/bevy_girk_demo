@@ -7,8 +7,8 @@ use bevy_girk_client_fw::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_server::*;
 use bevy_girk_wiring_common::*;
+use bevy_girk_wiring_server::*;
 use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use game_core::*;
@@ -55,8 +55,8 @@ fn prepare_game_startup(
                         ..Default::default()
                     },
                 );
-                ClientInitializer{
-                    context: ClientContext::new(client_id, ClientType::Player, duration_config)
+                ClientInitializer {
+                    context: ClientContext::new(client_id, ClientType::Player, duration_config),
                 }
             }
             ClientTypeInfo::Watcher => {
@@ -73,8 +73,8 @@ fn prepare_game_startup(
 
         // Prep start info for the client.
         let client_fw_config = ClientFwConfig::new(config.ticks_per_sec(), game_id, client_id);
-        let start_pack = ClientStarter{ client_fw_config, initializer };
-        let start_info = GameStartInfo::new(game_id, client_init.user_id, client_id.get(), start_pack);
+        let client_starter = ClientStarter { client_fw_config, initializer };
+        let start_info = GameStartInfo::new(game_id, client_init.user_id, client_id.get(), client_starter);
         start_infos.push(start_info)
     }
     debug_assert_eq!(client_set.len(), clients.len());
@@ -113,7 +113,7 @@ pub enum ClientTypeInfo
         /// the client's player name
         player_name: String,
     },
-    Watcher
+    Watcher,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -135,6 +135,8 @@ pub struct ClientGameInit
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Used by a game factory to initialize a game.
+///
+/// Produced by a launch pack source.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LaunchData
 {
@@ -185,11 +187,7 @@ impl GameFactoryImpl for ClickGameFactory
         let metas = prepare_girk_game_app(app, server_config);
         prepare_game_app_core(app, startup.click_init);
 
-        // game start info
-        // - must call this AFTER prepping the game app and setting up the renet server
-        let start_infos = get_game_start_infos(&app, launch_pack.game_id, &startup.clients)?;
-
-        Ok(GameStartReport { metas, start_infos })
+        Ok(GameStartReport { metas, start_infos: startup.start_infos })
     }
 }
 

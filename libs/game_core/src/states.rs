@@ -112,8 +112,7 @@ impl Plugin for GameStatePlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            .init_state::<GameState>()
+        app.init_state::<GameState>()
             .add_systems(
                 Update,
                 (

@@ -60,8 +60,7 @@ impl Plugin for GameTickPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            .init_resource::<GameTick>()
+        app.init_resource::<GameTick>()
             .init_resource::<PrepTick>()
             .init_resource::<PlayTick>()
             .init_resource::<GameOverTick>()

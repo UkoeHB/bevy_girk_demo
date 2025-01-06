@@ -49,7 +49,7 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
     let game_num_ticks = game_ticks_per_sec * 30;
 
     // versioning
-    //todo: use hasher directly
+    //todo: use hasher directly?
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // config
@@ -108,7 +108,7 @@ fn run_playtest(
         };
 
         // prepare to launch the clients
-        let Some(meta) = &report.native_meta else {
+        let Some(meta) = &report.metas.native_meta else {
             tracing::error!("missing native meta for setting up playtest renet client");
             return;
         };
@@ -116,42 +116,50 @@ fn run_playtest(
         // launch game clients
         let mut client_instances = Vec::default();
         for _ in 0..num_clients {
-            let Some(start_info) = report.start_infos.pop() else {
-                tracing::error!("missing start info for playtest");
-                return;
-            };
-
             let Ok(token) = new_connect_token_native(meta, get_systime(), start_info.client_id) else {
                 tracing::error!("failed producing connect token for playtest");
-                return;
+                continue;
             };
 
-            let (_client_command_sender, client_command_receiver) = new_io_channel::<ClientInstanceCommand>();
-            let (client_report_sender, _client_report_receiver) = new_io_channel::<ClientInstanceReport>();
+            let Some(start_info) = report.start_infos.pop() else {
+                tracing::error!("missing start info for playtest");
+                continue;
+            };
+
+            let Ok(token_ser) = serde_json::to_string(&token) else {
+                tracing::error!(game_id, "failed serializing server connect token for playtest game client");
+                continue;
+            };
+
+            let Ok(start_info_ser) = serde_json::to_string(&start_info) else {
+                tracing::error!(game_id, "failed serializing game start info for playtest game client");
+                continue;
+            };
 
             tracing::trace!(start_info.client_id, "launching game client for playtest");
-            let client_launcher =
-                ClientInstanceLauncherProcess::new(game_client_path.clone(), spawner_clone.clone());
 
-            client_instances.push(client_launcher.launch(
-                token,
-                start_info,
-                ClientInstanceConfig { reconnect_interval_secs: 100000u32 }, //localplayer doesn't reconnect
-                client_command_receiver,
-                client_report_sender,
-            ));
+            let Ok(child_process) = tokio::process::Command::new(&game_client_path)
+                .args(["-T", &token_ser, "-S", &start_info_ser])
+                .spawn()
+            else {
+                tracing::error!("failed launching game client for playtest at {:?}", game_client_path);
+                continue;
+            };
+
+            client_instances.push(child_process);
         }
 
         // wait for clients to close
         // - we must wait for client closure to avoid zombie process leak
         for mut client_instance in client_instances {
-            if !client_instance.get().await {
+            if client_instance.wait().await.is_err() {
                 tracing::warn!("playtest client instance closed with error");
+                client_instance.kill().await;
             }
         }
 
         // command game instance to abort
-        // - we assume if the client is closed then the game should die, since this is singleplayer
+        // - we assume if the clients are closed then the game should die
         // - this will do nothing if the game instance already closed
         let _ = game_instance.send_command(GameInstanceCommand::Abort);
 
@@ -208,7 +216,7 @@ fn main()
     // lobby contents
     let mut players = Vec::default();
     for idx in 0..num_clients {
-        players.push((bevy_simplenet::EnvType::Native, idx as u128));
+        players.push((ConnectionType::Native, idx as u128));
     }
 
     let lobby_contents = ClickLobbyContents {

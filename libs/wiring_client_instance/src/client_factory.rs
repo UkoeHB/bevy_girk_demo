@@ -26,21 +26,25 @@ impl ClientFactoryImpl for ClickClientFactory
 {
     type Data = ClientStarter;
 
+    /// Note: does not set up the user client, which is considered a semi-unrelated 'shell'
     fn add_plugins(&mut self, app: &mut App)
     {
         // girk client config
-        let config = GirkClientStartupConfig{
-            resend_time: self.resend_time,
-        };
+        let config = GirkClientStartupConfig { resend_time: self.resend_time };
 
         // set up client app
         prepare_girk_client_app(client_app, config);
         client_app
-            .add_plugins(ClientCorePlugins)
-            .add_plugins(ClickClientSkinPlugin);
+            .add_plugins(ClientCorePlugin)
+            .add_plugins(ClientSkinPlugin);
     }
 
-    fn setup_game(&mut self, world: &mut World, token: ServerConnectToken, start_info: ClientStartInfo<ClientStarter>)
+    fn setup_game(
+        &mut self,
+        world: &mut World,
+        token: ServerConnectToken,
+        start_info: ClientStartInfo<ClientStarter>,
+    )
     {
         let connect_pack = match ClientConnectPack::new(self.protocol_id, token) {
             Ok(connect) => connect,
@@ -51,29 +55,19 @@ impl ClientFactoryImpl for ClickClientFactory
         };
 
         // girk client config
-        let config = GirkClientConfig{
+        let config = GirkClientConfig {
             client_fw_config: start_info.data.client_fw_config,
             connect_pack,
         };
 
         // set up client app
         setup_girk_client_game(world, config);
-        let client_id = start_info.client_id;
-        let player_input_sender = prepare_client_core(&mut client_app, start_info.data.initializer);
-        prepare_client_skin(&mut client_app, client_id, player_input_sender);
-
-        match start_info.data.initializer
-        {
-            ClientInitializer::Player(player_initializer) =>
-            {
-                self.player_id    = Some(player_initializer.player_context.id());
-                self.player_input = Some(setup_client_game_core(world, player_initializer));
-            }
-            ClientInitializer::Watcher => ()
-        }
+        setup_client_game(world, start_info.data.initializer);
 
         // Enter the game.
-        world.resource_mut::<NextState<ClientInstanceState>>().set(ClientInstanceState::Game);
+        world
+            .resource_mut::<NextState<ClientInstanceState>>()
+            .set(ClientInstanceState::Game);
     }
 }
 

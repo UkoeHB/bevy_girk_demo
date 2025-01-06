@@ -7,7 +7,7 @@ use client_skin::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Prepare the click client skin on a client app.
-pub fn setup_client_game(world: &mut World)
+pub fn setup_client_game(world: &mut World, initializer: ClientInitializer)
 {
     let (player_input_sender, player_input_receiver) = new_channel::<PlayerInput>();
     world

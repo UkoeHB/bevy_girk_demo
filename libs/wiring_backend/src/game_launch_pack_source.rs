@@ -28,11 +28,7 @@ fn get_protocol_id() -> u64
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_player_init_data(
-    connection: ConnectionType,
-    user_id: u128,
-    client_id: ClientId,
-) -> ClientGameInit
+fn make_player_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
 {
     let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id.get()) };
 
@@ -41,11 +37,7 @@ fn make_player_init_data(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_watcher_init_data(
-    connection: ConnectionType,
-    user_id: u128,
-    client_id: ClientId,
-) -> ClientGameInit
+fn make_watcher_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
 {
     let client_type = ClientTypeInfo::Watcher;
 
@@ -110,7 +102,7 @@ pub fn get_launch_pack(
 
     // launch pack
     let data = LaunchData { config: game_factory_config, clients: client_init_data };
-    Ok(GameLaunchPack::new(lobby_contents.id, ser_msg(&data)))
+    Ok(GameLaunchPack::new(lobby_contents.id, data))
 }
 
 //-------------------------------------------------------------------------------------------------------------------

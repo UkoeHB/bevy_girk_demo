@@ -14,7 +14,11 @@ fn send_client_request(In(msg): In<ClientRequest>, mut sender: ClientRequestSend
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn process_player_inputs(world: &mut World, state: ClientState, handler: impl Fn(&mut World, PlayerInput, ClientState))
+fn process_player_inputs(
+    world: &mut World,
+    state: ClientState,
+    handler: impl Fn(&mut World, PlayerInput, ClientState),
+)
 {
     let Some(player_inputs) = world.remove_resource::<Receiver<PlayerInput>>() else {
         return;
@@ -49,7 +53,9 @@ fn handle_input(world: &mut World, input: PlayerInput, state: ClientState)
 /// Handle player inputs for ClientMode::GameOver.
 pub(crate) fn handle_player_inputs(world: &mut World)
 {
-    let Some(state) = world.get_resource::<State<ClientState>>() else { return; };
+    let Some(state) = world.get_resource::<State<ClientState>>() else {
+        return;
+    };
 
     process_player_inputs(world, state, handle_input);
 }

@@ -1,3 +1,6 @@
+//! Independent client binary. Can be used to launch games directly from another binary without an intermediating
+//! user client.
+
 use std::time::Duration;
 
 use bevy_girk_client_instance::*;
@@ -10,8 +13,10 @@ use wiring_client_instance::*;
 #[derive(Parser, Debug)]
 struct GameClientCli
 {
-    #[clap(flatten)]
-    instance: ClientInstanceCli,
+    #[arg(short = 'T')]
+    token: ServerConnectToken,
+    #[arg(short = 'S')]
+    start_info: GameStartInfo,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,14 +45,18 @@ fn main()
 
     tracing::info!("game client started");
 
+    // cli
+    let args = GameClientCli::parse();
+
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
     let mut factory =
         ClientFactory::new(ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) });
 
-    // run the client
-    let args = GameClientCli::parse();
-    inprocess_client_launcher(args.instance, &mut factory);
+    let mut app = App::new();
+    factory.add_plugins(&mut app);
+    factory.setup_game(app.world_mut(), args.token, args.start_info);
+    app.run();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

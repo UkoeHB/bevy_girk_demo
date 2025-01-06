@@ -23,20 +23,16 @@ impl Plugin for GamePlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            .add(GameReplicationPlugin)
+        app.add(GameReplicationPlugin)
             .add(GameSetsPlugin)
             .add(GameSetupPlugin)
             .add(GameStatePlugin)
             .add(GameTickPlugin)
             .configure_sets(
                 Update,
-                (
-                    GameStateUpdateSet,
-                    TickUpdateSet,
-                )
+                (GameStateUpdateSet, TickUpdateSet)
                     .chain()
-                    .in_set(GameLogicSet::Admin)
+                    .in_set(GameLogicSet::Admin),
             );
     }
 }

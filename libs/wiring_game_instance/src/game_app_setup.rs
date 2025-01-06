@@ -9,7 +9,7 @@ use game_core::*;
 pub fn prepare_game_app_core(game_app: &mut App, game_initializer: ClickGameInitializer)
 {
     game_app
-        .add_plugins(GamePlugins)
+        .add_plugins(GamePlugin)
         .insert_resource(game_initializer);
 }
 
