@@ -114,7 +114,7 @@ fn run_playtest(
         };
 
         // launch game clients
-        let mut client_instances = Vec::default();
+        let mut client_processes = Vec::default();
         for _ in 0..num_clients {
             let Ok(token) = new_connect_token_native(meta, get_systime(), start_info.client_id) else {
                 tracing::error!("failed producing connect token for playtest");
@@ -146,12 +146,12 @@ fn run_playtest(
                 continue;
             };
 
-            client_instances.push(child_process);
+            client_processes.push(child_process);
         }
 
         // wait for clients to close
         // - we must wait for client closure to avoid zombie process leak
-        for mut client_instance in client_instances {
+        for mut child_process in client_processes {
             if client_instance.wait().await.is_err() {
                 tracing::warn!("playtest client instance closed with error");
                 client_instance.kill().await;

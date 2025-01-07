@@ -1,8 +1,0 @@
-{
-
-"#manifest": {
-    "client_skin/game/manifest.load.json": "",
-    "client_skin/game_over.load.json": "skin.game_over"
-}
-
-}

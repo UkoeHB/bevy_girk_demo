@@ -8,6 +8,8 @@ use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Used to make local-player games.
+//TODO: move this into the user client binary and add a resource for game launch pack source?
 pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
 {
     // game duration

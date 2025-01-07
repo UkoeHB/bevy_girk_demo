@@ -19,14 +19,9 @@ bevy_girk_client_instance = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
-bevy_girk_wiring_common   = { workspace = true }
-bevy_girk_wiring_client   = { workspace = true }
+bevy_girk_wiring_common   = { workspace = true, features = ["memory_transport"] }
+bevy_girk_wiring_client   = { workspace = true, features = ["memory_transport"] }
 
 client_core          = { path = "../client_core" }
 client_skin          = { path = "../client_skin" }
 wiring_game_instance = { path = "../wiring_game_instance" }
-
-[target.'cfg(not(target_family = "wasm"))'.dependencies.tokio]
-version = "1.34"
-default-features = false
-features = ["io-util", "process", "macros"]

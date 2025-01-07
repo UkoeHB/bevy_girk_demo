@@ -107,16 +107,15 @@ fn main()
         ClientFactory::new(ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) });
 
     // build and launch the bevy app
-    let mut app = App::new()
-        .insert_resource(client)
-        .insert_resource(timer_configs)
-        .insert_resource(local_launcher)
-        .add_plugins(UserClientPlugin);
-
+    let mut app = App::new();
     factory.add_plugins(&mut app);
     app.insert_resource(factory);
 
-    app.run();
+    app.insert_resource(client)
+        .insert_resource(timer_configs)
+        .insert_resource(local_launcher)
+        .add_plugins(UserClientPlugin)
+        .run();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

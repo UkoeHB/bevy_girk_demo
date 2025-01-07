@@ -93,14 +93,12 @@ fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> Clic
     let game_duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
 
     // click game factory config
-    let game_factory_config = ClickGameFactoryConfig {
+    ClickGameFactoryConfig {
         server_setup_config,
         game_fw_config,
         game_duration_config,
         resend_time: Duration::from_millis(300),
-    };
-
-    game_factory_config
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

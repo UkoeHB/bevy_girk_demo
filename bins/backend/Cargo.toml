@@ -25,7 +25,7 @@ url                = { workspace = true }
 bevy_girk_backend_public  = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_hub_server = { workspace = true }
-bevy_girk_game_instance   = { workspace = true }
+bevy_girk_game_instance   = { workspace = true, features = ["process"] }
 bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 

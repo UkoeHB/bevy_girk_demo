@@ -110,7 +110,6 @@ pub enum ClientTypeInfo
 {
     Player
     {
-        /// the client's player name
         player_name: String,
     },
     Watcher,

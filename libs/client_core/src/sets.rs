@@ -31,6 +31,7 @@ pub enum ClientLogicSet
 {
     Admin,
     Update,
+    End,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -68,7 +69,7 @@ impl Plugin for ClientSetsPlugin
         )
         .configure_sets(
             Update,
-            (ClientLogicSet::Admin, ClientLogicSet::Update)
+            (ClientLogicSet::Admin, ClientLogicSet::Update, ClientLogicSet::End)
                 .chain()
                 .run_if(in_state(ClientInstanceState::Game)),
         );

@@ -11,17 +11,9 @@ struct LoadingStartTime(Duration);
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn reset_loading_time_start(time: Res<Time>, mut start: ResMut<LoadingStartTime>)
+fn setup_timer(mut c: Commands, time: Res<Time>)
 {
-    start.0 = time.elapsed();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-/// Hacky timer for delaying initialization.
-fn no_progress() -> Progress
-{
-    Progress { done: 0, total: 2 }
+    c.insert_resource(LoadingStartTime(time.elapsed()));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,31 +32,21 @@ fn initialization_timer(time: Res<Time>, start: Res<LoadingStartTime>) -> Progre
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Plugin for simulating loading delay when initializing the app.
-///
-/// The timer starts when the client connects.
-pub(crate) struct LoadingSimPlugin;
+/// Plugin for simulating loading delay when initializing a game.
+pub(super) struct LoadingSimPlugin;
 
 impl Plugin for LoadingSimPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.insert_resource(LoadingStartTime(Duration::default()))
-            .add_systems(
-                Update,
-                no_progress
-                    .track_progress()
-                    .run_if(in_state(ClientFwMode::Connecting))
-                    .in_set(ClientFwLoadingSet),
-            )
+        app.add_systems(OnEnter(ClientInstanceState::Game), setup_timer)
             .add_systems(
                 Update,
                 initialization_timer
-                    .track_progress()
-                    .run_if(not(in_state(ClientFwMode::Connecting)))
+                    .track_progress::<ClientInitState>()
+                    .run_if(client_is_initializing)
                     .in_set(ClientFwLoadingSet),
-            )
-            .add_systems(OnEnter(ClientFwMode::Syncing), reset_loading_time_start);
+            );
     }
 }
 

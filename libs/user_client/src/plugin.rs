@@ -35,7 +35,7 @@ impl Plugin for BevyEnginePlugin
         // add to app
         app.add_plugins(bevy_plugins)
             .insert_resource(bevy::winit::WinitSettings {
-                focused_mode: UpdateMode::Reactive { wait: std::time::Duration::from_millis(100) },
+                focused_mode: UpdateMode::Reactive { wait: std::time::Duration::from_millis(10) },
                 unfocused_mode: UpdateMode::ReactiveLowPower { wait: std::time::Duration::from_millis(250) },
                 ..Default::default()
             });

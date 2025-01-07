@@ -18,7 +18,19 @@ bevy_girk_client_fw       = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
-bevy_girk_wiring_common   = { workspace = true }
-bevy_girk_wiring_server   = { workspace = true }
+bevy_girk_wiring_common   = { workspace = true, features = [ "memory_transport" ] }
 
 game_core = { path = "../game_core" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+bevy_girk_wiring_server = { workspace = true, features = [
+    "memory_transport",
+    "native_transport",
+    "wasm_transport_wt",
+    "wasm_transport_ws"
+] }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+bevy_girk_wiring_server = { workspace = true, features = [
+    "memory_transport",
+] }

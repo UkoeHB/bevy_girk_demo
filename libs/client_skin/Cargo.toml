@@ -22,4 +22,3 @@ bevy_girk_utils     = { workspace = true }
 
 client_core = { path = "../client_core" }
 game_core   = { path = "../game_core" }
-ui_prefab   = { path = "../ui_prefab" }

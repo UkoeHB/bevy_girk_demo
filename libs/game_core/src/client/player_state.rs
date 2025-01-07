@@ -16,7 +16,7 @@ pub struct PlayerId
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player name component.
-#[derive(Component, ReactComponent, Default, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Component, Default, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerName
 {
     pub name: String,
@@ -24,9 +24,7 @@ pub struct PlayerName
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(
-    Component, ReactComponent, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug,
-)]
+#[derive(Component, Default, Serialize, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
 pub struct PlayerScore
 {
     /// Note: This is only `pub` for testing purposes.
