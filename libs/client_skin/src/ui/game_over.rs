@@ -7,11 +7,11 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn game_over_screen(mut c: Commands, mut s: ResMut<SceneLoader>)
+fn game_over_screen(mut c: Commands, mut s: ResMut<SceneBuilder>)
 {
     let scene = ("ui.skin", "gameover");
-    c.ui_root().load_scene_and_edit(scene, &mut s, |l| {
-        l.insert(StateScoped(ClientInstanceState::Game));
+    c.ui_root().spawn_scene_and_edit(scene, &mut s, |h| {
+        h.insert(StateScoped(ClientInstanceState::Game));
     });
 }
 

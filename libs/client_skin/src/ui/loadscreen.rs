@@ -12,14 +12,14 @@ struct RefreshLoadBar;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_loadscreen(mut c: Commands, mut s: ResMut<SceneLoader>)
+fn add_loadscreen(mut c: Commands, mut s: ResMut<SceneBuilder>)
 {
     let scene = ("ui.skin", "loadscreen");
-    c.ui_root().load_scene_and_edit(scene, &mut s, |l| {
-        l.despawn_on_broadcast::<ExitingInit>();
-        l.insert(StateScoped(ClientInstanceState::Game));
+    c.ui_root().spawn_scene_and_edit(scene, &mut s, |h| {
+        h.despawn_on_broadcast::<ExitingInit>();
+        h.insert(StateScoped(ClientInstanceState::Game));
 
-        l.get("gutter::bar").update_on(
+        h.get("gutter::bar").update_on(
             broadcast::<RefreshLoadBar>(),
             |//
                     id: UpdateId,

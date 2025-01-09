@@ -67,59 +67,66 @@ fn get_score_changes(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) fn add_game_scoreboard<'a>(l: &mut LoadedScene<'a, UiBuilder<'a, Entity>>)
+pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
 {
-    let scene = ("ui.skin.game", "scoreboard");
-    l.load_scene_and_edit(scene, |l| {
-        // Add scoreboard entries.
-        l.get("content").update_on(
-            resource_mutation::<Scoreboard>(),
-            |//
-                    id: UpdateId,
-                    mut num_entries: Local<usize>,
-                    mut c: Commands,
-                    mut s: ResMut<SceneLoader>,
-                    scoreboard: ReactRes<Scoreboard>,
-                    //
-                |
-                {
-                    let mut builder = c.ui_builder(*id);
-                    let entry_scene = ("ui.skin.game", "scoreboard_entry");
+    // Add scoreboard entries.
+    h.update_on(
+        resource_mutation::<Scoreboard>(),
+        |//
+            id: UpdateId,
+            mut num_entries: Local<usize>,
+            mut c: Commands,
+            mut s: ResMut<SceneLoader>,
+            scoreboard: ReactRes<Scoreboard>,
+            //
+        |
+        {
+            let mut builder = c.ui_builder(*id);
+            let rank_item = ("ui.skin.game", "scoreboard_rank_item");
+            let player_item = ("ui.skin.game", "scoreboard_player_item");
+            let score_item = ("ui.skin.game", "scoreboard_score_item");
 
-                    while *num_entries < scoreboard.num_players() {
-                        // Make an entry assigned to index `idx` in the scoreboard.
-                        // The entry text will update whenever the scoreboard changes.
-                        // - All entries should update in case the player they are assigned to changes.
-                        let idx = *num_entries;
-                        builder.load_scene_and_edit(entry_scene, &mut s, |l| {
-                            l.get("rank_text")
-                                .update_text(format!("{}.", idx + 1));
+            while *num_entries < scoreboard.num_players() {
+                // Make an entry assigned to index `idx` in the scoreboard.
+                // The entry text will update whenever the scoreboard changes.
+                // - All entries should update in case the player they are assigned to changes.
+                let idx = *num_entries;
+                let mut player_text;
+                let mut score_text;
+                // These are separate scenes because we are using grid layout.
+                builder.spawn_scene_and_edit(rank_item, &mut s, |h| {
+                    h.get("text")
+                        .update_text(format!("{}.", idx + 1));
+                });
+                builder.spawn_scene_and_edit(player_item, &mut s, |h| {
+                    player_text = h.id();
+                });
+                builder.spawn_scene_and_edit(score_item, &mut s, |h| {
+                    score_text = h.id();
+                });
 
-                            let player_text = l.entity("player_text");
-                            let score_text = l.entity("score_text");
-                            l.update_on(
-                                resource_mutation::<Scoreboard>(),
-                                move |//
-                                    id: UpdateId,
-                                    mut e: TextEditor,
-                                    scoreboard: ReactRes<Scoreboard>,
-                                    players: Query<(&PlayerName, &PlayerScore)>
-                                    //
-                                |
-                                {
-                                    let Some((name, score)) = players.get(scoreboard.get_player(idx)?)?;
-                                    write_text!(e, player_text, "{}", name.name.as_str());
-                                    write_text!(e, score_text, "{}", score.score());
-                                    DONE
-                                }
-                            );
-                        });
-
-                        *num_entries += 1;
+                // Entries are never despawned so it's ok to have the reactor on the scoreboard entity.
+                builder.update_on(
+                    resource_mutation::<Scoreboard>(),
+                    move |//
+                        _: UpdateId,
+                        mut e: TextEditor,
+                        scoreboard: ReactRes<Scoreboard>,
+                        players: Query<(&PlayerName, &PlayerScore)>
+                        //
+                    |
+                    {
+                        let Some((name, score)) = players.get(scoreboard.get_player(idx)?)?;
+                        write_text!(e, player_text, "{}", name.name.as_str());
+                        write_text!(e, score_text, "{}", score.score());
+                        DONE
                     }
-                },
-        );
-    });
+                );
+
+                *num_entries += 1;
+            }
+        },
+    );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
