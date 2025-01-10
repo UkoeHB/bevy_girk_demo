@@ -12,12 +12,12 @@ struct RefreshLoadBar;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_loadscreen(mut c: Commands, mut s: ResMut<SceneBuilder>)
+fn add_loadscreen(mut c: Commands, mut s: SceneBuilder)
 {
     let scene = ("ui.skin", "loadscreen");
     c.ui_root().spawn_scene_and_edit(scene, &mut s, |h| {
         h.despawn_on_broadcast::<ExitingInit>();
-        h.insert(StateScoped(ClientInstanceState::Game));
+        h.insert(StateScoped(ClientAppState::Game));
 
         h.get("gutter::bar").update_on(
             broadcast::<RefreshLoadBar>(),
@@ -52,7 +52,8 @@ impl Plugin for LoadScreenPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_reactor(broadcast::<EnteringConnecting>(), add_loadscreen)
+        // We assume ClientAppState::Game is always delayed until LoadState::Done.
+        app.add_systems(OnEnter(ClientAppState::Game), add_loadscreen)
             .add_systems(Update, broadcast_system::<RefreshLoadBar>.in_set(ClientLogicSet::End));
     }
 }

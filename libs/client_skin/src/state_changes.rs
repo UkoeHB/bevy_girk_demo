@@ -4,9 +4,6 @@ use bevy_cobweb::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Default)]
-pub struct EnteringConnecting;
-
-#[derive(Default)]
 pub struct ExitingInit;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -25,11 +22,7 @@ impl Plugin for StateChangesPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_systems(
-            OnEnter(ClientFwState::Connecting),
-            broadcast_system::<EnteringConnecting>,
-        )
-        .add_systems(OnExit(ClientFwState::Init), broadcast_system::<ExitingInit>);
+        app.add_systems(OnExit(ClientFwState::Init), broadcast_system::<ExitingInit>);
     }
 }
 

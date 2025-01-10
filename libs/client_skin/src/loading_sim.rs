@@ -39,7 +39,7 @@ impl Plugin for LoadingSimPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_systems(OnEnter(ClientInstanceState::Game), setup_timer)
+        app.add_systems(OnEnter(ClientAppState::Game), setup_timer)
             .add_systems(
                 Update,
                 initialization_timer

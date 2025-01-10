@@ -1,5 +1,5 @@
 #import
-constants as const
+ui.skin as _
 
 #defs
 +button = \
@@ -22,10 +22,16 @@ constants as const
 #scenes
 "game"
     FlexNode{width:100vw height:100vh flex_direction:Column justify_main:FlexStart}
-    BackgroundColor($const::COLOR_GAME_BG)
+    BackgroundColor($COLOR_GAME_BG)
 
     "header"
         FlexNode{width:100% height:25px flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
+
+        "name_shim"
+            AbsoluteNode{width:100% height:100% justify_main:Center justify_cross:Center}
+
+            "name"
+                TextLine{size:25}
 
         "shim"
             FlexNode{flex_grow:1}
@@ -72,10 +78,17 @@ constants as const
 
             "click_button"
                 +button{
-                    BackgroundColor($const::COLOR_GAME_CLICKER)
+                    Multi<Static<BackgroundColor>>[
+                        {value:$COLOR_GAME_CLICKER}
+                        {state:[Disabled] value:$COLOR_GAME_SECONDARY_BUTTONS_DISABLED}
+                    ]
 
                     "text"
                         TextLine{text:"CLICK ME" size:35}
+                        Multi<Static<TextLineColor>>[
+                            {value:#FFFFFF}
+                            {state:[Disabled] value:$COLOR_GAME_SECONDARY_BUTTONS_TEXT_DISABLED}
+                        ]
                 }
 
     "footer"
@@ -84,7 +97,6 @@ constants as const
         "disconnect_button"
             +button{
                 SetJustifySelfCross(Center)
-                BackgroundColor($const::COLOR_GAME_SECONDARY_BUTTONS)
 
                 "text"
                     TextLine{text:"Disconnect" size:20}

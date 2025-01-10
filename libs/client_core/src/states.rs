@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 /// Client core mode
 #[derive(SubStates, Debug, Default, Eq, PartialEq, Hash, Copy, Clone)]
-#[source(ClientInstanceState = ClientInstanceState::Game)]
+#[source(ClientAppState = ClientAppState::Game)]
 pub enum ClientState
 {
     #[default]

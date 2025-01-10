@@ -8,6 +8,12 @@ use crate::*;
 
 fn edit_header(mut h: UiSceneHandle)
 {
+    h.get("name_shim::name").update(
+        |id: UpdateId, mut e: TextEditor, context: Res<ClientContext>| match context.client_type() {
+            ClientType::Player => write_text!(e, *id, "Player {}", context.id().get()),
+            ClientType::Watcher => write_text!(e, *id, "Watcher {}", context.id().get()),
+        },
+    );
     h.get("fps::text").update_on(
         resource_mutation::<FpsTracker>(),
         |id: UpdateId, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
@@ -40,6 +46,13 @@ fn edit_footer(mut h: UiSceneHandle)
 {
     // Disconnect button. Lets you test in-game disconnects.
     h.get("disconnect_button")
+        .update(
+            |id: UpdateId, mut c: Commands, ps: PseudoStateParam, context: Res<ClientContext>| {
+                if context.client_type() != ClientType::Player {
+                    ps.try_disable(&mut c, *id);
+                }
+            },
+        )
         .on_pressed(|mut client: ResMut<RenetClient>| {
             client.disconnect();
         });
@@ -47,11 +60,11 @@ fn edit_footer(mut h: UiSceneHandle)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn build_ui(mut c: Commands, mut s: ResMut<SceneLoader>)
+fn build_ui(mut c: Commands, mut s: SceneBuilder)
 {
     let scene = ("ui.skin.game", "game");
-    c.ui_root().load_scene_and_edit(scene, &mut s, |h| {
-        h.insert(StateScoped(ClientInstanceState::Game));
+    c.ui_root().spawn_scene_and_edit(scene, &mut s, |h| {
+        h.insert(StateScoped(ClientAppState::Game));
 
         edit_header(h.get("header"));
         edit_content(h.get("content"));

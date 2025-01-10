@@ -8,28 +8,24 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_request_connect_token(
+fn handle_token_req(
+    In(game_id): In<u64>,
     mut c: Commands,
     client: Res<HostUserClient>,
-    monitor: ReactRes<ClientMonitor>,
+    starter: ReactRes<ClientStarter>,
     request: Query<Entity, (With<ConnectTokenRequest>, Without<React<PendingRequest>>)>,
 )
 {
     // sanity check
-    if !monitor.is_running() {
-        tracing::warn!("ignoring connect token request from non-running client");
+    if Some(game_id) != starter.game_id() {
+        tracing::warn!("ignoring connect token request for game {game_id}; client doesn't appear to be in \
+            that game");
         return;
     }
 
     // check for existing request
     let Ok(target_entity) = request.get_single() else {
         tracing::error!("ignoring client's connect token request because a request is already pending");
-        return;
-    };
-
-    // game id
-    let Some(game_id) = monitor.game_id() else {
-        tracing::error!("running client monitor is missing its game id");
         return;
     };
 
@@ -40,28 +36,47 @@ fn handle_request_connect_token(
     c.react()
         .insert(target_entity, PendingRequest::new(new_req));
 
-    tracing::info!(game_id, "requested new connect token from host server");
+    tracing::info!("requested new connect token from host server for game {game_id}");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_aborted(In(game_id): In<u64>)
+fn handle_client_ended(In(game_id): In<u64>, mut c: Commands, mut starter: ReactRes<ClientStarter>)
 {
-    tracing::warn!(game_id, "client instance aborted");
+    tracing::info!("client instance ended for game {game_id}");
+    starter.get_mut(&mut c).clear(game_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_client_instance_reports(world: &mut World)
+fn handle_client_aborted(In(game_id): In<u64>, mut c: Commands, mut starter: ReactRes<ClientStarter>)
 {
-    while let Some(report) = world
-        .react_resource_mut_noreact::<ClientMonitor>()
-        .next_report()
-    {
+    tracing::warn!("client instance aborted for game {game_id}");
+    starter.get_mut(&mut c).clear(game_id);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn handle_client_instance_reports(mut c: Commands, mut events: EventReader<ClientInstanceReport>)
+{
+    for report in events.read() {
         match report {
-            ClientInstanceReport::RequestConnectToken => world.syscall((), handle_request_connect_token),
-            ClientInstanceReport::Aborted(game_id) => world.syscall(game_id, handle_client_aborted),
+            ClientInstanceReport::RequestConnectToken(game_id) => c.syscall(game_id, handle_token_req),
+            ClientInstanceReport::Ended(game_id) => c.syscall(game_id, handle_client_ended),
+            ClientInstanceReport::Aborted(game_id) => c.syscall(game_id, handle_client_aborted),
         }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) struct ClientInstanceReportPlugin;
+
+impl Plugin for ClientInstanceReportPlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        app.add_systems(First, handle_client_instance_reports);
     }
 }
 

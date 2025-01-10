@@ -1,9 +1,9 @@
 mod config_temp;
 mod handle_client_instance_reports;
+mod local_game;
 mod plugin;
-mod tags;
 
-pub(crate) use crate::game::config_temp::*;
-pub(crate) use crate::game::handle_client_instance_reports::*;
-pub(crate) use crate::game::plugin::*;
-pub(crate) use crate::game::tags::*;
+pub(crate) use config_temp::*;
+pub(self) use handle_client_instance_reports::*;
+pub(self) use local_game::*;
+pub(crate) use plugin::*;

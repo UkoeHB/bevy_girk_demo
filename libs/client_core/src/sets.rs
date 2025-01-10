@@ -71,7 +71,7 @@ impl Plugin for ClientSetsPlugin
             Update,
             (ClientLogicSet::Admin, ClientLogicSet::Update, ClientLogicSet::End)
                 .chain()
-                .run_if(in_state(ClientInstanceState::Game)),
+                .run_if(in_state(ClientAppState::Game)),
         );
     }
 }

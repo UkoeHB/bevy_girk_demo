@@ -47,16 +47,21 @@ fn main()
 
     // cli
     let args = GameClientCli::parse();
+    let mut token = Some(args.token);
+    let mut start_info = Some(args.start_info);
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let mut factory =
-        ClientFactory::new(ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) });
+    let factory = ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) };
 
-    let mut app = App::new();
-    factory.add_plugins(&mut app);
-    factory.setup_game(app.world_mut(), args.token, args.start_info);
-    app.run();
+    App::new()
+        .add_plugins(ClientInstancePlugin::new(factory, None))
+        .add_systems(OnEnter(LoadState::Done), move |mut c: Commands| {
+            let token = token.take().unwrap();
+            let start_info = start_info.take().unwrap();
+            c.queue(ClientInstanceCommand::Start(token, start_info));
+        })
+        .run();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -66,7 +66,7 @@ impl Plugin for ClientSetupPlugin
         app.add_sub_state::<ClientState>()
             .add_systems(PreStartup, prestartup_check)
             .add_systems(Startup, setup_fw_reqs)
-            .add_systems(OnEnter(ClientInstanceState::Game), setup_client);
+            .add_systems(OnEnter(ClientAppState::Game), setup_client);
     }
 }
 

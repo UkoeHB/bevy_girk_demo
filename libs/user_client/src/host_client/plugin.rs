@@ -1,8 +1,18 @@
 use bevy::prelude::*;
-use bevy_cobweb::prelude::*;
-use bevy_kot_ui::InteractionSourceSet;
 
 use crate::*;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup_client_tag_entities(mut c: Commands)
+{
+    c.spawn(ReconnectorButton);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Component, Debug)]
+pub(crate) struct ReconnectorButton;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -12,14 +22,10 @@ impl Plugin for HostClientPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.insert_react_resource(ConnectionStatus::Connecting)
-            .add_systems(PreStartup, setup_client_tag_entities)
-            .add_systems(
-                First,
-                (handle_host_incoming, reaction_tree)
-                    .chain()
-                    .before(InteractionSourceSet),
-            );
+        app.add_plugins(HostClientConnectPlugin)
+            .add_plugins(HostIncomingPlugin)
+            .configure_sets(First, (HandleHostIncomingSet, HostClientConnectSet).chain())
+            .add_systems(PreStartup, setup_client_tag_entities);
     }
 }
 

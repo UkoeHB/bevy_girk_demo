@@ -1,11 +1,11 @@
 mod connection_status;
 mod handle_host_incoming;
 mod handle_host_incoming_impl;
+mod host_client_connect;
 mod plugin;
-mod tags;
 
-pub(crate) use crate::host_client::connection_status::*;
-pub(crate) use crate::host_client::handle_host_incoming::*;
-pub(crate) use crate::host_client::handle_host_incoming_impl::*;
-pub(crate) use crate::host_client::plugin::*;
-pub(crate) use crate::host_client::tags::*;
+pub(crate) use connection_status::*;
+pub(self) use handle_host_incoming::*;
+pub(self) use handle_host_incoming_impl::*;
+pub use host_client_connect::*;
+pub(super) use plugin::*;

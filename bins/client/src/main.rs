@@ -80,15 +80,17 @@ fn main()
     //TODO: use hasher directly?
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
-    // launch client
+    // prep to launch client
     // - todo: receive URL from HTTP server, and load the HTTP URL from an asset
-    let client = host_user_client_factory().new_client(
-        enfync::builtin::Handle::default(), //automatically selects native/WASM runtime
-        url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(),
-        bevy_simplenet::AuthRequest::None { client_id },
-        bevy_simplenet::ClientConfig::default(),
-        (),
-    );
+    let make_client = || {
+        host_user_client_factory().new_client(
+            enfync::builtin::Handle::default(), //automatically selects native/WASM runtime
+            url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(),
+            bevy_simplenet::AuthRequest::None { client_id },
+            bevy_simplenet::ClientConfig::default(),
+            (),
+        )
+    };
 
     // timer configs for the user client (TEMPORARY: use asset instead ?)
     let timer_configs = TimerConfigs {
@@ -97,24 +99,18 @@ fn main()
         lobby_list_refresh_ms: 10_000,
     };
 
-    // launcher for local-player games
+    // factory for local-player games
     let game_factory = GameFactory::new(ClickGameFactory);
-    let local_launcher =
-        LocalGameLauncher(GameInstanceLauncher::new(GameInstanceLauncherLocal::new(game_factory)));
 
     // client factory for setting up games
-    let mut factory =
-        ClientFactory::new(ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) });
+    let factory = ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) };
 
     // build and launch the bevy app
-    let mut app = App::new();
-    factory.add_plugins(&mut app);
-    app.insert_resource(factory);
-
-    app.insert_resource(client)
-        .insert_resource(timer_configs)
-        .insert_resource(local_launcher)
+    App::new()
+        .add_plugins(ClientInstancePlugin::new(factory, Some(game_factory)))
         .add_plugins(UserClientPlugin)
+        .insert_resource(HostClientConstructor::new(make_client))
+        .insert_resource(timer_configs)
         .run();
 }
 

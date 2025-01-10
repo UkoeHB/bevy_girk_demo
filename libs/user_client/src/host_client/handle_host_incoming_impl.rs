@@ -54,7 +54,7 @@ fn remove_failed_pending_request(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_connection_lost(
+pub(super) fn handle_connection_lost(
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
     mut ack_request: ReactResMut<AckRequestData>,
@@ -76,24 +76,24 @@ pub(crate) fn handle_connection_lost(
     //   since it's disconnected, so the starter never gets cleared. When we reconnect to the host server, we will
     //   get a fresh game start package which will be used to reconnect the game automatically (if needed).
     if starter.has_starter() {
-        starter.get_mut(&mut c).force_clear_if(GameLocation::Hosted);
+        starter.get_mut(&mut c).force_clear();
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_lobby_state_update(
+pub(super) fn handle_lobby_state_update(
     In(lobby_data): In<LobbyData>,
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
 )
 {
     let lobby_id = lobby_data.id;
-    tracing::info!(lobby_id, "lobby state update received");
+    tracing::info!("lobby state update received for lobby {lobby_id}");
 
     // check if the updated state matches the current lobby
     if lobby_display.lobby_id() != Some(lobby_id) {
-        tracing::warn!(lobby_id, "ignoring lobby state update for unknown lobby");
+        tracing::warn!("ignoring lobby state update for unknown lobby {lobby_id}");
         return;
     }
 
@@ -102,24 +102,24 @@ pub(crate) fn handle_lobby_state_update(
         .get_mut(&mut c)
         .try_set(lobby_data, LobbyType::Hosted)
     {
-        tracing::error!(lobby_id, "ignoring lobby state update for invalid lobby");
+        tracing::error!("ignoring lobby state update for invalid lobby {lobby_id}");
         return;
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_lobby_leave(
+pub(super) fn handle_lobby_leave(
     In(lobby_id): In<u64>,
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
 )
 {
-    tracing::info!(lobby_id, "lobby leave received");
+    tracing::info!("lobby leave received for lobby {lobby_id}");
 
     // check if the lobby matches the current lobby
     if lobby_display.lobby_id() != Some(lobby_id) {
-        tracing::warn!(lobby_id, "ignoring leave lobby for unknown lobby");
+        tracing::warn!("ignoring leave lobby for unknown lobby {lobby_id}");
         return;
     }
 
@@ -131,9 +131,9 @@ pub(crate) fn handle_lobby_leave(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_pending_lobby_ack_request(In(lobby_id): In<u64>, mut c: Commands)
+pub(super) fn handle_pending_lobby_ack_request(In(lobby_id): In<u64>, mut c: Commands)
 {
-    tracing::info!(lobby_id, "pending lobby ack request received");
+    tracing::info!("pending lobby ack request received for lobby {lobby_id}");
 
     // send ack request event
     c.react().broadcast(AckRequest { lobby_id });
@@ -141,17 +141,17 @@ pub(crate) fn handle_pending_lobby_ack_request(In(lobby_id): In<u64>, mut c: Com
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_pending_lobby_ack_fail(
+pub(super) fn handle_pending_lobby_ack_fail(
     In(lobby_id): In<u64>,
     mut c: Commands,
     mut ack_request: ReactResMut<AckRequestData>,
 )
 {
-    tracing::info!(lobby_id, "pending lobby ack fail received");
+    tracing::info!("pending lobby ack fail received for lobby {lobby_id}");
 
     // check if the lobby matches the ack request lobby
     if ack_request.get() != Some(lobby_id) {
-        tracing::warn!(lobby_id, "ignoring pending lobby ack fail for unknown lobby");
+        tracing::warn!("ignoring pending lobby ack fail for unknown lobby {lobby_id}");
         return;
     }
 
@@ -163,8 +163,8 @@ pub(crate) fn handle_pending_lobby_ack_fail(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_game_start(
-    In((lobby_id, token, start)): In<(u64, ServerConnectToken, GameStartInfo)>,
+pub(super) fn handle_game_start(
+    In((game_id, token, start)): In<(u64, ServerConnectToken, GameStartInfo)>,
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
     mut ack_request: ReactResMut<AckRequestData>,
@@ -173,7 +173,7 @@ pub(crate) fn handle_game_start(
     configs: Res<ClientLaunchConfigs>,
 )
 {
-    tracing::info!(lobby_id, "game start info received");
+    tracing::info!("game start info received for game {game_id}");
 
     // clear lobby state
     if lobby_display.is_set() {
@@ -193,14 +193,15 @@ pub(crate) fn handle_game_start(
     };
     starter
         .get_mut(&mut c)
-        .set(lobby_id, GameLocation::Hosted, launcher);
+        .set(game_id, GameLocation::Hosted, launcher);
 
     // if we are already running this game, then send in the connect token
     // - it's likely that the game client was also disconnected, but failed to request a new connect token since
     //   the user client was disconnected
     let current_game_id = monitor.game_id();
-    if (Some(lobby_id) == current_game_id) && monitor.is_running() {
-        tracing::info!(lobby_id, "received game start for game that is already running, sending new connect token to game");
+    if (Some(game_id) == current_game_id) && monitor.is_running() {
+        tracing::info!("received game start for game {game_id} that is already running, sending new connect \
+            token to game");
         monitor.get_noreact().send_token(token);
         return;
     }
@@ -217,61 +218,62 @@ pub(crate) fn handle_game_start(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_game_aborted(
-    In(lobby_id): In<u64>,
+pub(super) fn handle_game_aborted(
+    In(game_id): In<u64>,
     mut c: Commands,
-    mut monitor: ReactResMut<ClientMonitor>,
     mut starter: ReactResMut<ClientStarter>,
+    config: Option<Res<ClientFwConfig>>,
 )
 {
-    tracing::info!(lobby_id, "game aborted by host server");
-
-    // force-close existing game
-    //todo: display a message to user informing them a game was aborted
-    if monitor.is_running() {
-        monitor.get_mut(&mut c).kill(lobby_id);
-    }
+    tracing::info!("game {game_id} aborted by host server");
 
     // clear starter
     if starter.has_starter() {
-        starter.get_mut(&mut c).clear(lobby_id);
+        starter.get_mut(&mut c).clear(game_id);
+    }
+
+    // force-close existing game
+    //todo: display a message to user informing them a game was aborted
+    if let Some(config) = config {
+        if config.game_id() == game_id {
+            c.queue(ClientInstanceCommand::Abort);
+        }
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_game_over(
-    In((lobby_id, game_over_report)): In<(u64, GameOverReport)>,
+pub(super) fn handle_game_over(
+    In((game_id, game_over_report)): In<(u64, GameOverReport)>,
     mut c: Commands,
     mut starter: ReactResMut<ClientStarter>,
 )
 {
-    tracing::info!(lobby_id, "game over report received");
+    tracing::info!("game over report received for game {game_id}");
 
     // clear starter
     if starter.has_starter() {
-        starter.get_mut(&mut c).clear(lobby_id);
+        starter.get_mut(&mut c).clear(game_id);
     }
 
-    // send game over report data event
-    //todo: do something with the report
+    // send out report for use by the app
     c.react().broadcast(game_over_report);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_lobby_search_result(
+pub(super) fn handle_lobby_search_result(
     In((request_id, result)): In<(u64, LobbySearchResult)>,
     mut c: Commands,
     pending_search: Query<(Entity, &React<PendingRequest>), With<LobbySearch>>,
     mut lobby_page: ReactResMut<LobbyPage>,
 )
 {
-    tracing::info!(request_id, "lobby search result received");
+    tracing::info!("lobby search result received for request {request_id}");
 
     // clear pending request
     if !clear_pending_request(&mut c, request_id, pending_search.get_single()) {
-        tracing::warn!(request_id, "ignoring unexpected lobby search result");
+        tracing::warn!("ignoring unexpected lobby search result for request {request_id}");
         return;
     }
 
@@ -283,7 +285,7 @@ pub(crate) fn handle_lobby_search_result(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_lobby_join(
+pub(super) fn handle_lobby_join(
     In((request_id, lobby_data)): In<(u64, LobbyData)>,
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
@@ -291,7 +293,7 @@ pub(crate) fn handle_lobby_join(
 )
 {
     let lobby_id = lobby_data.id;
-    tracing::info!(request_id, lobby_id, "join lobby received");
+    tracing::info!("join lobby received for lobby {lobby_id} and request {request_id}");
 
     // clear pending request
     for (entity, pending_req) in pending_lobby_join.iter() {
@@ -311,14 +313,14 @@ pub(crate) fn handle_lobby_join(
         .get_mut(&mut c)
         .try_set(lobby_data, LobbyType::Hosted)
     {
-        tracing::error!(lobby_id, "ignoring join lobby for invalid lobby");
+        tracing::error!("ignoring join lobby for invalid lobby {lobby_id}");
         return;
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_connect_token(
+pub(super) fn handle_connect_token(
     In((request_id, game_id, token)): In<(u64, u64, ServerConnectToken)>,
     mut c: Commands,
     mut monitor: ReactResMut<ClientMonitor>,
@@ -327,11 +329,11 @@ pub(crate) fn handle_connect_token(
     pending_button: Query<(Entity, &React<PendingRequest>), With<ReconnectorButton>>,
 )
 {
-    tracing::info!(request_id, "connect token received");
+    tracing::info!("connect token received for request {request_id}");
 
     // check if we are currently tracking this game
     if starter.game_id() != Some(game_id) {
-        tracing::warn!("ignoring connect token for unknown game");
+        tracing::warn!("ignoring connect token for unknown game {game_id}");
         return;
     }
 
@@ -343,18 +345,18 @@ pub(crate) fn handle_connect_token(
     match monitor.is_running() {
         // if the game is running, send the token to the game
         true => {
-            tracing::info!(game_id, "sending new connect token into game");
+            tracing::info!("sending new connect token into game {game_id}");
             monitor.get_noreact().send_token(token);
         }
         // if not running, relaunch the game
         false if starter.has_starter() => {
-            tracing::info!(game_id, "restarting game with new connect token");
+            tracing::info!("restarting game {game_id} with new connect token");
             if starter
                 .get_noreact()
                 .start(monitor.get_mut(&mut c), token)
                 .is_err()
             {
-                tracing::error!(game_id, "failed using starter to reconnect a game");
+                tracing::error!("failed using starter to reconnect game {game_id}");
             }
         }
         // not running and not expecting a token
@@ -362,20 +364,20 @@ pub(crate) fn handle_connect_token(
             // This can happen if a connect token is requested by a running game client, then the client is closed
             // and another token is requested via the reconnect button. If the game client reopens then shuts down
             // due to a game over before the second token arrives, then this branch will execute non-erroneously.
-            tracing::warn!(game_id, "received unexpected connect token");
+            tracing::warn!("received unexpected connect token for game {game_id}");
         }
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_request_ack(
+pub(super) fn handle_request_ack(
     In(request_id): In<u64>,
     mut commands: Commands,
     pending_requests: Query<(Entity, &React<PendingRequest>)>,
 )
 {
-    tracing::info!(request_id, "request ack received");
+    tracing::info!("request ack received for request {request_id}");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for acks
@@ -384,13 +386,13 @@ pub(crate) fn handle_request_ack(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_request_rejected(
+pub(super) fn handle_request_rejected(
     In(request_id): In<u64>,
     mut commands: Commands,
     pending_requests: Query<(Entity, &React<PendingRequest>)>,
 )
 {
-    tracing::info!(request_id, "request rejection received");
+    tracing::info!("request rejection received for request {request_id}");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for rejections
@@ -399,13 +401,13 @@ pub(crate) fn handle_request_rejected(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_send_failed(
+pub(super) fn handle_send_failed(
     In(request_id): In<u64>,
     mut commands: Commands,
     pending_requests: Query<(Entity, &React<PendingRequest>)>,
 )
 {
-    tracing::info!(request_id, "request send failed");
+    tracing::info!("request {request_id} send failed");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for failed sends
@@ -414,13 +416,13 @@ pub(crate) fn handle_send_failed(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_response_lost(
+pub(super) fn handle_response_lost(
     In(request_id): In<u64>,
     mut commands: Commands,
     pending_requests: Query<(Entity, &React<PendingRequest>)>,
 )
 {
-    tracing::info!(request_id, "request response lost");
+    tracing::info!("request {request_id} response lost");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for lost responses
@@ -429,13 +431,13 @@ pub(crate) fn handle_response_lost(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_request_aborted(
+pub(super) fn handle_request_aborted(
     In(request_id): In<u64>,
     mut commands: Commands,
     pending_requests: Query<(Entity, &React<PendingRequest>)>,
 )
 {
-    tracing::info!(request_id, "request aborted");
+    tracing::info!("request {request_id} aborted");
 
     // find pending request and remove it
     //todo: consider allowing a custom callback for lost responses

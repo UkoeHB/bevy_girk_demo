@@ -24,7 +24,7 @@ pub struct ClickClientFactory
 
 impl ClientFactoryImpl for ClickClientFactory
 {
-    type Data = ClientStarter;
+    type Data = ClientStartPack;
 
     /// Note: does not set up the user client, which is considered a semi-unrelated 'shell'
     fn add_plugins(&mut self, app: &mut App)
@@ -43,7 +43,7 @@ impl ClientFactoryImpl for ClickClientFactory
         &mut self,
         world: &mut World,
         token: ServerConnectToken,
-        start_info: ClientStartInfo<ClientStarter>,
+        start_info: ClientStartInfo<ClientStartPack>,
     )
     {
         let connect_pack = match ClientConnectPack::new(self.protocol_id, token) {
@@ -66,8 +66,8 @@ impl ClientFactoryImpl for ClickClientFactory
 
         // Enter the game.
         world
-            .resource_mut::<NextState<ClientInstanceState>>()
-            .set(ClientInstanceState::Game);
+            .resource_mut::<NextState<ClientAppState>>()
+            .set(ClientAppState::Game);
     }
 }
 

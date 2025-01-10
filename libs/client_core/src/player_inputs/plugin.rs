@@ -32,7 +32,7 @@ impl Plugin for PlayerInputPlugin
     {
         app.add_systems(PreStartup, prestartup_check)
             .add_systems(Update, handle_player_inputs.in_set(PlayerInputSet))
-            .add_systems(OnEnter(ClientInstanceState::Game), clear_player_inputs);
+            .add_systems(OnEnter(ClientAppState::Game), clear_player_inputs);
     }
 }
 

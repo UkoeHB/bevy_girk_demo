@@ -1,22 +1,23 @@
 use bevy_cobweb::prelude::*;
+use bevy_simplenet::RequestSignal;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(ReactComponent, Debug, Clone)]
-pub(crate) struct PendingRequest(bevy_simplenet::RequestSignal);
+pub(crate) struct PendingRequest(RequestSignal);
 
 impl PendingRequest
 {
-    pub(crate) fn new(new_req: bevy_simplenet::RequestSignal) -> Self
+    pub(crate) fn new(new_req: RequestSignal) -> Self
     {
         Self(new_req)
     }
 }
 
-impl std::ops::Deref for PendingRequest
+impl Deref for PendingRequest
 {
-    type Target = bevy_simplenet::RequestSignal;
-    fn deref(&self) -> &bevy_simplenet::RequestSignal
+    type Target = RequestSignal;
+    fn deref(&self) -> &RequestSignal
     {
         &self.0
     }
