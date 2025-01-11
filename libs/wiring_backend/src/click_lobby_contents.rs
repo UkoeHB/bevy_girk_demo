@@ -34,14 +34,14 @@ pub enum ClickLobbyMemberType
 
 impl TryFrom<LobbyMemberColor> for ClickLobbyMemberType
 {
-    type Error = ();
+    type Error = String;
 
-    fn try_from(color: LobbyMemberColor) -> Result<ClickLobbyMemberType, ()>
+    fn try_from(color: LobbyMemberColor) -> Result<ClickLobbyMemberType, String>
     {
         match color.0 {
             0u64 => Ok(ClickLobbyMemberType::Player),
             1u64 => Ok(ClickLobbyMemberType::Watcher),
-            _ => Err(()),
+            _ => Err(format!("failed converting {color} to ClickLobbyMemberType")),
         }
     }
 }
@@ -116,12 +116,13 @@ impl ClickLobbyContents
 
 impl TryFrom<LobbyData> for ClickLobbyContents
 {
-    type Error = ();
+    type Error = String;
 
     fn try_from(data: LobbyData) -> Result<Self, Self::Error>
     {
         // config
-        let config = deser_msg::<ClickLobbyConfig>(&data.serialized_custom_data).ok_or(())?;
+        let config = deser_msg::<ClickLobbyConfig>(&data.serialized_custom_data)
+            .ok_or("failed deserializing lobby config".into())?;
 
         // members
         let mut players = Vec::default();

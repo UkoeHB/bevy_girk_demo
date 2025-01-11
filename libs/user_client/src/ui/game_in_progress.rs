@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_girk_user_client_utils::*;
 use bevy_kot_ui::builtin::MainUi;
 use bevy_kot_ui::{make_overlay, UiBuilder, UiInteractionBarrier};
 use bevy_lunex::prelude::*;
@@ -11,6 +10,7 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+// TODO: think this file can be deleted
 fn reconnect_game(
     mut c: Commands,
     client: Res<HostUserClient>,

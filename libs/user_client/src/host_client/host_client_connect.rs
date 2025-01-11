@@ -4,14 +4,8 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Resource, Default, Deref, DerefMut)]
-struct NextConstructTime(Duration);
-
-//-------------------------------------------------------------------------------------------------------------------
-
 fn try_reconnect(
     mut c: Commands,
-    mut next_construct_time: ResMut<NextConstructTime>,
     constructor: Res<HostClientConstructor>,
     mut status: ReactResMut<ConnectionStatus>,
     time: Res<Time>,
@@ -21,11 +15,7 @@ fn try_reconnect(
         return;
     }
 
-    if timer.elapsed() < *next_construct_time {
-        return;
-    }
-
-    *next_construct_time = timer.elapsed() + Duration::from_millis(500);
+    tracing::info!("Constructing new host-user client...");
     c.insert_resource(constructor.new_client());
     *status.get_mut(&mut c) = ConnectionStatus::Connecting;
 }
@@ -70,10 +60,17 @@ impl Plugin for HostClientConnectPlugin
 {
     fn build(&self, app: &mut App)
     {
+        let timer_configs = app.world.resource::<TimerConfigs>();
+        let refresh = Duration::from_millis(timer_configs.host_reconstruct_loop_ms);
+
         app.insert_react_resource(ConnectionStatus::Dead)
-            .init_resource::<NextConstructTime>()
-            .add_systems(Startup, try_reconnect)
-            .add_systems(First, try_reconnect.in_set(HostClientConnectSet));
+            .add_systems(Startup, try_reconnect) // Make sure there is a client resource after startup.
+            .add_systems(
+                First,
+                try_reconnect
+                    .run_if(on_timer(refresh))
+                    .in_set(HostClientConnectSet),
+            );
     }
 }
 

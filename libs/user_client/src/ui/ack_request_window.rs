@@ -13,52 +13,6 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn send_lobby_nack(mut c: Commands, client: Res<HostUserClient>, mut ack_request: ReactResMut<AckRequestData>)
-{
-    // fail if nack was already sent
-    if ack_request.is_nacked() {
-        tracing::error!("ignoring duplicate lobby nack");
-        return;
-    };
-
-    // send lobby nack
-    let Some(lobby_id) = ack_request.get() else {
-        tracing::warn!("tried to nack lobby but there is no ack request");
-        return;
-    };
-    tracing::trace!(lobby_id, "nacking lobby");
-
-    client.send(UserToHostMsg::NackPendingLobby { id: lobby_id });
-
-    // save action
-    ack_request.get_mut(&mut c).set_nacked();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn send_lobby_ack(mut c: Commands, client: Res<HostUserClient>, mut ack_request: ReactResMut<AckRequestData>)
-{
-    // fail if ack was already sent
-    if ack_request.is_acked() {
-        tracing::error!("ignoring duplicate lobby ack");
-        return;
-    };
-
-    // send lobby ack
-    let Some(lobby_id) = ack_request.get() else {
-        tracing::warn!("tried to ack lobby but there is no ack request");
-        return;
-    };
-    tracing::trace!(lobby_id, "acking lobby");
-
-    client.send(UserToHostMsg::AckPendingLobby { id: lobby_id });
-
-    // save action
-    ack_request.get_mut(&mut c).set_acked();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
 {
     // title text

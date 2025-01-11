@@ -6,7 +6,6 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_girk_user_client_utils::*;
 use bevy_kot_ui::builtin::MainUi;
 use bevy_kot_ui::{make_overlay, relative_widget, UiBuilder, UiInteractionBarrier};
 use bevy_lunex::prelude::*;
@@ -90,113 +89,6 @@ fn page_is_maxed<ListPage: ListPageTrait>(lobby: &LobbyDisplay, list_page: &List
         return true;
     };
     list_page.get() >= max_page(lobby_contents, ListPage::member_type())
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn leave_current_lobby(
-    mut c: Commands,
-    client: Res<HostUserClient>,
-    mut lobby: ReactResMut<LobbyDisplay>,
-    leave_lobby: Query<Entity, (With<LeaveLobby>, Without<React<PendingRequest>>)>,
-)
-{
-    // check for existing request
-    let Ok(target_entity) = leave_lobby.get_single() else {
-        tracing::warn!("ignoring leave lobby request because a request is already pending");
-        return;
-    };
-
-    // check if we are in a lobby
-    let Some(lobby_id) = lobby.lobby_id() else {
-        tracing::error!("tried to leave lobby but we aren't in a lobby");
-        return;
-    };
-
-    // leave the lobby
-    match lobby.lobby_type() {
-        None => {
-            tracing::error!("tried to leave lobby but there is no lobby type");
-            return;
-        }
-        Some(LobbyType::Local) => {
-            // clear the lobby
-            if lobby.is_set() {
-                lobby.get_mut(&mut c).clear();
-            }
-        }
-        Some(LobbyType::Hosted) => {
-            // send leave request
-            let new_req = client.request(UserToHostRequest::LeaveLobby { id: lobby_id });
-
-            // save request
-            c.react()
-                .insert(target_entity, PendingRequest::new(new_req));
-        }
-    }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn start_current_lobby(
-    mut c: Commands,
-    client: Res<HostUserClient>,
-    mut lobby: ReactResMut<LobbyDisplay>,
-    mut monitor: ReactResMut<ClientMonitor>,
-    launch_lobby: Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
-    configs: Res<ClientLaunchConfigs>,
-)
-{
-    // check for existing request
-    let Ok(target_entity) = launch_lobby.get_single() else {
-        tracing::warn!("ignoring start lobby request because a request is pending");
-        return;
-    };
-
-    // check if we are in a lobby
-    let Some(lobby_id) = lobby.lobby_id() else {
-        tracing::error!("tried to start lobby but we aren't in a lobby");
-        return;
-    };
-
-    // check if there is an existing game
-    if monitor.has_client() {
-        tracing::error!("tried to start lobby but we are already in a game");
-        return;
-    };
-
-    // launch the lobby
-    match lobby.lobby_type() {
-        None => {
-            tracing::error!("tried to start lobby but there is no lobby type");
-            return;
-        }
-        Some(LobbyType::Local) => {
-            // clear lobby display
-            let Some(lobby_contents) = lobby.get_mut(&mut c).clear() else {
-                tracing::error!("lobby contents are missing in local lobby");
-                return;
-            };
-
-            // prep launch pack
-            let game_configs = make_click_game_configs();
-            let Ok(launch_pack) = get_launch_pack(game_configs, lobby_contents) else {
-                tracing::error!("failed getting launch pack for local player game");
-                return;
-            };
-
-            // launch the game
-            launch_local_player_client(monitor.get_mut(&mut c), configs.local.clone(), launch_pack);
-        }
-        Some(LobbyType::Hosted) => {
-            // send launch reqeust
-            let new_req = client.request(UserToHostRequest::LaunchLobbyGame { id: lobby_id });
-
-            // save request
-            c.react()
-                .insert(target_entity, PendingRequest::new(new_req));
-        }
-    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

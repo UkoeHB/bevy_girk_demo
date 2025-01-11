@@ -168,3 +168,28 @@ pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUi>, menu_bar: &Widget
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+
+/// Resource that tracks which 'primary' section of the menu is visible.
+//TODO: update this when changing sections
+#[derive(Resource, Debug, Default)]
+pub(crate) enum MenuContentSection
+{
+    #[default]
+    Home,
+    Play,
+    Settings,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) struct MenuContentPlugin;
+
+impl Plugin for MenuContentPlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        app.init_resource::<MenuContentSection>();
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------

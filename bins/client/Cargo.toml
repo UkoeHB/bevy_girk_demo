@@ -23,7 +23,6 @@ wasm-timer         = { workspace = true }
 
 bevy_girk_backend_public    = { workspace = true }
 bevy_girk_client_instance   = { workspace = true }
-bevy_girk_user_client_utils = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
 user_client    = { path = "../../libs/user_client" }

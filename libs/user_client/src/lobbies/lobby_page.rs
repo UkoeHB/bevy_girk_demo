@@ -10,7 +10,7 @@ use wiring_backend::*;
 /// Caches the currently-displayed lobby page.
 ///
 /// This is a reactive resource.
-#[derive(ReactResource, Debug)]
+#[derive(ReactResource, Debug, Default)]
 pub(crate) struct LobbyPage
 {
     /// Current lobby contents.
@@ -59,14 +59,6 @@ impl LobbyPage
     pub(crate) fn stats(&self) -> (usize, usize, usize)
     {
         (self.num_younger + 1, self.num_younger + self.current.len(), self.total)
-    }
-}
-
-impl Default for LobbyPage
-{
-    fn default() -> Self
-    {
-        Self { current: Vec::default(), num_younger: 0, total: 0 }
     }
 }
 
@@ -123,7 +115,7 @@ impl Plugin for LobbyPagePlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.insert_react_resource(LobbyPage::default())
+        app.init_react_resource::<LobbyPage>()
             .insert_react_resource(LobbyPageRequest::new(LobbySearchRequest::PageOlder {
                 youngest_id: u64::MAX,
                 num: LOBBY_LIST_SIZE as u16,

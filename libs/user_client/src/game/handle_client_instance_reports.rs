@@ -2,17 +2,17 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_instance::*;
-use bevy_girk_user_client_utils::*;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_token_req(
+pub(super) fn handle_token_req(
     In(game_id): In<u64>,
     mut c: Commands,
     client: Res<HostUserClient>,
     starter: ReactRes<ClientStarter>,
+    cached: Res<CachedConnectToken>,
     request: Query<Entity, (With<ConnectTokenRequest>, Without<React<PendingRequest>>)>,
 )
 {
@@ -28,6 +28,12 @@ fn handle_token_req(
         tracing::error!("ignoring client's connect token request because a request is already pending");
         return;
     };
+
+    // check if we already have an unused token
+    if cached.has_token() {
+        tracing::warn!("ignoring connect token request for game {game_id}; client has a token not used yet");
+        return;
+    }
 
     // request new connect token
     let new_req = client.request(UserToHostRequest::GetConnectToken { id: game_id });

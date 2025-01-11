@@ -3,7 +3,6 @@ use std::sync::Arc;
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_instance::*;
-use bevy_girk_user_client_utils::*;
 use clap::Parser;
 use enfync::AdoptOrDefault;
 use user_client::*;
@@ -81,7 +80,7 @@ fn main()
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
     // prep to launch client
-    // - todo: receive URL from HTTP server, and load the HTTP URL from an asset
+    // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
     let make_client = || {
         host_user_client_factory().new_client(
             enfync::builtin::Handle::default(), //automatically selects native/WASM runtime
@@ -94,6 +93,8 @@ fn main()
 
     // timer configs for the user client (TEMPORARY: use asset instead ?)
     let timer_configs = TimerConfigs {
+        host_reconstruct_loop_ms: 500,
+        token_request_loop_ms: 500,
         ack_request_timeout_ms: ACK_TIMEOUT_MILLIS + 1_000,
         ack_request_timer_buffer_ms: 4_000,
         lobby_list_refresh_ms: 10_000,
@@ -108,9 +109,9 @@ fn main()
     // build and launch the bevy app
     App::new()
         .add_plugins(ClientInstancePlugin::new(factory, Some(game_factory)))
-        .add_plugins(UserClientPlugin)
         .insert_resource(HostClientConstructor::new(make_client))
         .insert_resource(timer_configs)
+        .add_plugins(ClickUserClientPlugin)
         .run();
 }
 

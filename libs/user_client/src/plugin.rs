@@ -13,39 +13,39 @@ impl notes
     x- ::End -> send when entered ClientState::GameOver
     x- ::Abort -> send if host server sends a game abort message or if local game reports an abort
 - ClientInstanceReport: bevy event
-    - ::RequestConnectToken(game_id)
-        - check if game_id matches ClientStarter
-        - send UserToHostRequest::GetConnectToken
+    x- ::RequestConnectToken(game_id)
+        x- check if game_id matches ClientStarter
+        x- send UserToHostRequest::GetConnectToken
             - save pending request to log results properly (??)
             - response = HostToUserResponse::ConnectToken
                 - insert connect token (system will handle starting the game)
-        - log
-    - ::Ended(game_id)
+        x- log
+    x- ::Ended(game_id)
         - clear ClientStarter if game_id matches
         - log
-    - ::Aborted(u64),
+    x- ::Aborted(u64),
         - clear ClientStarter if game_id matches
         - log
 - HostToUserMsg: simplenet channel message
-    - ::GameStart
-        - if game id doesn't match ClientStarter and game is currently running, abort the current game
-        - set ClientStarter and insert connect token
-        - use system with run_if(in_state(ClientAppState::Client)) and in_state(LoadState::Done) to start the
-        game if client starter is set and a connect token is inserted
-            - need to delay starting the new game until back in ClientAppState::Client, if game currently
+    x- ::GameStart
+        x- if game id doesn't match ClientStarter and game is currently running, abort the current game
+        x- set ClientStarter, cache connect token
+        x- use system with run_if(in_state(ClientAppState::Client)) and in_state(LoadState::Done) to start the
+        game if client starter is set and a connect token is cached
+            x- need to delay starting the new game until back in ClientAppState::Client, if game currently
             running (e.g. local-player game)
-    - ::GameAborted
-        - clear ClientStarter if game_id matches
-        - send ClientInstanceCommand::Abort
-    - ::GameOver
-        - clear ClientStarter if game_id matches
-        - send ClientInstanceCommand::End
-x- host to user client
-    - on death, need to reconstruct the client on a timer (0.5s)
-        - this loop may occur if the server is at max capacity; it lets us poll until a connection is allowed
+    x- ::GameAborted
+        x- clear ClientStarter if game_id matches
+        x- send ClientInstanceCommand::Abort
+    x- ::GameOver
+        x- clear ClientStarter if game_id matches
+        x- broadcast game over report
+- host to user client
+    x- on death, need to reconstruct the client on a timer (0.5s)
+        x- this loop may occur if the server is at max capacity; it lets us poll until a connection is allowed
 - LocalGameManager (resource): bevy_girk
-    - OnEnter(ClientAppState::Client) -> manager.take_report()
-        - log
+    x- OnEnter(ClientAppState::Client) -> manager.take_report()
+        x- log
 */
 
 use bevy::prelude::*;
@@ -97,10 +97,9 @@ impl Plugin for BevyEnginePlugin
 /// Plugin for setting up a click demo user client.
 ///
 /// Prerequisites:
-/// - You must add a bevy_girk `HostUserClient` to the app.
-/// - You must add a [`TimeoutConfigs`] resource to the app.
-/// - You must add a [`ClientLaunchConfigs`] resource to the app.
-/// - You must add a [`HostClientConstructor`] resource to the app.
+/// - `ClientInstancePlugin` plugin *with* game factory for local games
+/// - [`TimerConfigs`] resource
+/// - [`HostClientConstructor`] resource
 pub struct ClickUserClientPlugin;
 
 impl Plugin for ClickUserClientPlugin
@@ -111,7 +110,6 @@ impl Plugin for ClickUserClientPlugin
             // Dependencies
             .add_plugins(BevyEnginePlugin)
             .add_plugins(ReactPlugin)
-            .add_plugins(UserClientUtilsPlugin)
             // Crate plugins
             .add_plugins(HostClientPlugin)
             .add_plugins(LobbiesPlugin)

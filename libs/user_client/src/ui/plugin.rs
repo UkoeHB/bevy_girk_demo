@@ -96,12 +96,11 @@ impl Plugin for UiPlugin
     fn build(&self, app: &mut App)
     {
         app
-            .add_plugins(LunexUiPlugin2D::<MainUi>::new())
-            .register_interaction_source(MouseLButtonMain::default())
             .add_systems(PreStartup, setup_ui)
             .add_systems(Startup, build_ui)
 
             // ui plugins
+            .add_plugins(MenuContentPlugin)
             .add_plugins(UiConnectionStatusPlugin)
             .add_plugins(UiPlaySectionPlugin)
             .add_plugins(UiAckLobbyWindowPlugin)
