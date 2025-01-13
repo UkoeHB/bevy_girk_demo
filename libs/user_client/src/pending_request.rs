@@ -24,3 +24,29 @@ impl Deref for PendingRequest
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+
+/// Event broadcast when [`PendingRequest`] is added to the entity with tag component `T`.
+#[derive(Default)]
+pub(crate) struct RequestStarted<T>(PhantomData<T>);
+
+/// Event broadcast when [`PendingRequest`] is removed from the entity with tag component `T`.
+#[derive(Default)]
+pub(crate) struct RequestEnded<T>(PhantomData<T>);
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Spawns an entity with component `T` that will gain and lose `PendingRequest` components based on request
+/// lifecycle.
+pub(crate) fn spawn_request_entity<T: Component>(c: &mut Commands, tag: T) -> Entity
+{
+    let id = c.spawn(tag).id();
+    c.react().on(entity_insertion::<PendingRequest>(id), |mut c: Commands| {
+        c.react().broadcast(RequestStarted::<T>::default());
+    });
+    // Entity event reactors are a bit more efficient than entity-removal reactors.
+    c.react().on((entity_event::<RequestSucceeded>(id), entity_event::<RequestFailed>(id)), |mut c: Commands| {
+        c.react().broadcast(RequestEnded::<T>::default());
+    });
+}
+
+//-------------------------------------------------------------------------------------------------------------------

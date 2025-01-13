@@ -4,13 +4,13 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_lobby_tag_entities(mut commands: Commands)
+fn setup_lobby_tag_entities(mut c: Commands)
 {
-    commands.spawn(JoinLobby);
-    commands.spawn(LobbySearch);
-    commands.spawn(MakeLobby);
-    commands.spawn(LeaveLobby);
-    commands.spawn(LaunchLobby);
+    spawn_request_entity(&mut c, JoinLobby);
+    spawn_request_entity(&mut c, LobbySearch);
+    spawn_request_entity(&mut c, MakeLobby);
+    spawn_request_entity(&mut c, LeaveLobby);
+    spawn_request_entity(&mut c, LaunchLobby);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

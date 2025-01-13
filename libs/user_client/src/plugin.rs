@@ -94,6 +94,17 @@ impl Plugin for BevyEnginePlugin
 
 //-------------------------------------------------------------------------------------------------------------------
 
+fn setup(mut commands: Commands)
+{
+    // prepare 2D camera
+    commands.spawn(Camera2dBundle {
+        transform: Transform { translation: Vec3 { x: 0., y: 0., z: 1000. }, ..default() },
+        ..default()
+    });
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Plugin for setting up a click demo user client.
 ///
 /// Prerequisites:
@@ -114,7 +125,8 @@ impl Plugin for ClickUserClientPlugin
             .add_plugins(HostClientPlugin)
             .add_plugins(LobbiesPlugin)
             .add_plugins(GamePlugin)
-            .add_plugins(UiPlugin);
+            .add_plugins(UiPlugin)
+            .add_systems(PreStartup, setup);
     }
 }
 

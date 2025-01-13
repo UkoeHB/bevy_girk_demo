@@ -76,7 +76,7 @@ fn set_ack_request_data(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn try_timeout_ack_request(mut c: Commands, time: Res<Time>, mut ack_request: ReactResMut<AckRequestData>)
+fn tick_ack_request(mut c: Commands, time: Res<Time>, mut ack_request: ReactResMut<AckRequestData>)
 {
     // check if there is a pending ack request
     if !ack_request.is_set() {
@@ -106,33 +106,6 @@ fn try_timeout_ack_request(mut c: Commands, time: Res<Time>, mut ack_request: Re
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn send_lobby_nack(
-    mut c: Commands,
-    client: Res<HostUserClient>,
-    mut ack_request: ReactResMut<AckRequestData>,
-)
-{
-    // fail if nack was already sent
-    if ack_request.is_nacked() {
-        tracing::error!("ignoring duplicate lobby nack");
-        return;
-    };
-
-    // send lobby nack
-    let Some(lobby_id) = ack_request.get() else {
-        tracing::warn!("tried to nack lobby but there is no ack request");
-        return;
-    };
-    tracing::trace!(lobby_id, "nacking lobby");
-
-    client.send(UserToHostMsg::NackPendingLobby { id: lobby_id });
-
-    // save action
-    ack_request.get_mut(&mut c).set_nacked();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 pub(crate) fn send_lobby_ack(
     mut c: Commands,
     client: Res<HostUserClient>,
@@ -156,6 +129,33 @@ pub(crate) fn send_lobby_ack(
 
     // save action
     ack_request.get_mut(&mut c).set_acked();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) fn send_lobby_nack(
+    mut c: Commands,
+    client: Res<HostUserClient>,
+    mut ack_request: ReactResMut<AckRequestData>,
+)
+{
+    // fail if nack was already sent
+    if ack_request.is_nacked() {
+        tracing::error!("ignoring duplicate lobby nack");
+        return;
+    };
+
+    // send lobby nack
+    let Some(lobby_id) = ack_request.get() else {
+        tracing::warn!("tried to nack lobby but there is no ack request");
+        return;
+    };
+    tracing::trace!(lobby_id, "nacking lobby");
+
+    client.send(UserToHostMsg::NackPendingLobby { id: lobby_id });
+
+    // save action
+    ack_request.get_mut(&mut c).set_nacked();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -275,7 +275,7 @@ impl Plugin for AckRequestPlugin
         app.insert_react_resource(AckRequestData::new(timeout, timer_buffer))
             .add_reactor(broadcast::<AckRequest>(), set_ack_request_data)
             .add_reactor(resource_mutation::<AckRequestData>(), focus_window_for_ack_request)
-            .add_systems(PreUpdate, try_timeout_ack_request);
+            .add_systems(PreUpdate, tick_ack_request);
     }
 }
 

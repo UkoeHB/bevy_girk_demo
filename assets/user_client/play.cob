@@ -54,11 +54,12 @@ ui.skin as ui
     // join button
 
 
-"game_ack_popup"
-    // "Lobby Ready" title
+"ack_popup"
+    // "Start Game" title
     // timer
-    // "Start" button
-    // "Cancel" button
+    // "Accept" button
+    // "Reject" button
+    // - buttons use 'diabled' state to show they can't be used any more
 
 
 "make_lobby_popup"

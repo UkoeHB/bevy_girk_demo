@@ -18,6 +18,7 @@ fn try_reconnect(
     tracing::info!("Constructing new host-user client...");
     c.insert_resource(constructor.new_client());
     *status.get_mut(&mut c) = ConnectionStatus::Connecting;
+    c.react().broadcast(NewHostUserClient);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -45,6 +46,21 @@ impl HostClientConstructor
     {
         (self.callback)()
     }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Event broadcast when a new host-user client is constructed.
+pub(crate) struct NewHostUserClient;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(ReactResource, Copy, Clone, Eq, PartialEq, Debug)]
+pub(crate) enum ConnectionStatus
+{
+    Connecting,
+    Connected,
+    Dead,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

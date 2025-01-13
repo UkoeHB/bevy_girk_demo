@@ -15,7 +15,8 @@ struct NeedTokenRequest(bool);
 
 fn setup_game_tag_entities(mut c: Commands)
 {
-    c.spawn(ConnectTokenRequest)
+    let id = spawn_request_entity(&mut c, ConnectTokenRequest);
+    c.entity(id)
         .on_event::<RequestFailed>()
         .r(|mut need_token: ResMut<NeedTokenRequest>| {
             need_token.0 = true;

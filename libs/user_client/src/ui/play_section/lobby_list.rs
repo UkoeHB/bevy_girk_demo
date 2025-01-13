@@ -6,11 +6,8 @@ use std::vec::Vec;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_kot_ui::builtin::MainUi;
-use bevy_kot_ui::*;
-use bevy_lunex::prelude::*;
-use ui_prefab::*;
 use wiring_backend::*;
 
 use crate::*;

@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
-use bevy_lunex::prelude::*;
-use ui_prefab::*;
+use bevy_cobweb_ui::prelude::*;
 
 use crate::*;
 
@@ -169,6 +167,95 @@ pub(crate) fn add_menu_bar_section(ui: &mut UiBuilder<MainUi>, menu_bar: &Widget
 
 //-------------------------------------------------------------------------------------------------------------------
 
+pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
+{
+    // menu options
+    h.get("options")
+        .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
+            h.get("text").update_text("Home");
+            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
+                c.get_entity(content_id)?.despawn_descendants();
+
+                c.ui_builder(content_id).spawn_scene_and_edit(
+                    ("ui.user", "home_section"),
+                    &mut s,
+                    build_home_section,
+                );
+
+                DONE
+            });
+        })
+        .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
+            h.get("text").update_text("Play");
+            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
+                c.get_entity(content_id)?.despawn_descendants();
+
+                c.ui_builder(content_id).spawn_scene_and_edit(
+                    ("ui.user", "play_section"),
+                    &mut s,
+                    build_play_section,
+                );
+
+                DONE
+            });
+        })
+        .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
+            h.get("text").update_text("Settings");
+            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
+                c.get_entity(content_id)?.despawn_descendants();
+
+                c.ui_builder(content_id).spawn_scene_and_edit(
+                    ("ui.user", "settings_section"),
+                    &mut s,
+                    build_settings_section,
+                );
+
+                DONE
+            });
+        });
+
+    // footer
+    h.get("footer")
+        .spawn_scene_and_edit(("ui.user", "sidebar_footer"), |h| {
+            h.get("client_id").update_on(
+                broadcast::<NewHostUserClient>(),
+                |id: TargetId, client: Res<HostUserClient>, mut e: TextEditor| {
+                    write_text!(e, *id, "Client ID: {}", client.id());
+                },
+            );
+            h.get("connection_status").update_on(
+                resource_mutation::<ConnectionStatus>(),
+                |//
+                        id: TargetId,
+                        mut c: Commands,
+                        mut e: TextEditor,
+                        ps: PseudoStateParam,
+                        status: ReactRes<ConnectionStatus>,//
+                    | {
+                        ps.try_remove(*id, &mut c, PseudoState::Custom("Connected".into()));
+                        ps.try_remove(*id, &mut c, PseudoState::Custom("Connecting".into()));
+                        ps.try_remove(*id, &mut c, PseudoState::Custom("Dead".into()));
+                        match *status {
+                            ConnectionStatus::Connected => {
+                                write_text!(e, *id, "Connected");
+                                ps.try_insert(*id, &mut c, PseudoState::Custom("Connected".into()));
+                            }
+                            ConnectionStatus::Connecting => {
+                                write_text!(e, *id, "Connecting...");
+                                ps.try_insert(*id, &mut c, PseudoState::Custom("Connecting".into()));
+                            }
+                            ConnectionStatus::Dead => {
+                                write_text!(e, *id, "Dead");
+                                ps.try_insert(*id, &mut c, PseudoState::Custom("Dead".into()));
+                            }
+                        }
+                    },
+            );
+        });
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Resource that tracks which 'primary' section of the menu is visible.
 //TODO: update this when changing sections
 #[derive(Resource, Debug, Default)]
@@ -182,9 +269,9 @@ pub(crate) enum MenuContentSection
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct MenuContentPlugin;
+pub(super) struct SidebarPlugin;
 
-impl Plugin for MenuContentPlugin
+impl Plugin for SidebarPlugin
 {
     fn build(&self, app: &mut App)
     {

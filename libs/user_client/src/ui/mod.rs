@@ -1,17 +1,15 @@
-mod ack_request_window;
-mod game_in_progress;
+mod ack_request_popup;
 mod info;
-mod menu_content;
 mod play_section;
 mod plugin;
-mod user_client_styles;
+mod reconnecting_overlay;
+mod sidebar;
 mod utils;
 
-pub(crate) use ack_request_window::*;
-pub(crate) use game_in_progress::*;
+pub(crate) use ack_request_popup::*;
 pub(crate) use info::*;
-pub(crate) use menu_content::*;
 pub(crate) use play_section::*;
 pub(crate) use plugin::*;
-pub(crate) use user_client_styles::*;
+pub(crate) use reconnecting_overlay::*;
+pub(crate) use sidebar::*;
 pub(crate) use utils::*;

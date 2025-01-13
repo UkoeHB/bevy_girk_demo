@@ -4,10 +4,6 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_kot_ui::builtin::MainUi;
-use bevy_kot_ui::{relative_widget, UiBuilder};
-use bevy_lunex::prelude::*;
-use ui_prefab::*;
 
 use crate::*;
 
@@ -113,11 +109,63 @@ pub(crate) fn add_ack_lobby_window(ui: &mut UiBuilder<MainUi>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
+fn build_ack_popup(&mut h: UiSceneHandle) -> WarnErr
+{
+    let accept_id = h.get_entity("accept_button")?;
+    let reject_id = h.get_entity("reject_button")?;
+    h.get("accept_button")
+        .on_pressed(|mut c: Commands, ps: PseudoStateParam| {
+            c.syscall((), send_lobby_ack);
+            c.try_disable(accept_id);
+            // Don't disable reject button because we can reject after acking if the ack request isn't completely
+            // acked yet.
+        });
+    h.get("reject_button")
+        .on_pressed(|mut c: Commands, ps: PseudoStateParam| {
+            c.syscall((), send_lobby_nack);
+            c.try_disable(accept_id); // Also disable accept button since nacking takes precedence.
+            c.try_disable(reject_id);
+        });
+
+    OK
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn try_spawn_ack_popup(
+    mut has_popup: Local<Option<Entity>>,
+    mut c: Commands,
+    mut s: SceneBuilder,
+    data: ReactRes<AckRequestData>,
+) -> WarnErr
+{
+    if data.is_set() == has_popup.is_some() {
+        return;
+    }
+
+    if !data.is_set() {
+        c.get_entity(has_popup.result()?)?.despawn_recursive();
+        *has_popup = None;
+    } else {
+        c.ui_root()
+            .spawn_scene_and_edit(("ui.user", "ack_popup"), &mut s, |h| {
+                *has_popup = Some(h.id());
+                build_ack_popup(h);
+            });
+    }
+    OK
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 pub(crate) struct UiAckLobbyWindowPlugin;
 
 impl Plugin for UiAckLobbyWindowPlugin
 {
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App)
+    {
+        app.add_reactor(resource_mutation::<AckRequestData>(), try_spawn_ack_popup);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
