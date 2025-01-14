@@ -358,6 +358,8 @@ pub(crate) fn add_lobby_list(ui: &mut UiBuilder<MainUi>, area: &Widget)
         .trigger_resource_mutation::<LobbyPageRequest>();
 }
 
+// TODO: make lobby button needs to set MakeLobbyData to is_constructing=true
+
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(crate) struct UiLobbyListPlugin;

@@ -1,15 +1,15 @@
 mod ack_request_popup;
-mod info;
+mod home_section;
 mod play_section;
 mod plugin;
 mod reconnecting_overlay;
+mod settings_section;
 mod sidebar;
-mod utils;
 
-pub(crate) use ack_request_popup::*;
-pub(crate) use info::*;
+pub(self) use ack_request_popup::*;
+pub(self) use home_section::*;
 pub(crate) use play_section::*;
-pub(crate) use plugin::*;
-pub(crate) use reconnecting_overlay::*;
+pub(super) use plugin::*;
+pub(self) use reconnecting_overlay::*;
+pub(self) use settings_section::*;
 pub(crate) use sidebar::*;
-pub(crate) use utils::*;

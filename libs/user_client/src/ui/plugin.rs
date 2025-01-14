@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 
+use super::*;
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -27,22 +28,15 @@ impl Plugin for UiPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            // TODO: is there a better way to do this?
-            .add_systems(
-                OnEnter(LoadState::Done),
-                build_ui.run_if(in_state(ClientAppState::Client)),
-            )
-            .add_systems(
-                OnEnter(ClientAppState::Client),
-                build_ui.run_if(in_state(LoadState::Done)),
-            )
+        app.add_systems(OnEnter(ClientAppState::Client), build_ui)
             // ui plugins
-            .add_plugins(MenuContentPlugin)
-            .add_plugins(UiConnectionStatusPlugin)
+            .add_plugins(UiSidebarPlugin)
+            .add_plugins(UiReconnectingPlugin)
+            .add_plugins(UiAckLobbyPopupPlugin)
+            // ui menu sections
+            .add_plugins(UiHomeSectionPlugin)
             .add_plugins(UiPlaySectionPlugin)
-            .add_plugins(UiAckLobbyWindowPlugin)
-            .add_plugins(UiGameInProgressPlugin);
+            .add_plugins(UiSettingsSectionPlugin);
     }
 }
 

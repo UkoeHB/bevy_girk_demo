@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 
+use super::*;
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -25,7 +26,11 @@ pub(crate) fn add_play_section(ui: &mut UiBuilder<MainUi>, play_button: &Widget,
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) struct UiPlaySectionPlugin;
+pub(super) fn build_play_section(h: &mut UiSceneHandle) {}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) struct UiPlaySectionPlugin;
 
 impl Plugin for UiPlaySectionPlugin
 {
@@ -33,7 +38,9 @@ impl Plugin for UiPlaySectionPlugin
     {
         app.add_plugins(UiPlayButtonPlugin)
             .add_plugins(UiLobbyDisplayPlugin)
-            .add_plugins(UiLobbyListPlugin);
+            .add_plugins(UiLobbyListPlugin)
+            .add_plugins(UiJoinLobbyPopupPlugin)
+            .add_plugins(UiMakeLobbyPopupPlugin);
     }
 }
 

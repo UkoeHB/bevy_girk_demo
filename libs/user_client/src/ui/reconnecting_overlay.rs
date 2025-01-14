@@ -31,7 +31,7 @@ fn try_spawn_reconnecting_overlay(mut c: Commands, mut s: SceneBuilder, starter:
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) struct UiReconnectingPlugin;
+pub(super) struct UiReconnectingPlugin;
 
 impl Plugin for UiReconnectingPlugin
 {

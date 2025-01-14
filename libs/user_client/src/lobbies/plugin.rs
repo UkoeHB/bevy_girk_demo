@@ -42,8 +42,8 @@ impl Plugin for LobbiesPlugin
             .add_plugins(LobbyDisplayPlugin)
             .add_plugins(LobbyPagePlugin)
             .add_plugins(LobbyListPlugin)
-            .add_plugins(LobbyJoinWindowPlugin)
-            .add_plugins(LobbyMakeWindowPlugin)
+            .add_plugins(JoinLobbyPlugin)
+            .add_plugins(MakeLobbyPlugin)
             .add_systems(PreStartup, setup_lobby_tag_entities);
     }
 }

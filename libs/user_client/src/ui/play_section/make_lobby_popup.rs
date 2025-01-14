@@ -11,281 +11,132 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_a_lobby(world: &mut World)
+pub(super) fn build_make_lobby_popup(_: ActivateMakeLobbyPopup, h: &mut UiSceneHandle)
 {
-    match world.react_resource::<MakeLobbyWindow>().is_single_player() {
-        true => world.syscall((), make_local_lobby),
-        false => world.syscall((), send_make_lobby_request),
-    }
-}
+    // Reactors for auto-closing the popup.
+    h.reactor(
+        broadcast::<RequestEnded<MakeLobby>>(),
+        |//
+            id: TargetId,
+            event: BroadcastEvent<RequestEnded<MakeLobby>>,
+            mut c: Commands//
+        |
+        {
+            match event.try_read()? {
+                RequestEnded::Success => {
+                    tracing::info!("MakeLobby request succeeded");
+                    c.get_entity(*id)?.despawn_recursive();
+                }
+                RequestEnded::Failure => {
+                    tracing::warn!("MakeLobby request failed");
+                }
+            }
+            DONE
+        },
+    );
+    h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
+        c.get_entity(*id)?.despawn_recursive();
+        DONE
+    });
 
-//-------------------------------------------------------------------------------------------------------------------
+    // Form fields
+    h.edit("password", |_| {
+        // does nothing yet
+    });
+    h.edit("config", |h| {
+        h.get("max_players::text").update_on(
+            resource_mutation::<MakeLobbyData>(),
+            |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| {
+                write_text!(e, *id, "{}", data.config.max_players);
+            },
+        );
+        h.get("add_player")
+            .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
+                data.get_mut(&mut c).config.max_players += 1;
+            });
+        h.get("remove_player")
+            .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
+                data.get_mut(&mut c).config.max_players.saturating_sub(1);
+            });
+    });
+    h.edit("join_as", |h| {
+        h.get("as_text").update_text("Player");
+    });
 
-fn setup_window_reactors(
-    In((popup_pack, accept_text)): In<(BasicPopupPack, &'static str)>,
-    mut ui: UiBuilder<MainUi>,
-    make_lobby: Query<Entity, With<MakeLobby>>,
-)
-{
-    let make_lobby_entity = make_lobby.single();
-
-    // when activation event is detected
-    let window_overlay = popup_pack.window_overlay.clone();
-    ui.commands().react().on(
-        broadcast::<ActivateMakeLobbyWindow>(),
-        move |mut ui: UiUtils<MainUi>| {
-            // open window
-            ui.toggle(true, &window_overlay);
+    // Info text
+    h.get("connection_notice::text").update_on(
+        resource_mutation::<MakeLobbyData>(),
+        |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| match data.is_single_player() {
+            true => write_text!(e, *id, "Single-player lobby: does not require a server connection."),
+            false => write_text!(e, *id, "Multiplayer lobby: requires a server connection."),
         },
     );
 
-    // when a local lobby is made
-    let window_overlay = popup_pack.window_overlay.clone();
-    ui.commands()
-        .react()
-        .on(broadcast::<MadeLocalLobby>(), move |mut ui: UiUtils<MainUi>| {
-            // close window
-            ui.toggle(false, &window_overlay);
+    // Popup buttons
+    h.edit("make_button", |h| {
+        // This is where the magic happens.
+        h.on_pressed(make_a_lobby);
+
+        // Disable button when it can't be used.
+        h.update_on(
+            (
+                resource_mutation::<ConnectionStatus>(),
+                resource_mutation::<MakeLobbyData>(),
+                resource_mutation::<LobbyDisplay>(),
+                broadcast::<RequestStarted<MakeLobby>>(),
+                broadcast::<RequestEnded<MakeLobby>>(),
+            ),
+            |//
+                id: TargetId,
+                mut c: Commands,
+                ps: PseudoStateParam,
+                status: ReactRes<ConnectionStatus>,
+                data: ReactRes<MakeLobbyData>,
+                make_lobby: Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
+                lobby_display: ReactResMut<LobbyDisplay>//
+            | {
+                let enable = (*status == ConnectionStatus::Connected) || data.is_single_player();
+                // if LobbyDisplay is hosted then we are in a lobby on the host server
+                let enable = enable && make_lobby.is_empty() && !lobby_display.is_hosted();
+
+                match enable {
+                    true => {
+                        ps.try_enable(&mut c, *id);
+                    }
+                    false => {
+                        ps.try_disable(&mut c, *id);
+                    }
+                }
+            },
+        );
+    });
+    let id = h.id();
+    h.get("cancel_button")
+        .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
+            c.get_entity(id)?.despawn_recursive();
+            DONE
         });
-
-    // when a make lobby request starts
-    let accept_entity = popup_pack.accept_entity;
-    ui.commands().react().on(
-        entity_insertion::<PendingRequest>(make_lobby_entity),
-        move |mut text: TextEditor| {
-            // modify accept button text
-            text.write(accept_entity, |text| write!(text, "{}", "..."));
-        },
-    );
-
-    // when a make lobby request completes
-    let window_overlay = popup_pack.window_overlay;
-    ui.commands().react().on(
-        entity_removal::<PendingRequest>(make_lobby_entity),
-        move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>| {
-            // access the window state
-            let Some(req) = &window.last_req else {
-                return;
-            };
-            let req_status = req.status();
-
-            // log error if still sending
-            if (req_status == bevy_simplenet::RequestStatus::Sending)
-                || (req_status == bevy_simplenet::RequestStatus::Waiting)
-            {
-                tracing::error!("make lobby request terminated but window's cached request is still sending");
-            }
-
-            // handle request result
-            if req_status == bevy_simplenet::RequestStatus::Responded {
-                // close window
-                ui.toggle(false, &window_overlay);
-            } else {
-                // remove cached request, we must have failed
-                window.get_noreact().last_req = None;
-            }
-
-            // reset accept button text
-            ui.text
-                .write(accept_entity, |text| write!(text, "{}", accept_text));
-        },
-    );
-
-    // prepare blocker for make button
-    let accept_entity = popup_pack.accept_entity;
-    let accept_disable = spawn_basic_button_blocker(&mut ui, &popup_pack.accept_button, false);
-
-    // disable 'make' button
-    // - when disconnected and configs are non-local
-    // - when in a hosted lobby or waiting for a hosted lobby request
-    ui.commands().react().on(
-        (
-            resource_mutation::<ConnectionStatus>(),
-            resource_mutation::<MakeLobbyWindow>(),
-            resource_mutation::<LobbyDisplay>(),
-        ),
-        move |mut ui: UiUtils<MainUi>,
-              status: ReactRes<ConnectionStatus>,
-              window: ReactRes<MakeLobbyWindow>,
-              make_lobby: Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
-              lobby_display: ReactResMut<LobbyDisplay>| {
-            let enable = (*status == ConnectionStatus::Connected) || window.is_single_player();
-            let enable = enable && make_lobby.is_empty() && !lobby_display.is_hosted();
-            ui.toggle_basic_button(enable, accept_entity, &accept_disable);
-        },
-    );
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // title text
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "New Lobby");
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_join_as_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // field outline
-    spawn_plain_outline(ui, area.clone());
-
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        text,
-        TextParams::center().with_width(Some(75.)),
-        "Join as: Player\n(UI todo)",
-    );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_config_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // field outline
-    spawn_plain_outline(ui, area.clone());
-
-    let singleplayer_overlay = make_overlay(ui.tree(), area, "", true);
-    spawn_basic_text(
-        ui,
-        singleplayer_overlay.clone(),
-        TextParams::center().with_width(Some(75.)),
-        "Config: 1 player, 0 watchers\n(UI todo)",
-    );
-
-    let multiplayer_overlay = make_overlay(ui.tree(), area, "", false);
-    spawn_basic_text(
-        ui,
-        multiplayer_overlay.clone(),
-        TextParams::center().with_width(Some(75.)),
-        "Config: 2 players, 1 watcher\n(UI todo)",
-    );
-
-    // basic toggle for single/multiplayer
-    //todo: replace with proper UI
-    let button = relative_widget(ui.tree(), area.end(""), (40., 60.), (75., 95.));
-    spawn_basic_button(
-        ui,
-        &button,
-        "Toggle",
-        move |mut toggle: Local<bool>, mut ui: UiUtils<MainUi>, mut window: ReactResMut<MakeLobbyWindow>| {
-            ui.toggle(*toggle, &singleplayer_overlay);
-            ui.toggle(!*toggle, &multiplayer_overlay);
-
-            match *toggle {
-                true => {
-                    window.get_mut(&mut ui.builder.commands()).config =
-                        ClickLobbyConfig { max_players: 1, max_watchers: 0 };
-                }
-                false => {
-                    window.get_mut(&mut ui.builder.commands()).config =
-                        ClickLobbyConfig { max_players: 2, max_watchers: 1 };
-                }
-            }
-
-            *toggle = !*toggle;
-        },
-    );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // field outline
-    spawn_plain_outline(ui, area.clone());
-
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        text,
-        TextParams::center().with_width(Some(75.)),
-        "Password: <empty>\n(UI todo)",
-    );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_connection_requirement_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // single-player text
-    let sp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        sp_text.clone(),
-        TextParams::center().with_height(Some(80.)),
-        "Single-player lobby: does not require a server connection.",
-    );
-
-    // multiplayer text
-    let mp_text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        mp_text.clone(),
-        TextParams::center().with_height(Some(80.)),
-        "Multiplayer lobby: requires a server connection.",
-    );
-
-    // adjust text depending on the lobby type
-    let sp_widgets = [sp_text];
-    let mp_widgets = [mp_text];
-    ui.commands().react().on(
-        resource_mutation::<MakeLobbyWindow>(),
-        move |mut ui: UiUtils<MainUi>, window: ReactRes<MakeLobbyWindow>| match window.is_single_player() {
-            true => ui.toggle_many(&sp_widgets, &mp_widgets),
-            false => ui.toggle_many(&mp_widgets, &sp_widgets),
-        },
-    );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    ui.div_rel(area.end(""), (40., 60.), (5., 15.), add_window_title);
-    ui.div_rel(area.end(""), (15., 47.), (20., 50.), add_join_as_field);
-    ui.div_rel(area.end(""), (53., 85.), (20., 50.), add_config_field);
-    ui.div_rel(area.end(""), (30., 70.), (57., 87.), add_password_field);
-    ui.div_rel(area.end(""), (10., 90.), (95., 100.), add_connection_requirement_field);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-/// This is a reactive data event used to activate the window.
+/// Event broadcast to activate the popup.
 #[derive(Debug)]
-pub(crate) struct ActivateMakeLobbyWindow;
+pub(crate) struct ActivateMakeLobbyPopup;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_make_lobby_window(ui: &mut UiBuilder<MainUi>)
+pub(super) struct UiMakeLobbyPopupPlugin;
+
+impl Plugin for UiMakeLobbyPopupPlugin
 {
-    // spawn window
-    let accept_text = "Make";
-    let popup_pack = spawn_basic_popup(ui, "Close", accept_text, || (), make_a_lobby);
-
-    // add window contents
-    ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
-
-    // setup window reactors
-    ui.commands()
-        .add(move |world: &mut World| world.syscall((popup_pack, accept_text), setup_window_reactors));
-
-    // initialize ui
-    ui.commands()
-        .react()
-        .trigger_resource_mutation::<MakeLobbyWindow>();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) struct UiMakeLobbyWindowPlugin;
-
-impl Plugin for UiMakeLobbyWindowPlugin
-{
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App)
+    {
+        app.add_reactor(
+            broadcast::<ActivateMakeLobbyPopup>(),
+            setup_broadcast_popup(("ui.user", "make_lobby_popup"), build_make_lobby_popup),
+        );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

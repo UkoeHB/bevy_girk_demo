@@ -9,7 +9,7 @@ pub(crate) fn send_join_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
     join_lobby: Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
-    mut window: ReactResMut<JoinLobbyWindow>,
+    mut data: ReactResMut<JoinLobbyData>,
 )
 {
     // get request entity
@@ -20,7 +20,7 @@ pub(crate) fn send_join_lobby_request(
     };
 
     // fail if there is no lobby
-    let Some(lobby_contents) = &window.contents else {
+    let Some(lobby_contents) = &data.contents else {
         tracing::error!("lobby contents are missing for join lobby request");
         return;
     };
@@ -28,27 +28,27 @@ pub(crate) fn send_join_lobby_request(
     // request to join the specified lobby
     // - note: do not log the password
     let lobby_id = lobby_contents.id;
-    tracing::trace!(lobby_id, ?window.member_type, "requesting to join lobby");
+    tracing::trace!(lobby_id, ?data.member_type, "requesting to join lobby");
 
     let new_req = client.request(UserToHostRequest::JoinLobby {
         id: lobby_id,
-        mcolor: window.member_type.into(),
-        pwd: window.pwd.clone(),
+        mcolor: data.member_type.into(),
+        pwd: data.pwd.clone(),
     });
 
     // save request
     let request = PendingRequest::new(new_req);
     c.react().insert(target_entity, request.clone());
-    window.get_noreact().last_req = Some(request);
+    data.get_noreact().last_req = Some(request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Cached state of the join lobby window.
+/// Cached state of the join lobby workflow.
 ///
 /// This is a reactive resource.
 #[derive(ReactResource, Debug)]
-pub(crate) struct JoinLobbyWindow
+pub(crate) struct JoinLobbyData
 {
     /// Lobby contents.
     pub(crate) contents: Option<ClickLobbyContents>,
@@ -57,12 +57,9 @@ pub(crate) struct JoinLobbyWindow
     pub(crate) member_type: ClickLobbyMemberType,
     /// Cached password.
     pub(crate) pwd: String,
-
-    /// Last request sent
-    pub(crate) last_req: Option<PendingRequest>,
 }
 
-impl Default for JoinLobbyWindow
+impl Default for JoinLobbyData
 {
     fn default() -> Self
     {
@@ -77,13 +74,13 @@ impl Default for JoinLobbyWindow
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) struct LobbyJoinWindowPlugin;
+pub(crate) struct JoinLobbyPlugin;
 
-impl Plugin for LobbyJoinWindowPlugin
+impl Plugin for JoinLobbyPlugin
 {
     fn build(&self, _app: &mut App)
     {
-        app.init_react_resource::<JoinLobbyWindow>();
+        app.init_react_resource::<JoinLobbyData>();
     }
 }
 

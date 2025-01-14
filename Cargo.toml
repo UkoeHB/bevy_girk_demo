@@ -35,17 +35,17 @@ bevy_replicon_attributes = { version = "0.8" }
 bevy_simplenet = { version = "0.14", default-features = false }
 iyes_progress = { version = "0.13" , features = [ "assets" ] }
 
-bevy_girk_backend_public    = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_client_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_client_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_game_fw           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_game_hub_server   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_game_instance     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_host_server       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_utils             = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_wiring_common     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_wiring_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
-bevy_girk_wiring_client     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "47622d5" }
+bevy_girk_backend_public    = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_client_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_client_instance   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_game_fw           = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_game_hub_server   = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_game_instance     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_host_server       = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_utils             = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_wiring_common     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_wiring_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
+bevy_girk_wiring_client     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "9fe5658" }
 
 clap               = { version = "4.4", default-features = false, features = [ "std" ] }
 enfync             = { version = "0.1", default-features = false }

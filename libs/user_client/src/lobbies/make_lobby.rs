@@ -5,19 +5,19 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Convert window state to lobby contents.
+/// Convert state to lobby contents.
 ///
 /// Panics if not single-player.
-fn single_player_lobby(owner_id: u128, window: &MakeLobbyWindow) -> ClickLobbyContents
+fn single_player_lobby(owner_id: u128, data: &MakeLobbyData) -> ClickLobbyContents
 {
-    if !window.is_single_player() {
-        panic!("cannot convert make lobby window to lobby contents for multiplayer lobbies");
+    if !data.is_single_player() {
+        panic!("cannot convert make lobby data to lobby contents for multiplayer lobbies");
     }
 
     ClickLobbyContents {
         id: 0u64,
         owner_id,
-        config: window.config.clone(),
+        config: data.config.clone(),
         players: vec![(ConnectionType::Memory, owner_id)], // Must use memory connection type
         watchers: vec![],
     }
@@ -25,17 +25,12 @@ fn single_player_lobby(owner_id: u128, window: &MakeLobbyWindow) -> ClickLobbyCo
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Event broadcast when a local lobby has been constructed.
-pub(crate) struct MadeLocalLobby;
-
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) fn make_local_lobby(
+fn make_local_lobby(
     mut c: Commands,
     client: Res<HostUserClient>,
     make_lobby: Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
     mut lobby_display: ReactResMut<LobbyDisplay>,
-    window: ReactRes<MakeLobbyWindow>,
+    data: ReactRes<MakeLobbyData>,
 )
 {
     // do nothing if there is a pending request
@@ -52,10 +47,10 @@ pub(crate) fn make_local_lobby(
 
     // make a local lobby
     // - note: do not log the password
-    tracing::trace!(?window.member_type, ?window.config, "making a local lobby");
+    tracing::trace!(?data.member_type, ?data.config, "making a local lobby");
     lobby_display
         .get_mut(&mut c)
-        .set(single_player_lobby(client.id(), &window), LobbyType::Local);
+        .set(single_player_lobby(client.id(), &data), LobbyType::Local);
 
     // send event for UI updates
     c.react().broadcast(MadeLocalLobby);
@@ -63,11 +58,11 @@ pub(crate) fn make_local_lobby(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn send_make_lobby_request(
+fn send_make_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
     make_lobby: Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
-    mut window: ReactResMut<MakeLobbyWindow>,
+    mut data: ReactResMut<MakeLobbyData>,
 )
 {
     // get request entity
@@ -79,27 +74,37 @@ pub(crate) fn send_make_lobby_request(
 
     // request to make a lobby
     // - note: do not log the password
-    tracing::trace!(?window.member_type, ?window.config, "requesting to make lobby");
+    tracing::trace!(?data.member_type, ?data.config, "requesting to make lobby");
 
     let new_req = client.request(UserToHostRequest::MakeLobby {
-        mcolor: window.member_type.into(),
-        pwd: window.pwd.clone(),
-        data: ser_msg(&window.config),
+        mcolor: data.member_type.into(),
+        pwd: data.pwd.clone(),
+        data: ser_msg(&data.config),
     });
 
     // save request
     let request = PendingRequest::new(new_req);
     c.react().insert(target_entity, request.clone());
-    window.get_noreact().last_req = Some(request);
+    data.get_noreact().last_req = Some(request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Cached state of the make lobby window.
+pub(crate) fn make_a_lobby(world: &mut World)
+{
+    match world.react_resource::<MakeLobbyData>().is_single_player() {
+        true => world.syscall((), make_local_lobby),
+        false => world.syscall((), send_make_lobby_request),
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Cached state of the make lobby workflow.
 ///
 /// This is a reactive resource.
 #[derive(ReactResource, Debug)]
-pub(crate) struct MakeLobbyWindow
+pub(crate) struct MakeLobbyData
 {
     /// Cached member type.
     pub(crate) member_type: ClickLobbyMemberType,
@@ -107,12 +112,9 @@ pub(crate) struct MakeLobbyWindow
     pub(crate) pwd: String,
     /// Cached lobby config.
     pub(crate) config: ClickLobbyConfig,
-
-    /// Last request sent
-    pub(crate) last_req: Option<PendingRequest>,
 }
 
-impl MakeLobbyWindow
+impl MakeLobbyData
 {
     pub(crate) fn is_single_player(&self) -> bool
     {
@@ -120,7 +122,7 @@ impl MakeLobbyWindow
     }
 }
 
-impl Default for MakeLobbyWindow
+impl Default for MakeLobbyData
 {
     fn default() -> Self
     {
@@ -135,13 +137,18 @@ impl Default for MakeLobbyWindow
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) struct LobbyMakeWindowPlugin;
+/// Event broadcast when a local lobby has been constructed.
+pub(crate) struct MadeLocalLobby;
 
-impl Plugin for LobbyMakeWindowPlugin
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(crate) struct MakeLobbyPlugin;
+
+impl Plugin for MakeLobbyPlugin
 {
     fn build(&self, _app: &mut App)
     {
-        app.init_react_resource::<MakeLobbyWindow>();
+        app.init_react_resource::<MakeLobbyData>();
     }
 }
 

@@ -51,8 +51,10 @@ impl notes
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy::winit::UpdateMode;
+use bevy_cobweb_ui::prelude::*;
 
 use crate::*;
+use super::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -94,13 +96,25 @@ impl Plugin for BevyEnginePlugin
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup(mut commands: Commands)
+fn setup(mut c: Commands)
 {
-    // prepare 2D camera
-    commands.spawn(Camera2dBundle {
+    c.spawn(Camera2dBundle {
         transform: Transform { translation: Vec3 { x: 0., y: 0., z: 1000. }, ..default() },
         ..default()
     });
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn loadstate_progress(state: Res<State<LoadState>>, progress: Res<LoadProgress>) -> Progress
+{
+    let state = match state.get() {
+        LoadState::Loading => 0,
+        LoadState::Done => 1,
+    };
+    let (pending, total) = progress.loading_progress();
+
+    Progress{ done: state + total.saturating_sub(pending), total: 1 + total }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -126,7 +140,13 @@ impl Plugin for ClickUserClientPlugin
             .add_plugins(LobbiesPlugin)
             .add_plugins(GamePlugin)
             .add_plugins(UiPlugin)
-            .add_systems(PreStartup, setup);
+            .add_systems(PreStartup, setup)
+            .add_systems(
+                Update,
+                loadstate_progress
+                    .track_progress::<ClientAppState>()
+                    .run_if(in_state(ClientAppState::Loading))
+            );
     }
 }
 

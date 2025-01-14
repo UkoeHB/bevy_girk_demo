@@ -1,3 +1,13 @@
+/*
+Networked buttons should indicate request status.
+- Add indicators 'floating' as a tooltip to the upper-right of the button text.
+- Add 'pending' spiny for "RequestPending"
+- Add 'success' checkmark for "RequestSucceeded"
+    - Fades out after 2s
+- Add 'failed' x mark for "RequestFailed"
+    - Fades out after 2s
+*/
+
 #import
 ui.skin as ui
 
@@ -47,6 +57,8 @@ ui.skin as ui
         // [currently shown range]/total
         // >
         // >>
+        "make_lobby_button"
+            // triggers popup
 
 "lobby_list_entry"
     // lobby id
@@ -59,14 +71,13 @@ ui.skin as ui
     // timer
     // "Accept" button
     // "Reject" button
-    // - buttons use 'diabled' state to show they can't be used any more
+    // - buttons use 'disabled' state to show they can't be used any more
 
 
 "make_lobby_popup"
     // "Make Lobby" title
     // password: not yet supported
-    // num players (use arrow keys)
-    // num watchers (use arrow keys)
+    // max players buttons (+ "add_player"/- "remove_player")
     // make lobby button
     // cancel button
 

@@ -32,7 +32,7 @@ fn setup_window_reactors(
     let window_overlay = popup_pack.window_overlay;
     ui.commands().react().on(
         entity_removal::<PendingRequest>(join_lobby_entity),
-        move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<JoinLobbyWindow>| {
+        move |mut ui: UiUtils<MainUi>, mut window: ReactResMut<JoinLobbyData>| {
             // access the window state
             let Some(req) = &window.last_req else {
                 return;
@@ -63,87 +63,122 @@ fn setup_window_reactors(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_window_title(ui: &mut UiBuilder<MainUi>, area: &Widget)
+fn update_join_lobby_data(
+    event: BroadcastEvent<ActivateJoinLobbyData>,
+    mut c: Commands,
+    lobby_page: ReactRes<LobbyPage>,
+    mut data: ReactResMut<JoinLobbyData>,
+) -> DropErr
 {
-    // title text
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(ui, text, TextParams::center().with_height(Some(100.)), "Join Lobby");
+    // lobby id of lobby to join
+    let event = event.try_read()?;
+    let lobby_index = event.lobby_list_index;
+
+    let Some(lobby_contents) = lobby_page.get().get(lobby_index) else {
+        tracing::error!(lobby_index, "failed accessing lobby contents for join lobby popup");
+        return;
+    };
+
+    // update the cached lobby contents
+    *data.get_mut(&mut c) = JoinLobbyData { contents: Some(lobby_contents.clone()), ..Default::default() };
+
+    DONE
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_subtitle(ui: &mut UiBuilder<MainUi>, area: &Widget)
+pub(super) fn build_join_lobby_popup(_: ActivateJoinLobbyPopup, h: &mut UiSceneHandle)
 {
-    // add text
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-
-    let default_text = "Lobby: ?????? -- Owner: ??????";
-    let text_entity = spawn_basic_text(ui, text, TextParams::center().with_height(Some(40.)), default_text);
-
-    // update the text when the window changes
-    ui.commands().react().on(
-        resource_mutation::<JoinLobbyWindow>(),
-        move |mut text: TextEditor, window: ReactRes<JoinLobbyWindow>| {
-            if let Some(lobby_contents) = &window.contents {
-                let id = lobby_contents.id % 1_000_000u64;
-                let owner_id = lobby_contents.owner_id % 1_000_000u128;
-                text.write(text_entity, |text| {
-                    write!(text, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id)
-                });
-            } else {
-                text.write(text_entity, |text| write!(text, "{}", default_text));
+    // Reactors for auto-closing the popup.
+    h.reactor(
+        broadcast::<RequestEnded<JoinLobby>>(),
+        |//
+            id: TargetId,
+            event: BroadcastEvent<RequestEnded<JoinLobby>>,
+            mut c: Commands//
+        |
+        {
+            match event.try_read()? {
+                RequestEnded::Success => {
+                    tracing::info!("JoinLobby request succeeded");
+                    c.get_entity(*id)?.despawn_recursive();
+                }
+                RequestEnded::Failure => {
+                    tracing::warn!("JoinLobby request failed");
+                }
             }
+            DONE
         },
     );
-}
+    h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
+        c.get_entity(*id)?.despawn_recursive();
+        DONE
+    });
 
-//-------------------------------------------------------------------------------------------------------------------
+    // Sub-title
+    h.get("subtitle::text")
+        .update(|id: TargetId, mut e: TextEditor, data: ReactRes<JoinLobbyData>| {
+            let contents = data.contents.as_ref().result()?;
+            let id = contents.id % 1_000_000u64;
+            let owner_id = contents.owner_id % 1_000_000u128;
+            write_text!(e, *id, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id);
+            OK
+        });
 
-fn add_member_type_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // field outline
-    spawn_plain_outline(ui, area.clone());
+    // Form fields
+    h.edit("password", |_| {
+        // does nothing yet
+    });
+    h.edit("member_type", |h| {
+        h.get("type_text").update_text("Player");
+    });
 
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        text,
-        TextParams::center().with_width(Some(75.)),
-        "Member type: Player\n(UI todo)",
-    );
-}
+    // Popup buttons
+    h.edit("join_button", |h| {
+        // This is where the magic happens.
+        h.on_pressed(send_join_lobby_request);
 
-//-------------------------------------------------------------------------------------------------------------------
+        // Disable button when it can't be used.
+        h.update_on(
+            (
+                resource_mutation::<ConnectionStatus>(),
+                broadcast::<RequestStarted<JoinLobby>>(),
+                broadcast::<RequestEnded<JoinLobby>>(),
+            ),
+            |//
+                id: TargetId,
+                mut c: Commands,
+                ps: PseudoStateParam,
+                status: ReactRes<ConnectionStatus>,
+                join_lobby: Query<(), (With<JoinLobby>, With<React<PendingRequest>>)>,
+                lobby_display: ReactResMut<LobbyDisplay>//
+            | {
+                let enable = *status == ConnectionStatus::Connected;
+                let enable = enable && join_lobby.is_empty();
 
-fn add_password_field(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    // field outline
-    spawn_plain_outline(ui, area.clone());
-
-    let text = relative_widget(ui.tree(), area.end(""), (0., 100.), (0., 100.));
-    spawn_basic_text(
-        ui,
-        text,
-        TextParams::center().with_width(Some(75.)),
-        "Password: <empty>\n(UI todo)",
-    );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn add_window_contents(ui: &mut UiBuilder<MainUi>, area: &Widget)
-{
-    ui.div_rel(area.end(""), (40., 60.), (5., 15.), add_window_title);
-    ui.div_rel(area.end(""), (10., 90.), (20., 30.), add_subtitle);
-    ui.div_rel(area.end(""), (15., 47.), (40., 70.), add_member_type_field);
-    ui.div_rel(area.end(""), (53., 85.), (40., 70.), add_password_field);
+                match enable {
+                    true => {
+                        ps.try_enable(&mut c, *id);
+                    }
+                    false => {
+                        ps.try_disable(&mut c, *id);
+                    }
+                }
+            },
+        );
+    });
+    h.get("cancel_button")
+        .on_pressed(|mut c: Commands, mut data: ReactResMut<JoinLobbyData>| {
+            c.get_entity(id)?.despawn_recursive();
+            DONE
+        });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// This is a reactive data event used to activate the window.
 #[derive(Debug, Clone)]
-pub(crate) struct ActivateJoinLobbyWindow
+pub(crate) struct ActivateJoinLobbyPopup
 {
     /// Index in the lobby list of the lobby corresponding to this lobby window.
     ///
@@ -153,60 +188,19 @@ pub(crate) struct ActivateJoinLobbyWindow
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn add_join_lobby_window(ui: &mut UiBuilder<MainUi>)
+pub(super) struct UiJoinLobbyPopupPlugin;
+
+impl Plugin for UiJoinLobbyPopupPlugin
 {
-    // spawn window
-    let accept_text = "Join";
-    let popup_pack = spawn_basic_popup(ui, "Close", "Join", || (), send_join_lobby_request);
-
-    // add window contents
-    ui.div(|ui| add_window_contents(ui, &popup_pack.content_section));
-
-    // update window state and open window when activation event is detected
-    let window_overlay = popup_pack.window_overlay.clone();
-    ui.commands().react().on(
-        broadcast::<ActivateJoinLobbyWindow>(),
-        move |events: BroadcastEvent<ActivateJoinLobbyWindow>,
-              mut ui: UiUtils<MainUi>,
-              lobby_page: ReactRes<LobbyPage>,
-              mut window: ReactResMut<JoinLobbyWindow>| {
-            // get lobby id of lobby to join
-            let Some(event) = events.read() else {
-                return;
-            };
-            let lobby_index = event.lobby_list_index;
-
-            let Some(lobby_contents) = lobby_page.get().get(lobby_index) else {
-                tracing::error!(lobby_index, "failed accessing lobby contents for join lobby window");
-                return;
-            };
-
-            // update the window state
-            *window.get_mut(&mut ui.builder.commands()) =
-                JoinLobbyWindow { contents: Some(lobby_contents.clone()), ..Default::default() };
-
-            // open the window
-            ui.toggle(true, &window_overlay);
-        },
-    );
-
-    // setup window reactors
-    ui.commands()
-        .add(move |world: &mut World| world.syscall((popup_pack, accept_text), setup_window_reactors));
-
-    // initialize ui
-    ui.commands()
-        .react()
-        .trigger_resource_mutation::<JoinLobbyWindow>();
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) struct UiJoinLobbyWindowPlugin;
-
-impl Plugin for UiJoinLobbyWindowPlugin
-{
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App)
+    {
+        // note: must order this before the popup constructor
+        app.add_reactor(broadcast::<ActivateJoinLobbyPopup>(), update_join_lobby_data)
+            .add_reactor(
+                broadcast::<ActivateJoinLobbyPopup>(),
+                setup_broadcast_popup(("ui.user", "join_lobby_popup"), build_join_lobby_popup),
+            );
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

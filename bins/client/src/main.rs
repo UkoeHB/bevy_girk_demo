@@ -83,11 +83,11 @@ fn main()
     // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
     let make_client = || {
         host_user_client_factory().new_client(
-            enfync::builtin::Handle::default(), //automatically selects native/WASM runtime
-            url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(),
-            bevy_simplenet::AuthRequest::None { client_id },
+            enfync::builtin::Handle::default(), // automatically selects native/WASM runtime
+            url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(), // TODO: use CLI or auth server to get this?
+            bevy_simplenet::AuthRequest::None { client_id }, // TODO: use auth tokens and an auth server
             bevy_simplenet::ClientConfig::default(),
-            (),
+            HostUserConnectMsg::new(), // auto-detects connection type for games (udp/webtransport/websockets)
         )
     };
 
