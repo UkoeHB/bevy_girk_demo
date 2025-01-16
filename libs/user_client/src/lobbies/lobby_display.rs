@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_client_fw::ClientFwConfig;
+use bevy_girk_client_instance::ClientInstanceCommand;
 use wiring_backend::*;
+
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

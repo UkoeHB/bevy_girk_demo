@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_girk_client_fw::ClientFwConfig;
+use bevy_girk_client_instance::{ClientInstanceCommand, LocalGameManager, LocalGameReport};
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -12,7 +14,7 @@ fn try_take_local_report(
     let Some(report) = manager.take_report() else { return };
 
     match report {
-        LocalGameReport::Ended { game_id, report } => {
+        LocalGameReport::End { game_id, report } => {
             tracing::info!("local game {game_id} ended");
             // send out report for use by the app
             c.react().broadcast(report);

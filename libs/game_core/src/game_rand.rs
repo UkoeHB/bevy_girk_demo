@@ -1,4 +1,4 @@
-use bevy_girk_game_fw::*;
+use bevy::prelude::*;
 use bevy_girk_utils::*;
 
 use crate::*;

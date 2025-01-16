@@ -1,15 +1,13 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
-use bevy_girk_backend_public::*;
-use wiring_backend::*;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn update_join_lobby_data(
-    event: BroadcastEvent<ActivateJoinLobbyData>,
+    event: BroadcastEvent<ActivateJoinLobbyPopup>,
     mut c: Commands,
     lobby_page: ReactRes<LobbyPage>,
     mut data: ReactResMut<JoinLobbyData>,
@@ -21,7 +19,7 @@ fn update_join_lobby_data(
 
     let Some(lobby_contents) = lobby_page.get().get(lobby_index) else {
         tracing::error!("failed accessing lobby contents for join lobby popup; index={lobby_index}");
-        return;
+        return DONE;
     };
 
     // update the cached lobby contents
@@ -32,7 +30,7 @@ fn update_join_lobby_data(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) fn build_join_lobby_popup(_: ActivateJoinLobbyPopup, h: &mut UiSceneHandle)
+pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiSceneHandle)
 {
     // Reactors for auto-closing the popup.
     h.reactor(
@@ -51,6 +49,7 @@ pub(super) fn build_join_lobby_popup(_: ActivateJoinLobbyPopup, h: &mut UiSceneH
                 RequestEnded::Failure => {
                     tracing::warn!("JoinLobby request failed");
                 }
+                _ => ()
             }
             DONE
         },

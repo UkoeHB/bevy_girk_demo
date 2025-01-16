@@ -15,15 +15,19 @@ bevy_framepace  = { workspace = true }
 bevy_simplenet  = { workspace = true, features = ["client", "bevy"] }
 enfync          = { workspace = true }
 serde           = { workspace = true }
+smol_str        = { workspace = true }
 tracing         = { workspace = true }
 
-bevy_girk_backend_public    = { workspace = true }
+bevy_girk_backend_public    = { workspace = true, features = ["client"] }
 bevy_girk_client_instance   = { workspace = true }
+bevy_girk_client_fw         = { workspace = true }
 bevy_girk_game_fw           = { workspace = true }
 bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
+bevy_girk_wiring_common     = { workspace = true }
 
-game_core              = { path = "../game_core" }
-wiring_backend         = { path = "../wiring_backend" }
+client_core = { path = "../client_core" }
+game_core = { path = "../game_core" }
+wiring_backend = { path = "../wiring_backend" }
 wiring_client_instance = { path = "../wiring_client_instance" }
-wiring_game_instance   = { path = "../wiring_game_instance" }
+wiring_game_instance = { path = "../wiring_game_instance" }

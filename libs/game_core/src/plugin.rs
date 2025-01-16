@@ -10,7 +10,6 @@
 //! - plugin GameReplicationPlugin must be added to the client core app
 
 use bevy::prelude::*;
-use bevy_girk_game_fw::*;
 
 use crate::*;
 
@@ -23,11 +22,11 @@ impl Plugin for GamePlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add(GameReplicationPlugin)
-            .add(GameSetsPlugin)
-            .add(GameSetupPlugin)
-            .add(GameStatePlugin)
-            .add(GameTickPlugin)
+        app.add_plugins(GameReplicationPlugin)
+            .add_plugins(GameSetsPlugin)
+            .add_plugins(GameSetupPlugin)
+            .add_plugins(GameStatePlugin)
+            .add_plugins(GameTickPlugin)
             .configure_sets(
                 Update,
                 (GameStateUpdateSet, TickUpdateSet)

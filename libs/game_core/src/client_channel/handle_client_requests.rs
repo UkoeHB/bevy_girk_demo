@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_girk_game_fw::*;
 use bevy_replicon::prelude::*;
 
 use crate::*;
@@ -9,7 +8,7 @@ use crate::*;
 
 fn player_syscall<A, S, Marker>(world: &mut World, id: ClientId, req: ClientRequest, arg: A, sys: S)
 where
-    A: SystemInput + Send + Sync + 'static,
+    A: Send + Sync + 'static,
     S: IntoSystem<In<(Entity, A)>, (), Marker> + Send + Sync + 'static,
 {
     match world.resource::<PlayerMap>().client_to_entity(id) {

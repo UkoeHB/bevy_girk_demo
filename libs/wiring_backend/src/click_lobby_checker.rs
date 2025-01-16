@@ -18,7 +18,7 @@ pub struct ClickLobbyChecker
 
 impl ClickLobbyChecker
 {
-    pub fn count_members(lobby_data: &LobbyData) -> Result<(usize, usize), ()>
+    pub fn count_members(lobby_data: &LobbyData) -> Result<(usize, usize), String>
     {
         let mut num_players = 0;
         let mut num_watchers = 0;

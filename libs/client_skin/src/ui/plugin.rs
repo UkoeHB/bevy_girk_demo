@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 
 use super::*;
-use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct UiPlugin;
+pub(crate) struct UiPlugin;
 
 impl Plugin for UiPlugin
 {

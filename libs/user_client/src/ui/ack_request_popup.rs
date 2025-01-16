@@ -3,7 +3,6 @@ use std::fmt::Write;
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
-use bevy_girk_backend_public::*;
 
 use crate::*;
 

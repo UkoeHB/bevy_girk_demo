@@ -29,14 +29,13 @@ impl Plugin for ClientCorePlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugin(GameReplicationPlugin)
-            .add_plugin(ClientSetsPlugin)
-            .add_plugin(ClientSetupPlugin)
-            .add_plugin(ClientPlugin)
+        app.add_plugins(GameReplicationPlugin)
+            .add_plugins(ClientSetsPlugin)
+            .add_plugins(ClientSetupPlugin)
             // For this demo we assume watcher clients will re-use the player skin, which depends on
             // `PlayerInputPlugin`. A different project may want to completely separate player and
             // watcher skins, in which case this plugin can go in a player-client-specific crate.
-            .add_plugin(PlayerInputPlugin)
+            .add_plugins(PlayerInputPlugin)
             .add_systems(OnEnter(ClientInitState::Done), request_game_state)
             .configure_sets(Update, PlayerInputSet.in_set(ClientLogicSet::Admin));
     }

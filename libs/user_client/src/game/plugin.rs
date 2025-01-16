@@ -1,6 +1,15 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy::time::common_conditions::on_timer;
 use bevy_cobweb::prelude::*;
-use bevy_girk_utils::*;
+use bevy_cobweb_ui::prelude::*;
+use bevy_girk_client_fw::{ClientAppState, ClientFwConfig};
+use bevy_girk_client_instance::ClientInstanceCommand;
+use bevy_girk_game_fw::GameOverReport;
+use client_core::ClientState;
+use game::{handle_token_req, ClientInstanceReportPlugin, ClientStarterPlugin, LocalGamePlugin};
+use game_core::ClickGameOverReport;
 
 use crate::*;
 
@@ -82,7 +91,7 @@ impl Plugin for GamePlugin
 {
     fn build(&self, app: &mut App)
     {
-        let timer_configs = app.world.resource::<TimerConfigs>();
+        let timer_configs = app.world().resource::<TimerConfigs>();
         let refresh = Duration::from_millis(timer_configs.token_request_loop_ms);
 
         app.add_plugins(ClientStarterPlugin)

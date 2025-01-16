@@ -1,7 +1,3 @@
-use std::fmt::Write;
-use std::sync::Arc;
-use std::vec::Vec;
-
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;

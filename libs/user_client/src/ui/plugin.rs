@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
+use bevy_girk_client_fw::ClientAppState;
 
 use super::*;
-use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 

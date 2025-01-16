@@ -1,5 +1,6 @@
 use bevy_girk_backend_public::*;
 use bevy_girk_utils::*;
+use bevy_girk_wiring_common::ConnectionType;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -41,7 +42,7 @@ impl TryFrom<LobbyMemberColor> for ClickLobbyMemberType
         match color.0 {
             0u64 => Ok(ClickLobbyMemberType::Player),
             1u64 => Ok(ClickLobbyMemberType::Watcher),
-            _ => Err(format!("failed converting {color} to ClickLobbyMemberType")),
+            _ => Err(format!("failed converting {color:?} to ClickLobbyMemberType")),
         }
     }
 }
@@ -122,7 +123,7 @@ impl TryFrom<LobbyData> for ClickLobbyContents
     {
         // config
         let config = deser_msg::<ClickLobbyConfig>(&data.serialized_custom_data)
-            .ok_or("failed deserializing lobby config".into())?;
+            .ok_or(String::from("failed deserializing lobby config"))?;
 
         // members
         let mut players = Vec::default();

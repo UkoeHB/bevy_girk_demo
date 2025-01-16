@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_replicon::prelude::*;
-use bevy_replicon_attributes::*;
 
 use crate::*;
 

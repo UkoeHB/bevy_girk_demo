@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_girk_game_fw::*;
+use bevy_girk_client_fw::{client_is_initializing, ClientAppState, ClientFwState};
 
 use crate::*;
 

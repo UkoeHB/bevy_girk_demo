@@ -13,11 +13,11 @@ const FPS_TRACKER_NUM_RECORDS: u8 = 30;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Update FPS tracker with new time.
-fn update_fps_tracker(mut rc: ReactCommands, mut tracker: ReactResMut<FpsTracker>, time: Res<Time>)
+fn update_fps_tracker(mut c: Commands, mut tracker: ReactResMut<FpsTracker>, time: Res<Time>)
 {
     tracker
-        .get_mut(&mut rc)
-        .update(time.delta_seconds(), time.elapsed());
+        .get_mut(&mut c)
+        .update(time.delta_secs(), time.elapsed());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ pub(super) struct FpsTrackerPlugin;
 
 impl Plugin for FpsTrackerPlugin
 {
-    pub fn build(&self, app: &mut App)
+    fn build(&self, app: &mut App)
     {
         app.insert_react_resource(FpsTracker::new(FPS_TRACKER_NUM_RECORDS))
             .configure_sets(First, FpsTrackerSet.after(TimeSystem))

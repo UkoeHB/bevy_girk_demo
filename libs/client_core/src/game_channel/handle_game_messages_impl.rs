@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_client_fw::*;
+use bevy_girk_utils::apply_state_transitions;
 use game_core::*;
 
 use crate::*;

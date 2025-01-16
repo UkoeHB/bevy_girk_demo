@@ -3,11 +3,11 @@ use bevy_cobweb_ui::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) fn build_home_section(_h: &mut UiSceneHandle) {}
+pub(crate) fn build_home_section(_h: &mut UiSceneHandle) {}
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct UiHomeSectionPlugin;
+pub(crate) struct UiHomeSectionPlugin;
 
 impl Plugin for UiHomeSectionPlugin
 {

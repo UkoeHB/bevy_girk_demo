@@ -1,9 +1,11 @@
+use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
+use bevy_cobweb::react::ReactionTriggerBundle;
 use bevy_cobweb_ui::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) trait CobwebReactExt
+pub(crate) trait CobwebReactExt
 {
     /// Creates a reactor that enables/disables a UI node based on the given callback, which
     /// takes a system parameter the reactor should access.

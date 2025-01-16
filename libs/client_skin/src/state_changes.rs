@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_girk_client_fw::ClientFwState;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -9,7 +10,7 @@ pub struct ExitingInit;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// System that broadcasts `T`.
-pub fn broadcast_system<T: Default>(mut c: Commands)
+pub fn broadcast_system<T: Default + Send + Sync + 'static>(mut c: Commands)
 {
     c.react().broadcast(T::default());
 }

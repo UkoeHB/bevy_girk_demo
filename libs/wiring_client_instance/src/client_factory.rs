@@ -1,10 +1,15 @@
+use std::any::type_name;
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_girk_client_fw::ClientAppState;
 use bevy_girk_client_instance::*;
-use bevy_girk_game_instance::*;
-use bevy_girk_utils::*;
+use bevy_girk_wiring_client::{
+    prepare_girk_client_app, setup_girk_client_game, ClientConnectPack, GirkClientConfig, GirkClientStartupConfig,
+};
 use bevy_girk_wiring_common::*;
+use client_core::ClientCorePlugin;
+use client_skin::ClientSkinPlugin;
 use wiring_game_instance::*;
 
 use crate::*;
@@ -33,9 +38,8 @@ impl ClientFactoryImpl for ClickClientFactory
         let config = GirkClientStartupConfig { resend_time: self.resend_time };
 
         // set up client app
-        prepare_girk_client_app(client_app, config);
-        client_app
-            .add_plugins(ClientCorePlugin)
+        prepare_girk_client_app(app, config);
+        app.add_plugins(ClientCorePlugin)
             .add_plugins(ClientSkinPlugin);
     }
 

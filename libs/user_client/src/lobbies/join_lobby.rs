@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_girk_backend_public::{HostUserClient, UserToHostRequest};
+use wiring_backend::{ClickLobbyContents, ClickLobbyMemberType};
 
 use crate::*;
 
@@ -66,7 +68,6 @@ impl Default for JoinLobbyData
             contents: None,
             member_type: ClickLobbyMemberType::Player,
             pwd: String::default(),
-            last_req: None,
         }
     }
 }
@@ -77,7 +78,7 @@ pub(crate) struct JoinLobbyPlugin;
 
 impl Plugin for JoinLobbyPlugin
 {
-    fn build(&self, _app: &mut App)
+    fn build(&self, app: &mut App)
     {
         app.init_react_resource::<JoinLobbyData>();
     }

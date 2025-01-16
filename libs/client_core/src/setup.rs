@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_girk_client_fw::*;
 use game_core::*;
+use wiring_game_instance::ClientInitializer;
 
 use crate::*;
 

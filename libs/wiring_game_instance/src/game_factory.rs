@@ -10,7 +10,6 @@ use bevy_girk_utils::*;
 use bevy_girk_wiring_common::*;
 use bevy_girk_wiring_server::*;
 use bevy_replicon::prelude::*;
-use bevy_replicon_attributes::*;
 use game_core::*;
 use serde::{Deserialize, Serialize};
 
@@ -30,6 +29,8 @@ struct GameStartupHelper
 
 /// Prepare information to use when setting up the game app.
 fn prepare_game_startup(
+    game_id: u64,
+    config: &GameFwConfig,
     client_init_data: Vec<ClientGameInit>,
     duration_config: GameDurationConfig,
 ) -> Result<GameStartupHelper, ()>
@@ -61,7 +62,9 @@ fn prepare_game_startup(
             }
             ClientTypeInfo::Watcher => {
                 watchers.insert(client_id);
-                ClientInitializer::Watcher
+                ClientInitializer {
+                    context: ClientContext::new(client_id, ClientType::Watcher, duration_config),
+                }
             }
         };
 
@@ -77,7 +80,7 @@ fn prepare_game_startup(
         let start_info = GameStartInfo::new(game_id, client_init.user_id, client_id.get(), client_start_pack);
         start_infos.push(start_info)
     }
-    debug_assert_eq!(client_set.len(), clients.len());
+    debug_assert_eq!(client_set.len(), start_infos.len());
 
     // finalize
     let game_context = ClickGameContext::new(gen_rand128(), duration_config);
@@ -171,7 +174,7 @@ impl GameFactoryImpl for ClickGameFactory
     {
         // initialize clients and game config
         let config = data.config;
-        let startup = prepare_game_startup(data.clients, config.duration_config)?;
+        let startup = prepare_game_startup(game_id, &config.game_fw_config, data.clients, config.duration_config)?;
 
         // girk server config
         let server_config = GirkServerConfig {

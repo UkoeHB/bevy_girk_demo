@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-use bevy_girk_utils::*;
-use bevy_replicon_repair::*;
+use bevy_replicon::prelude::AppRuleExt;
 
 use crate::*;
 

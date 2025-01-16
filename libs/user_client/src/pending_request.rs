@@ -1,7 +1,13 @@
 use std::any::type_name;
+use std::marker::PhantomData;
 
+use bevy::ecs::system::SystemParam;
+use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
+use bevy_cobweb_ui::sickle::PseudoState;
 use bevy_simplenet::RequestSignal;
+use smol_str::SmolStr;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -12,7 +18,7 @@ const REQUEST_FAILED_PSEUDOSTATE: PseudoState = PseudoState::Custom(SmolStr::new
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(ReactComponent, Debug, Clone)]
+#[derive(ReactComponent, Debug, Clone, Deref)]
 pub(crate) struct PendingRequest(RequestSignal);
 
 impl PendingRequest
@@ -20,15 +26,6 @@ impl PendingRequest
     pub(crate) fn new(new_req: RequestSignal) -> Self
     {
         Self(new_req)
-    }
-}
-
-impl Deref for PendingRequest
-{
-    type Target = RequestSignal;
-    fn deref(&self) -> &RequestSignal
-    {
-        &self.0
     }
 }
 
@@ -53,8 +50,15 @@ pub(crate) struct RequestFailed;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Event broadcast when [`PendingRequest`] is added to the entity with tag component `T`.
-#[derive(Default)]
 pub(crate) struct RequestStarted<T>(PhantomData<T>);
+
+impl<T> Default for RequestStarted<T>
+{
+    fn default() -> Self
+    {
+        Self(PhantomData)
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -75,7 +79,7 @@ pub(crate) enum RequestEnded<T>
 #[derive(SystemParam)]
 pub(crate) struct PendingRequestParam<'w, 's, T: Component>
 {
-    q: Query<'w, 's, (Entity, Option<&React<PendingRequest>>), With<T>>,
+    q: Query<'w, 's, (Entity, Option<&'static React<PendingRequest>>), With<T>>,
 }
 
 impl<'w, 's, T: Component> PendingRequestParam<'w, 's, T>
@@ -131,13 +135,14 @@ pub(crate) fn spawn_request_entity<T: Component>(c: &mut Commands, tag: T) -> En
         .on(entity_event::<RequestFailed>(id), |mut c: Commands| {
             c.react().broadcast(RequestEnded::<T>::Failure);
         });
+    id
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Adds/removes "Request{Pending/Succeeded/Failed}" pseudo-states from the scene node in response to
 /// [`RequestStarted`]/[`RequestEnded`] events.
-pub(crate) fn setup_request_tracker<T>(h: &mut UiSceneHandle)
+pub(crate) fn setup_request_tracker<T: Send + Sync + 'static>(h: &mut UiSceneHandle)
 {
     h.reactor(
         broadcast::<RequestStarted<T>>(),

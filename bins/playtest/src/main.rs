@@ -1,10 +1,10 @@
 use std::net::Ipv6Addr;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use bevy_girk_client_instance::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
+use bevy_girk_wiring_common::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
 use game_core::*;
@@ -69,13 +69,13 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
     let game_fw_config = GameFwConfig::new(game_ticks_per_sec, max_init_ticks, game_over_ticks);
 
     // game duration config
-    let game_duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
+    let duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
 
     // click game factory config
     let game_factory_config = ClickGameFactoryConfig {
         server_setup_config,
         game_fw_config,
-        game_duration_config,
+        duration_config,
         resend_time: Duration::from_millis(300),
     };
 
@@ -84,12 +84,7 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn run_playtest(
-    num_clients: usize,
-    launch_pack: GameLaunchPack,
-    game_instance_path: String,
-    game_client_path: String,
-)
+fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_client_path: String)
 {
     // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
@@ -102,36 +97,31 @@ fn run_playtest(
         let mut game_instance = game_launcher.launch(launch_pack, game_report_sender);
 
         // wait for game start report
-        let Some(GameInstanceReport::GameStart(_, mut report)) = game_report_receiver.recv().await else {
+        let Some(GameInstanceReport::GameStart(game_id, report)) = game_report_receiver.recv().await else {
             tracing::error!("failed getting game start report for playtest");
             return;
         };
 
         // prepare to launch the clients
-        let Some(meta) = &report.metas.native_meta else {
+        let Some(meta) = &report.metas.native else {
             tracing::error!("missing native meta for setting up playtest renet client");
             return;
         };
 
         // launch game clients
         let mut client_processes = Vec::default();
-        for _ in 0..num_clients {
-            let Ok(token) = new_connect_token_native(meta, get_systime(), start_info.client_id) else {
+        for start_info in report.start_infos {
+            let Some(token) = meta.new_connect_token(get_systime(), start_info.client_id) else {
                 tracing::error!("failed producing connect token for playtest");
                 continue;
             };
 
-            let Some(start_info) = report.start_infos.pop() else {
-                tracing::error!("missing start info for playtest");
-                continue;
-            };
-
-            let Ok(token_ser) = serde_json::to_string(&token) else {
+            let Ok(token_ser) = serde_json::to_string(&ser_msg(&token)) else {
                 tracing::error!(game_id, "failed serializing server connect token for playtest game client");
                 continue;
             };
 
-            let Ok(start_info_ser) = serde_json::to_string(&start_info) else {
+            let Ok(start_info_ser) = serde_json::to_string(&ser_msg(&start_info)) else {
                 tracing::error!(game_id, "failed serializing game start info for playtest game client");
                 continue;
             };
@@ -151,10 +141,10 @@ fn run_playtest(
 
         // wait for clients to close
         // - we must wait for client closure to avoid zombie process leak
-        for mut child_process in client_processes {
-            if client_instance.wait().await.is_err() {
+        for mut client_process in client_processes {
+            if client_process.wait().await.is_err() {
                 tracing::warn!("playtest client instance closed with error");
-                client_instance.kill().await;
+                let _ = client_process.kill().await;
             }
         }
 
@@ -235,7 +225,7 @@ fn main()
     };
 
     // run it
-    run_playtest(num_clients, launch_pack, game_instance_path, game_client_path);
+    run_playtest(launch_pack, game_instance_path, game_client_path);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

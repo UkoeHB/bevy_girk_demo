@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy_girk_backend_public::*;
 use bevy_girk_game_instance::*;
-use bevy_girk_utils::*;
+use bevy_girk_wiring_common::ConnectionType;
 use bevy_replicon::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use rand::seq::SliceRandom;

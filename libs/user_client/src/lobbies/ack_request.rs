@@ -3,6 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_cobweb::prelude::*;
+use bevy_girk_backend_public::{HostUserClient, UserToHostMsg};
 
 use crate::*;
 

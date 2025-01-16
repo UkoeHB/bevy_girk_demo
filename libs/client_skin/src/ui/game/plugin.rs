@@ -1,22 +1,30 @@
 use bevy::prelude::*;
-use bevy_kot::prelude::*;
-use bevy_lunex::prelude::*;
+use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
+use bevy_girk_client_fw::ClientAppState;
+use bevy_girk_utils::Sender;
+use bevy_renet2::prelude::RenetClient;
+use client_core::ClientState;
+use game_core::PlayerInput;
+use wiring_game_instance::{ClientContext, ClientType};
 
+use super::*;
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn edit_header(mut h: UiSceneHandle)
 {
-    h.get("name_shim::name").update(
-        |id: UpdateId, mut e: TextEditor, context: Res<ClientContext>| match context.client_type() {
-            ClientType::Player => write_text!(e, *id, "Player {}", context.id().get()),
-            ClientType::Watcher => write_text!(e, *id, "Watcher {}", context.id().get()),
-        },
-    );
+    h.get("name_shim::name")
+        .update(|id: TargetId, mut e: TextEditor, context: Res<ClientContext>| {
+            match context.client_type() {
+                ClientType::Player => write_text!(e, *id, "Player {}", context.id().get()),
+                ClientType::Watcher => write_text!(e, *id, "Watcher {}", context.id().get()),
+            };
+        });
     h.get("fps::text").update_on(
         resource_mutation::<FpsTracker>(),
-        |id: UpdateId, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
+        |id: TargetId, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
             // only refresh once per second
             if fps.current_time().as_secs() <= fps.previous_time().as_secs() {
                 return;
@@ -47,7 +55,7 @@ fn edit_footer(mut h: UiSceneHandle)
     // Disconnect button. Lets you test in-game disconnects.
     h.get("disconnect_button")
         .update(
-            |id: UpdateId, mut c: Commands, ps: PseudoStateParam, context: Res<ClientContext>| {
+            |id: TargetId, mut c: Commands, ps: PseudoStateParam, context: Res<ClientContext>| {
                 if context.client_type() != ClientType::Player {
                     ps.try_disable(&mut c, *id);
                 }
@@ -74,7 +82,7 @@ fn build_ui(mut c: Commands, mut s: SceneBuilder)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct GameUiPlugin;
+pub(crate) struct GameUiPlugin;
 
 impl Plugin for GameUiPlugin
 {

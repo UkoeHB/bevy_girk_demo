@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_girk_backend_public::{HostUserClient, UserToHostRequest};
+use bevy_girk_utils::ser_msg;
+use bevy_girk_wiring_common::ConnectionType;
+use wiring_backend::{ClickLobbyConfig, ClickLobbyContents, ClickLobbyMemberType};
 
 use crate::*;
 
@@ -129,7 +133,6 @@ impl Default for MakeLobbyData
             member_type: ClickLobbyMemberType::Player,
             pwd: String::default(),
             config: ClickLobbyConfig { max_players: 1, max_watchers: 0 },
-            last_req: None,
         }
     }
 }
@@ -145,7 +148,7 @@ pub(crate) struct MakeLobbyPlugin;
 
 impl Plugin for MakeLobbyPlugin
 {
-    fn build(&self, _app: &mut App)
+    fn build(&self, app: &mut App)
     {
         app.init_react_resource::<MakeLobbyData>();
     }

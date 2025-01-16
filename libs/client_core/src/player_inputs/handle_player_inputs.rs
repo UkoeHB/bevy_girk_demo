@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_kot_utils::*;
+use bevy_girk_client_fw::ClientSender;
+use bevy_girk_utils::Receiver;
 use game_core::*;
+use wiring_game_instance::{ClientContext, ClientType};
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn send_client_request(In(msg): In<ClientRequest>, mut sender: ClientRequestSender)
+fn send_client_request(In(msg): In<ClientRequest>, mut sender: ClientSender)
 {
     sender.request(msg);
 }
@@ -41,7 +43,7 @@ fn process_player_inputs(
 fn handle_input(world: &mut World, input: PlayerInput, state: ClientState)
 {
     match state {
-        ClientState::Play => world.syscall(ClientRequest::PlayerInput(player_input), send_client_request),
+        ClientState::Play => world.syscall(ClientRequest::PlayerInput(input), send_client_request),
         _ => {
             tracing::warn!(?input, "ignoring invalid input sent during {state:?}");
         }
@@ -57,7 +59,7 @@ pub(crate) fn handle_player_inputs(world: &mut World)
         return;
     };
 
-    process_player_inputs(world, state, handle_input);
+    process_player_inputs(world, **state, handle_input);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

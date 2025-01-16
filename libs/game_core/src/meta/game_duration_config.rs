@@ -25,7 +25,7 @@ impl GameDurationConfig
         GameDurationConfig { prep_ticks, game_ticks }
     }
 
-    pub fn expected_mode(&self, game_tick: Tick) -> GameState
+    pub fn expected_state(&self, game_tick: Tick) -> GameState
     {
         // prep
         if *game_tick < self.prep_ticks {

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_girk_client_fw::*;
-use bevy_kot_utils::*;
+use bevy_girk_utils::Receiver;
+use game_core::PlayerInput;
 
 use crate::*;
 

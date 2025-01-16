@@ -3,8 +3,12 @@
 
 use std::time::Duration;
 
+use bevy::prelude::*;
+use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_instance::*;
+use bevy_girk_game_instance::GameStartInfo;
 use bevy_girk_utils::*;
+use bevy_girk_wiring_common::ServerConnectToken;
 use clap::Parser;
 use wiring_client_instance::*;
 
@@ -13,10 +17,12 @@ use wiring_client_instance::*;
 #[derive(Parser, Debug)]
 struct GameClientCli
 {
+    /// ServerConnectToken
     #[arg(short = 'T')]
-    token: ServerConnectToken,
+    token: Vec<u8>,
+    /// GameStartInfo
     #[arg(short = 'S')]
-    start_info: GameStartInfo,
+    start_info: Vec<u8>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -47,8 +53,8 @@ fn main()
 
     // cli
     let args = GameClientCli::parse();
-    let mut token = Some(args.token);
-    let mut start_info = Some(args.start_info);
+    let mut token: Option<ServerConnectToken> = Some(deser_msg(&args.token).unwrap_or_default());
+    let mut start_info: Option<GameStartInfo> = Some(deser_msg(&args.start_info).unwrap_or_default());
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();

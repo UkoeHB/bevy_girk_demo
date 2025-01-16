@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 
 use super::*;
-use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -10,9 +9,9 @@ use crate::*;
 ///
 /// Prerequisites:
 /// - Use `make_game_client_core()` to set up a client app.
-pub struct ClickClientSkinPlugin;
+pub struct ClientSkinPlugin;
 
-impl Plugin for ClickClientSkinPlugin
+impl Plugin for ClientSkinPlugin
 {
     fn build(&self, app: &mut App)
     {

@@ -14,6 +14,6 @@ pub use game_rand::*;
 pub use meta::*;
 pub use plugin::*;
 pub use sets::*;
-pub use setup::*;
+pub(crate) use setup::*;
 pub use states::*;
 pub use ticks::*;

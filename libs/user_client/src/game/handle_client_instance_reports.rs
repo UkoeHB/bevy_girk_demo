@@ -14,7 +14,7 @@ pub(super) fn handle_token_req(
     starter: ReactRes<ClientStarter>,
     cached: Res<CachedConnectToken>,
     request: PendingRequestParam<ConnectTokenRequest>,
-) -> WarnErr
+)
 {
     // sanity check
     if Some(game_id) != starter.game_id() {
@@ -39,18 +39,14 @@ pub(super) fn handle_token_req(
     let new_req = client.request(UserToHostRequest::GetConnectToken { id: game_id });
 
     // save request
-    let target_entity = request.entity()?;
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    request.add_request(&mut c, new_req);
 
     tracing::info!("requested new connect token from host server for game {game_id}");
-
-    OK
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_ended(In(game_id): In<u64>, mut c: Commands, mut starter: ReactRes<ClientStarter>)
+fn handle_client_ended(In(game_id): In<u64>, mut c: Commands, mut starter: ReactResMut<ClientStarter>)
 {
     tracing::info!("client instance ended for game {game_id}");
     starter.get_mut(&mut c).clear(game_id);
@@ -58,7 +54,7 @@ fn handle_client_ended(In(game_id): In<u64>, mut c: Commands, mut starter: React
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_client_aborted(In(game_id): In<u64>, mut c: Commands, mut starter: ReactRes<ClientStarter>)
+fn handle_client_aborted(In(game_id): In<u64>, mut c: Commands, mut starter: ReactResMut<ClientStarter>)
 {
     tracing::warn!("client instance aborted for game {game_id}");
     starter.get_mut(&mut c).clear(game_id);
@@ -69,7 +65,7 @@ fn handle_client_aborted(In(game_id): In<u64>, mut c: Commands, mut starter: Rea
 fn handle_client_instance_reports(mut c: Commands, mut events: EventReader<ClientInstanceReport>)
 {
     for report in events.read() {
-        match report {
+        match report.clone() {
             ClientInstanceReport::RequestConnectToken(game_id) => c.syscall(game_id, handle_token_req),
             ClientInstanceReport::Ended(game_id) => c.syscall(game_id, handle_client_ended),
             ClientInstanceReport::Aborted(game_id) => c.syscall(game_id, handle_client_aborted),

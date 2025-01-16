@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::*;
 use bevy_girk_game_fw::*;
+use client_core::ClientLogicSet;
 
 use crate::*;
 
@@ -22,7 +24,7 @@ fn add_loadscreen(mut c: Commands, mut s: SceneBuilder)
         h.get("gutter::bar").update_on(
             broadcast::<RefreshLoadBar>(),
             |//
-                    id: UpdateId,
+                    id: TargetId,
                     mut prev: Local<f32>,
                     mut c: Commands,
                     progress: Query<&GameInitProgress>,//

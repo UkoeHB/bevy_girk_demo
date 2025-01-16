@@ -19,3 +19,4 @@ bevy_girk_game_fw   = { workspace = true }
 bevy_girk_utils     = { workspace = true }
 
 game_core  = { path = "../game_core" }
+wiring_game_instance  = { path = "../wiring_game_instance" }

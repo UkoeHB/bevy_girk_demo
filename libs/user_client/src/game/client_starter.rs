@@ -1,8 +1,11 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
+use bevy_girk_client_fw::{ClientAppState, ClientFwConfig};
 use bevy_girk_client_instance::ClientInstanceCommand;
 use bevy_girk_game_instance::GameStartInfo;
 use bevy_girk_wiring_common::ServerConnectToken;
+use client_core::ClientState;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -20,7 +23,7 @@ fn try_start_game(mut c: Commands, mut cached: ResMut<CachedConnectToken>, mut s
     let Some(game_id) = cached.game_id.take() else { return };
     let Some(token) = cached.token.take() else { return };
     if Some(game_id) != starter.game_id() {
-        tracing::warn!("discarding cached connect token, starter game id {} doesn't match cached game id {}",
+        tracing::warn!("discarding cached connect token, starter game id {:?} doesn't match cached game id {}",
             starter.game_id(), game_id);
     }
     if let Err(err) = starter.get_mut(&mut c).start(&mut c, token) {

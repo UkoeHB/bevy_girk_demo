@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
+use bevy_girk_client_fw::ClientFwConfig;
+use bevy_girk_client_instance::ClientInstanceCommand;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
-use bevy_girk_utils::*;
+use bevy_girk_wiring_common::ServerConnectToken;
 
 use crate::*;
 
@@ -185,7 +187,7 @@ pub(super) fn handle_game_start(
     // if we are already running this game, then send in the connect token
     // - it's likely that the game client was also disconnected, but failed to request a new connect token since
     //   the user client was disconnected
-    let current_game_id = config.and_then(|c| c.game_id());
+    let current_game_id = config.map(|c| c.game_id());
     if Some(game_id) == current_game_id {
         tracing::info!("received game start for game {game_id} that is already running, discarding new connect \
             token");

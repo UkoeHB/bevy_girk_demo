@@ -1,3 +1,3 @@
 mod plugin;
 
-pub(super) use plugin::*;
+pub(crate) use plugin::*;

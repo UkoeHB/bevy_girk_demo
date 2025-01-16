@@ -1,17 +1,12 @@
-use std::fmt::Write;
-
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
-use bevy_girk_backend_public::*;
-use bevy_girk_utils::*;
-use wiring_backend::*;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) fn build_make_lobby_popup(_: ActivateMakeLobbyPopup, h: &mut UiSceneHandle)
+pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiSceneHandle)
 {
     // Reactors for auto-closing the popup.
     h.reactor(
@@ -30,6 +25,7 @@ pub(super) fn build_make_lobby_popup(_: ActivateMakeLobbyPopup, h: &mut UiSceneH
                 RequestEnded::Failure => {
                     tracing::warn!("MakeLobby request failed");
                 }
+                _ => ()
             }
             DONE
         },

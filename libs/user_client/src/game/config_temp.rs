@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
+use bevy_girk_wiring_common::GameServerSetupConfig;
 use game_core::*;
 use wiring_game_instance::*;
 
@@ -37,13 +38,13 @@ pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
     let game_fw_config = GameFwConfig::new(game_ticks_per_sec, max_init_ticks, game_over_ticks);
 
     // game duration config
-    let game_duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
+    let duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
 
     // click game factory config
     let game_factory_config = ClickGameFactoryConfig {
         server_setup_config,
         game_fw_config,
-        game_duration_config,
+        duration_config,
         resend_time: Duration::from_millis(300),
     };
 

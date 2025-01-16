@@ -1,5 +1,10 @@
 use bevy::prelude::*;
+use bevy_girk_game_fw::*;
+use bevy_girk_utils::apply_state_transitions;
+use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
+
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -41,7 +46,7 @@ fn set_game_end_flag(
     let game_over_report = ClickGameOverReport { final_game_tick: **game_tick, player_reports };
 
     // serialize it
-    let game_over_report_final = GameOverReport::new(ser_msg(&game_over_report));
+    let game_over_report_final = GameOverReport::new(&game_over_report);
 
     // set the game end flag
     game_end_flag.set(game_over_report_final);
@@ -51,13 +56,9 @@ fn set_game_end_flag(
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Notify all clients of the current game state.
-pub(crate) fn notify_game_state_all(
-    game_state: Res<State<GameState>>,
-    mut sender: GameMessageSender,
-    attributes: ClientAttributes,
-)
+pub(crate) fn notify_game_state_all(game_state: Res<State<GameState>>, mut sender: GameSender)
 {
-    sender.send(&attributes, GameMsg::CurrentGameState(**game_state), vis!(Global));
+    sender.send_to_all(GameMsg::CurrentGameState(**game_state));
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -74,15 +75,10 @@ pub(crate) fn get_game_state(game_state: Res<State<GameState>>) -> GameState
 pub(crate) fn notify_game_state_single(
     In(client_id): In<ClientId>,
     game_state: Res<State<GameState>>,
-    mut sender: GameMessageSender,
-    attributes: ClientAttributes,
+    mut sender: GameSender,
 )
 {
-    sender.send(
-        &attributes,
-        GameMsg::CurrentGameState(**game_state),
-        vis!(Client(client_id)),
-    );
+    sender.send_to_client(GameMsg::CurrentGameState(**game_state), client_id.get());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -116,7 +112,7 @@ impl Plugin for GameStatePlugin
             .add_systems(
                 Update,
                 (
-                    // determine which game mode the previous tick was in and set it
+                    // determine which game state the previous tick was in and set it
                     update_game_state,
                     apply_state_transitions,
                 )
@@ -124,9 +120,9 @@ impl Plugin for GameStatePlugin
                     .in_set(GameSet::PostInit)
                     .in_set(GameStateUpdateSet),
             )
-            .add_systems(OnEnter(GameState::Init), notify_game_mode_all)
-            .add_systems(OnEnter(GameState::Prep), notify_game_mode_all)
-            .add_systems(OnEnter(GameState::Play), notify_game_mode_all)
+            .add_systems(OnEnter(GameState::Init), notify_game_state_all)
+            .add_systems(OnEnter(GameState::Prep), notify_game_state_all)
+            .add_systems(OnEnter(GameState::Play), notify_game_state_all)
             .add_systems(OnEnter(GameState::GameOver), (notify_game_state_all, set_game_end_flag));
     }
 }

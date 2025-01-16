@@ -8,14 +8,11 @@ test    = false
 doctest = false
 
 [dependencies]
-bevy           = { workspace = true }
-bevy_cobweb    = { workspace = true }
-bevy_replicon  = { workspace = true }
-serde          = { workspace = true }
-serde_json     = { workspace = true }
-tracing        = { workspace = true }
+bevy = { workspace = true }
+tracing = { workspace = true }
 
 bevy_girk_client_instance = { workspace = true }
+bevy_girk_client_fw       = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
@@ -24,4 +21,5 @@ bevy_girk_wiring_client   = { workspace = true, features = ["memory_transport"] 
 
 client_core          = { path = "../client_core" }
 client_skin          = { path = "../client_skin" }
+game_core            = { path = "../game_core" }
 wiring_game_instance = { path = "../wiring_game_instance" }

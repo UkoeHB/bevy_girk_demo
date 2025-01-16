@@ -3,7 +3,7 @@ use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_simplenet::ClientReport;
 
-use crate::*;
+use super::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ fn handle_host_incoming(w: &mut World)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(SystemSet, Debug, Hash, PartialEq)]
+#[derive(SystemSet, Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub(super) struct HandleHostIncomingSet;
 
 //-------------------------------------------------------------------------------------------------------------------

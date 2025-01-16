@@ -7,7 +7,7 @@ use crate::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player report for the game over report.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClickPlayerReport
 {
     /// Client id within the game.
@@ -19,7 +19,7 @@ pub struct ClickPlayerReport
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Report emitted at the end of a game.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClickGameOverReport
 {
     /// The last game tick that elapsed before this report was created.

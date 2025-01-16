@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_cobweb::prelude::*;
 use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
@@ -7,7 +6,7 @@ use serde::{Deserialize, Serialize};
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player id component (wraps the player's client id).
-#[derive(Component, Default, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Component, Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct PlayerId
 {
     pub id: ClientId,
@@ -66,7 +65,7 @@ impl Default for PlayerState
     fn default() -> Self
     {
         Self {
-            id: Default::default(),
+            id: PlayerId { id: ClientId::new(1) },
             name: Default::default(),
             score: Default::default(),
             replicate: Default::default(),

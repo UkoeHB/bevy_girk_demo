@@ -1,13 +1,10 @@
 use std::collections::{BTreeSet, HashMap};
-use std::fmt::Write;
 
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_girk_game_fw::*;
+use bevy_cobweb_ui::prelude::*;
 use client_core::*;
 use game_core::*;
-
-use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -33,6 +30,11 @@ impl Scoreboard
     fn get(&self, idx: usize) -> Result<Entity, ()>
     {
         self.ordered.iter().nth(idx).map(|(_, e)| *e).ok_or(())
+    }
+
+    fn num_players(&self) -> usize
+    {
+        self.entries.len()
     }
 }
 
@@ -73,10 +75,10 @@ pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
     h.update_on(
         resource_mutation::<Scoreboard>(),
         |//
-            id: UpdateId,
+            id: TargetId,
             mut num_entries: Local<usize>,
             mut c: Commands,
-            mut s: ResMut<SceneLoader>,
+            mut s: SceneBuilder,
             scoreboard: ReactRes<Scoreboard>,
             //
         |
@@ -91,8 +93,8 @@ pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
                 // The entry text will update whenever the scoreboard changes.
                 // - All entries should update in case the player they are assigned to changes.
                 let idx = *num_entries;
-                let mut player_text;
-                let mut score_text;
+                let mut player_text = Entity::PLACEHOLDER;
+                let mut score_text = Entity::PLACEHOLDER;
                 // These are separate scenes because we are using grid layout.
                 builder.spawn_scene_and_edit(rank_item, &mut s, |h| {
                     h.get("text")
@@ -109,14 +111,14 @@ pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
                 builder.update_on(
                     resource_mutation::<Scoreboard>(),
                     move |//
-                        _: UpdateId,
+                        _: TargetId,
                         mut e: TextEditor,
                         scoreboard: ReactRes<Scoreboard>,
                         players: Query<(&PlayerName, &PlayerScore)>
                         //
                     |
                     {
-                        let Some((name, score)) = players.get(scoreboard.get_player(idx)?)?;
+                        let (name, score) = players.get(scoreboard.get(idx)?)?;
                         write_text!(e, player_text, "{}", name.name.as_str());
                         write_text!(e, score_text, "{}", score.score());
                         DONE

@@ -1,4 +1,9 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy::time::common_conditions::on_timer;
+use bevy_cobweb::prelude::*;
+use bevy_girk_backend_public::HostUserClient;
 
 use crate::*;
 
@@ -8,7 +13,6 @@ fn try_reconnect(
     mut c: Commands,
     constructor: Res<HostClientConstructor>,
     mut status: ReactResMut<ConnectionStatus>,
-    time: Res<Time>,
 )
 {
     if *status != ConnectionStatus::Dead {
@@ -65,7 +69,7 @@ pub(crate) enum ConnectionStatus
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(SystemSet, Debug, Hash, PartialEq)]
+#[derive(SystemSet, Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub(super) struct HostClientConnectSet;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -76,7 +80,7 @@ impl Plugin for HostClientConnectPlugin
 {
     fn build(&self, app: &mut App)
     {
-        let timer_configs = app.world.resource::<TimerConfigs>();
+        let timer_configs = app.world().resource::<TimerConfigs>();
         let refresh = Duration::from_millis(timer_configs.host_reconstruct_loop_ms);
 
         app.insert_react_resource(ConnectionStatus::Dead)

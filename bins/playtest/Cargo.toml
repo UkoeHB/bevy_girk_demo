@@ -22,10 +22,10 @@ tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "trac
 tracing            = { workspace = true }
 tokio              = { workspace = true, default-features = false, features = ["process"] }
 
-bevy_girk_client_instance = { workspace = true }
-bevy_girk_game_fw         = { workspace = true }
-bevy_girk_game_instance   = { workspace = true, features = ["process"] }
-bevy_girk_utils           = { workspace = true }
+bevy_girk_game_fw = { workspace = true }
+bevy_girk_game_instance = { workspace = true, features = ["process"] }
+bevy_girk_utils = { workspace = true }
+bevy_girk_wiring_common = { workspace = true }
 
 game_core            = { path = "../../libs/game_core" }
 wiring_backend       = { path = "../../libs/wiring_backend" }

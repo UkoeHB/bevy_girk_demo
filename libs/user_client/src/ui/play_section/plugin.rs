@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 
 use super::*;
@@ -6,7 +7,7 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) fn build_play_section(h: &mut UiSceneHandle)
+pub(crate) fn build_play_section(h: &mut UiSceneHandle)
 {
     // TODO: find a better abstraction for managing page navigation ??
     h.update_on(
@@ -15,12 +16,15 @@ pub(super) fn build_play_section(h: &mut UiSceneHandle)
             c.get_entity(*id)?.despawn_descendants();
             match display.is_set() {
                 true => {
-                    c.ui_builder(*id)
-                        .spawn_scene_and_edit(("ui.user", "lobby_display"), build_lobby_display);
+                    c.ui_builder(*id).spawn_scene_and_edit(
+                        ("ui.user", "lobby_display"),
+                        &mut s,
+                        build_lobby_display,
+                    );
                 }
                 false => {
                     c.ui_builder(*id)
-                        .spawn_scene_and_edit(("ui.user", "lobby_list"), build_lobby_list);
+                        .spawn_scene_and_edit(("ui.user", "lobby_list"), &mut s, build_lobby_list);
                 }
             }
             DONE
@@ -30,7 +34,7 @@ pub(super) fn build_play_section(h: &mut UiSceneHandle)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct UiPlaySectionPlugin;
+pub(crate) struct UiPlaySectionPlugin;
 
 impl Plugin for UiPlaySectionPlugin
 {
