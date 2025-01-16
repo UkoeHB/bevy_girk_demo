@@ -74,11 +74,13 @@ pub(super) fn build_make_lobby_popup(_: ActivateMakeLobbyPopup, h: &mut UiSceneH
 
     // Popup buttons
     h.edit("make_button", |h| {
+        setup_request_tracker::<MakeLobby>(h);
+
         // This is where the magic happens.
         h.on_pressed(make_a_lobby);
 
         // Disable button when it can't be used.
-        h.update_on(
+        h.enable_if(
             (
                 resource_mutation::<ConnectionStatus>(),
                 resource_mutation::<MakeLobbyData>(),
@@ -86,27 +88,16 @@ pub(super) fn build_make_lobby_popup(_: ActivateMakeLobbyPopup, h: &mut UiSceneH
                 broadcast::<RequestStarted<MakeLobby>>(),
                 broadcast::<RequestEnded<MakeLobby>>(),
             ),
-            |//
-                id: TargetId,
-                mut c: Commands,
-                ps: PseudoStateParam,
-                status: ReactRes<ConnectionStatus>,
-                data: ReactRes<MakeLobbyData>,
-                make_lobby: Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
-                lobby_display: ReactResMut<LobbyDisplay>//
-            | {
+            |(status, data, make_lobby, lobby_display): &(
+                ReactRes<ConnectionStatus>,
+                ReactRes<MakeLobbyData>,
+                PendingRequestParam<MakeLobby>,
+                ReactResMut<LobbyDisplay>,
+            )| {
                 let enable = (*status == ConnectionStatus::Connected) || data.is_single_player();
                 // if LobbyDisplay is hosted then we are in a lobby on the host server
-                let enable = enable && make_lobby.is_empty() && !lobby_display.is_hosted();
-
-                match enable {
-                    true => {
-                        ps.try_enable(&mut c, *id);
-                    }
-                    false => {
-                        ps.try_disable(&mut c, *id);
-                    }
-                }
+                let enable = enable && !make_lobby.has_request() && !lobby_display.is_hosted();
+                enable
             },
         );
     });

@@ -53,8 +53,8 @@ use bevy::window::*;
 use bevy::winit::UpdateMode;
 use bevy_cobweb_ui::prelude::*;
 
-use crate::*;
 use super::*;
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -114,7 +114,10 @@ fn loadstate_progress(state: Res<State<LoadState>>, progress: Res<LoadProgress>)
     };
     let (pending, total) = progress.loading_progress();
 
-    Progress{ done: state + total.saturating_sub(pending), total: 1 + total }
+    Progress {
+        done: state + total.saturating_sub(pending),
+        total: 1 + total,
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -145,7 +148,7 @@ impl Plugin for ClickUserClientPlugin
                 Update,
                 loadstate_progress
                     .track_progress::<ClientAppState>()
-                    .run_if(in_state(ClientAppState::Loading))
+                    .run_if(in_state(ClientAppState::Loading)),
             );
     }
 }

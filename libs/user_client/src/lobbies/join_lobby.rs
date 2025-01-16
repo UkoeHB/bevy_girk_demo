@@ -8,13 +8,13 @@ use crate::*;
 pub(crate) fn send_join_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
-    join_lobby: Query<Entity, (With<JoinLobby>, Without<React<PendingRequest>>)>,
+    join_lobby: PendingRequestParam<JoinLobby>,
     mut data: ReactResMut<JoinLobbyData>,
 )
 {
     // get request entity
     // - do nothing if there is already a pending request
-    let Ok(target_entity) = join_lobby.get_single() else {
+    if join_lobby.has_request() {
         tracing::warn!("ignoring join lobby request because a request is already pending");
         return;
     };
@@ -38,8 +38,7 @@ pub(crate) fn send_join_lobby_request(
 
     // save request
     let request = PendingRequest::new(new_req);
-    c.react().insert(target_entity, request.clone());
-    data.get_noreact().last_req = Some(request);
+    join_lobby.add_request(&mut c, request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

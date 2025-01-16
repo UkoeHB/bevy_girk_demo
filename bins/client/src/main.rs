@@ -87,7 +87,10 @@ fn main()
             url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(), // TODO: use CLI or auth server to get this?
             bevy_simplenet::AuthRequest::None { client_id }, // TODO: use auth tokens and an auth server
             bevy_simplenet::ClientConfig::default(),
-            HostUserConnectMsg::new(), // auto-detects connection type for games (udp/webtransport/websockets)
+            // auto-detects connection type for games (udp/webtransport/websockets)
+            // TODO: need a workaround for firefox v133-135(?) which has broken webtransport (currently will
+            // reconnect cycle infinitely)
+            HostUserConnectMsg::new(),
         )
     };
 

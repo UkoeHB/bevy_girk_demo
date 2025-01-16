@@ -1,4 +1,5 @@
 mod ack_request_popup;
+mod cobweb_ext;
 mod home_section;
 mod play_section;
 mod plugin;
@@ -7,6 +8,7 @@ mod settings_section;
 mod sidebar;
 
 pub(self) use ack_request_popup::*;
+pub(self) use cobweb_ext::*;
 pub(self) use home_section::*;
 pub(crate) use play_section::*;
 pub(super) use plugin::*;

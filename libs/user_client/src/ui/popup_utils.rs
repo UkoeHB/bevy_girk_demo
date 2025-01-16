@@ -5,7 +5,7 @@ use bevy_cobweb_ui::prelude::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Creates a reactor system that ties opening and closing a popup to a reactive resource `T`.
-pub(crate) fn manage_popup<T: ReactResource, R: CobwebResult>(
+pub(crate) fn setup_reactres_managed_popup<T: ReactResource, R: CobwebResult>(
     should_open: impl Fn(&T) -> bool,
     scene_ref: (&'static str, &'static str),
     build_fn: fn(&mut UiSceneHandle) -> R

@@ -9,14 +9,14 @@ pub(crate) fn leave_current_lobby(
     mut c: Commands,
     client: Res<HostUserClient>,
     mut lobby: ReactResMut<LobbyDisplay>,
-    leave_lobby: Query<Entity, (With<LeaveLobby>, Without<React<PendingRequest>>)>,
+    leave_lobby: PendingRequestParam<LeaveLobby>,
 )
 {
     // check for existing request
-    let Ok(target_entity) = leave_lobby.get_single() else {
+    if leave_lobby.has_request() {
         tracing::warn!("ignoring leave lobby request because a request is already pending");
         return;
-    };
+    }
 
     // check if we are in a lobby
     let Some(lobby_id) = lobby.lobby_id() else {
@@ -41,8 +41,7 @@ pub(crate) fn leave_current_lobby(
             let new_req = client.request(UserToHostRequest::LeaveLobby { id: lobby_id });
 
             // save request
-            c.react()
-                .insert(target_entity, PendingRequest::new(new_req));
+            leave_lobby.add_request(&mut c, new_req);
         }
     }
 }
@@ -55,14 +54,14 @@ pub(crate) fn start_current_lobby(
     mut lobby: ReactResMut<LobbyDisplay>,
     starter: ReactRes<ClientStarter>,
     config: Option<Res<ClientFwConfig>>,
-    launch_lobby: Query<Entity, (With<LaunchLobby>, Without<React<PendingRequest>>)>,
+    launch_lobby: PendingRequestParam<LaunchLobby>,
 )
 {
     // check for existing request
-    let Ok(target_entity) = launch_lobby.get_single() else {
+    if launch_lobby.has_request() {
         tracing::warn!("ignoring start lobby request because a request is pending");
         return;
-    };
+    }
 
     // check if we are in a lobby
     let Some(lobby_id) = lobby.lobby_id() else {
@@ -111,8 +110,7 @@ pub(crate) fn start_current_lobby(
             let new_req = client.request(UserToHostRequest::LaunchLobbyGame { id: lobby_id });
 
             // save request
-            c.react()
-                .insert(target_entity, PendingRequest::new(new_req));
+            launch_lobby.add_request(&mut c, new_req);
         }
     }
 }

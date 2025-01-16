@@ -4,7 +4,7 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup_lobby_tag_entities(mut c: Commands)
+fn setup_request_entities(mut c: Commands)
 {
     spawn_request_entity(&mut c, JoinLobby);
     spawn_request_entity(&mut c, LobbySearch);
@@ -44,7 +44,7 @@ impl Plugin for LobbiesPlugin
             .add_plugins(LobbyListPlugin)
             .add_plugins(JoinLobbyPlugin)
             .add_plugins(MakeLobbyPlugin)
-            .add_systems(PreStartup, setup_lobby_tag_entities);
+            .add_systems(PreStartup, setup_request_entities);
     }
 }
 

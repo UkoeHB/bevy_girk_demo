@@ -9,6 +9,8 @@ const STATUS_CONNECTED_PSEUDOSTATE: PseudoState = PseudoState::Custom(SmolStr::n
 const STATUS_CONNECTING_PSEUDOSTATE: PseudoState = PseudoState::Custom(SmolStr::new_static("Connecting"));
 const STATUS_DEAD_PSEUDOSTATE: PseudoState = PseudoState::Custom(SmolStr::new_static("Dead"));
 
+const IN_LOBBY_PSEUDOSTATE: PseudoState = PseudoState::Custom(SmolStr::new_static("InLobby"));
+
 //-------------------------------------------------------------------------------------------------------------------
 
 pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
@@ -34,7 +36,17 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
             h.react().entity_event(id, Select);
         })
         .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
-            h.get("text").update_text("Play");
+            h.get("text").update_on(
+                resource_mutation::<LobbyDisplay>(),
+                |id: TargetId, mut e: TextEditor, display: ReactRes<LobbyDisplay>| match display.is_set() {
+                    true => {
+                        write_text!(e, *id, "In Lobby");
+                    }
+                    false => {
+                        write_text!(e, *id, "Play");
+                    }
+                },
+            );
             h.on_select(|mut c: Commands, mut s: SceneBuilder| {
                 c.get_entity(content_id)?.despawn_descendants();
 
@@ -46,6 +58,19 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
 
                 DONE
             });
+            h.update_on(
+                resource_mutation::<LobbyDisplay>(),
+                |id: TargetId, mut c: Commands, ps: PseudoStateParam, display: ReactRes<LobbyDisplay>| {
+                    match display.is_set() {
+                        true => {
+                            ps.try_insert(&mut c, *id, IN_LOBBY_PSEUDOSTATE.clone());
+                        }
+                        false => {
+                            ps.try_remove(&mut c, *id, IN_LOBBY_PSEUDOSTATE.clone());
+                        }
+                    }
+                },
+            );
         })
         .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
             h.get("text").update_text("Settings");

@@ -13,8 +13,8 @@ pub(super) fn handle_token_req(
     client: Res<HostUserClient>,
     starter: ReactRes<ClientStarter>,
     cached: Res<CachedConnectToken>,
-    request: Query<Entity, (With<ConnectTokenRequest>, Without<React<PendingRequest>>)>,
-)
+    request: PendingRequestParam<ConnectTokenRequest>,
+) -> WarnErr
 {
     // sanity check
     if Some(game_id) != starter.game_id() {
@@ -24,10 +24,10 @@ pub(super) fn handle_token_req(
     }
 
     // check for existing request
-    let Ok(target_entity) = request.get_single() else {
+    if request.has_request() {
         tracing::error!("ignoring client's connect token request because a request is already pending");
         return;
-    };
+    }
 
     // check if we already have an unused token
     if cached.has_token() {
@@ -39,10 +39,13 @@ pub(super) fn handle_token_req(
     let new_req = client.request(UserToHostRequest::GetConnectToken { id: game_id });
 
     // save request
+    let target_entity = request.entity()?;
     c.react()
         .insert(target_entity, PendingRequest::new(new_req));
 
     tracing::info!("requested new connect token from host server for game {game_id}");
+
+    OK
 }
 
 //-------------------------------------------------------------------------------------------------------------------

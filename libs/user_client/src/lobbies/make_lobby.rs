@@ -28,13 +28,13 @@ fn single_player_lobby(owner_id: u128, data: &MakeLobbyData) -> ClickLobbyConten
 fn make_local_lobby(
     mut c: Commands,
     client: Res<HostUserClient>,
-    make_lobby: Query<(), (With<MakeLobby>, With<React<PendingRequest>>)>,
+    make_lobby: PendingRequestParam<MakeLobby>,
     mut lobby_display: ReactResMut<LobbyDisplay>,
     data: ReactRes<MakeLobbyData>,
 )
 {
     // do nothing if there is a pending request
-    if !make_lobby.is_empty() {
+    if make_lobby.has_request() {
         tracing::warn!("ignoring make local lobby request because a multiplayer request is pending");
         return;
     };
@@ -61,13 +61,13 @@ fn make_local_lobby(
 fn send_make_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
-    make_lobby: Query<Entity, (With<MakeLobby>, Without<React<PendingRequest>>)>,
+    make_lobby: PendingRequestParam<MakeLobby>,
     mut data: ReactResMut<MakeLobbyData>,
 )
 {
     // get request entity
     // - do nothing if there is already a pending request
-    let Ok(target_entity) = make_lobby.get_single() else {
+    if make_lobby.has_request() {
         tracing::warn!("ignoring make lobby request because a request is already pending");
         return;
     };
@@ -84,8 +84,7 @@ fn send_make_lobby_request(
 
     // save request
     let request = PendingRequest::new(new_req);
-    c.react().insert(target_entity, request.clone());
-    data.get_noreact().last_req = Some(request);
+    make_lobby.add_request(&mut c, request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

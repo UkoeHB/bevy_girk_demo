@@ -8,21 +8,20 @@ use crate::*;
 pub(crate) fn refresh_lobby_list(
     mut c: Commands,
     client: Res<HostUserClient>,
-    lobby_search: Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
+    lobby_search: PendingRequestParam<LobbySearch>,
     lobby_page_req: ReactRes<LobbyPageRequest>,
 )
 {
     // do nothing if there is already a pending lobby search
-    let Ok(target_entity) = lobby_search.get_single() else {
+    if lobby_search.has_request() {
         tracing::debug!("ignoring lobby search request because a search is already pending");
         return;
-    };
+    }
 
     // re-request the last-requested lobby page
     tracing::trace!("refreshing lobby list");
     let new_req = client.request(UserToHostRequest::LobbySearch(lobby_page_req.get().clone()));
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    lobby_search.add_request(&mut c, new_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -30,15 +29,15 @@ pub(crate) fn refresh_lobby_list(
 pub(crate) fn request_lobby_list_now(
     mut c: Commands,
     client: Res<HostUserClient>,
-    lobby_search: Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
+    lobby_search: PendingRequestParam<LobbySearch>,
     mut lobby_page_req: ReactResMut<LobbyPageRequest>,
 )
 {
     // do nothing if there is already a pending lobby search
-    let Ok(target_entity) = lobby_search.get_single() else {
+    if lobby_search.has_request() {
         tracing::debug!("ignoring lobby search request because a search is already pending");
         return;
-    };
+    }
 
     // make request
     // - we request the highest-possible lobby id in order to get the youngest available lobby
@@ -50,8 +49,7 @@ pub(crate) fn request_lobby_list_now(
 
     // save request
     lobby_page_req.get_mut(&mut c).set(req);
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    lobby_search.add_request(&mut c, new_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -59,16 +57,16 @@ pub(crate) fn request_lobby_list_now(
 pub(crate) fn request_lobby_list_next_newer(
     mut c: Commands,
     client: Res<HostUserClient>,
-    lobby_search: Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
+    lobby_search: PendingRequestParam<LobbySearch>,
     mut lobby_page_req: ReactResMut<LobbyPageRequest>,
     lobby_page: ReactRes<LobbyPage>,
 )
 {
     // do nothing if there is already a pending lobby search
-    let Ok(target_entity) = lobby_search.get_single() else {
+    if lobby_search.has_request() {
         tracing::debug!("ignoring lobby search request because a search is already pending");
         return;
-    };
+    }
 
     // make request
     let oldest_id = lobby_page
@@ -94,8 +92,7 @@ pub(crate) fn request_lobby_list_next_newer(
 
     // save request
     lobby_page_req.get_mut(&mut c).set(req);
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    lobby_search.add_request(&mut c, new_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -103,13 +100,13 @@ pub(crate) fn request_lobby_list_next_newer(
 pub(crate) fn request_lobby_list_next_older(
     mut c: Commands,
     client: Res<HostUserClient>,
-    lobby_search: Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
+    lobby_search: PendingRequestParam<LobbySearch>,
     mut lobby_page_req: ReactResMut<LobbyPageRequest>,
     lobby_page: ReactRes<LobbyPage>,
 )
 {
     // do nothing if there is already a pending lobby search
-    let Ok(target_entity) = lobby_search.get_single() else {
+    if lobby_search.has_request() {
         tracing::debug!("ignoring lobby search request because a search is already pending");
         return;
     };
@@ -138,8 +135,7 @@ pub(crate) fn request_lobby_list_next_older(
 
     // save request
     lobby_page_req.get_mut(&mut c).set(req);
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    lobby_search.add_request(&mut c, new_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -147,12 +143,12 @@ pub(crate) fn request_lobby_list_next_older(
 pub(crate) fn request_lobby_list_oldest(
     mut c: Commands,
     client: Res<HostUserClient>,
-    lobby_search: Query<Entity, (With<LobbySearch>, Without<React<PendingRequest>>)>,
+    lobby_search: PendingRequestParam<LobbySearch>,
     mut lobby_page_req: ReactResMut<LobbyPageRequest>,
 )
 {
     // do nothing if there is already a pending lobby search
-    let Ok(target_entity) = lobby_search.get_single() else {
+    if lobby_search.has_request() {
         tracing::warn!("ignoring lobby search request because a request is already pending");
         return;
     };
@@ -167,8 +163,7 @@ pub(crate) fn request_lobby_list_oldest(
 
     // save request
     lobby_page_req.get_mut(&mut c).set(req);
-    c.react()
-        .insert(target_entity, PendingRequest::new(new_req));
+    lobby_search.add_request(&mut c, new_req);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -6,27 +6,27 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_play_overlay(ui: &mut UiBuilder<MainUi>, area: &Widget)
+pub(super) fn build_play_section(h: &mut UiSceneHandle)
 {
-    ui.div_rel(area.end(""), (0., 50.), (0., 100.), add_lobby_display);
-    ui.div_rel(area.end(""), (50., 100.), (0., 100.), add_lobby_list);
+    // TODO: find a better abstraction for managing page navigation ??
+    h.update_on(
+        resource_mutation::<LobbyDisplay>(),
+        |id: TargetId, mut c: Commands, mut s: SceneBuilder, display: ReactRes<LobbyDisplay>| {
+            c.get_entity(*id)?.despawn_descendants();
+            match display.is_set() {
+                true => {
+                    c.ui_builder(*id)
+                        .spawn_scene_and_edit(("ui.user", "lobby_display"), build_lobby_display);
+                }
+                false => {
+                    c.ui_builder(*id)
+                        .spawn_scene_and_edit(("ui.user", "lobby_list"), build_lobby_list);
+                }
+            }
+            DONE
+        },
+    );
 }
-
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(crate) fn add_play_section(ui: &mut UiBuilder<MainUi>, play_button: &Widget, menu_overlay: &Widget)
-{
-    let play_overlay = make_overlay(ui.tree(), menu_overlay, "play_overlay", false);
-
-    ui.div_rel(play_button.end(""), (1.75, 97.25), (6.25, 90.5), |ui, area| {
-        add_play_button(ui, area, &play_overlay)
-    });
-    ui.div(|ui| add_play_overlay(ui, &play_overlay));
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-pub(super) fn build_play_section(h: &mut UiSceneHandle) {}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -36,8 +36,7 @@ impl Plugin for UiPlaySectionPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugins(UiPlayButtonPlugin)
-            .add_plugins(UiLobbyDisplayPlugin)
+        app.add_plugins(UiLobbyDisplayPlugin)
             .add_plugins(UiLobbyListPlugin)
             .add_plugins(UiJoinLobbyPopupPlugin)
             .add_plugins(UiMakeLobbyPopupPlugin);

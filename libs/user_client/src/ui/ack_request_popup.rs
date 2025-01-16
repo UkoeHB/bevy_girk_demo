@@ -47,7 +47,7 @@ impl Plugin for UiAckLobbyPopupPlugin
     {
         app.add_reactor(
             resource_mutation::<AckRequestData>(),
-            manage_popup(
+            setup_reactres_managed_popup(
                 |data: &AckRequestData| data.is_set(),
                 ("ui.user", "ack_popup"),
                 build_ack_popup,

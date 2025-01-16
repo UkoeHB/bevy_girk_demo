@@ -15,22 +15,20 @@ ui.skin as ui
 
 
 #scenes
-"scene"
-    "area1"
-        // lobby view
-
-    "area2"
-        // lobby list
+"play_section"
 
 
-"lobby_view"
+
+"lobby_display"
     "header"
+        // leave button (closes lobby display view and returns the user to the list view)
+        // - "Back to lobby list" in small text above button
+        // title: Current Lobby
 
     "content"
         // needs to be scroll area in case too many members; only show scrollbar if scrollable
 
     "footer"
-        // leave button
         // start game button
         // - only lobby owner can start the game once min number of players is present
         // - maybe add on-hover that indicates why the button is disabled
@@ -47,8 +45,9 @@ ui.skin as ui
             // re-requests the current page
 
 
-        "refreshing_text"
-            // only shows while refreshing
+        "loading_text"
+            // only shows while loading
+            // "Loading..."
 
 
     "footer"
@@ -61,8 +60,7 @@ ui.skin as ui
             // triggers popup
 
 "lobby_list_entry"
-    // lobby id
-    // num members / total members allowed
+    // text
     // join button
 
 
@@ -75,7 +73,7 @@ ui.skin as ui
 
 
 "make_lobby_popup"
-    // "Make Lobby" title
+    // "New Lobby" title
     // password: not yet supported
     // max players buttons (+ "add_player"/- "remove_player")
     // make lobby button
