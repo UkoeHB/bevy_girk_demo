@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use client_core::*;
-use ui_prefab::*;
 
 use crate::*;
 

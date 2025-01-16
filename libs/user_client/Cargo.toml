@@ -24,7 +24,6 @@ bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
 game_core              = { path = "../game_core" }
-ui_prefab              = { path = "../ui_prefab" }
 wiring_backend         = { path = "../wiring_backend" }
 wiring_client_instance = { path = "../wiring_client_instance" }
 wiring_game_instance   = { path = "../wiring_game_instance" }
