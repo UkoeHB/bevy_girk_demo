@@ -269,7 +269,7 @@ impl Plugin for AckRequestPlugin
 {
     fn build(&self, app: &mut App)
     {
-        let timer_configs = app.world.resource::<TimerConfigs>();
+        let timer_configs = app.world().resource::<TimerConfigs>();
         let timeout = Duration::from_millis(timer_configs.ack_request_timeout_ms);
         let timer_buffer = Duration::from_millis(timer_configs.ack_request_timer_buffer_ms);
 

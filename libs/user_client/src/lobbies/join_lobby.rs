@@ -11,7 +11,7 @@ pub(crate) fn send_join_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
     join_lobby: PendingRequestParam<JoinLobby>,
-    mut data: ReactResMut<JoinLobbyData>,
+    data: ReactRes<JoinLobbyData>,
 )
 {
     // get request entity
@@ -58,6 +58,14 @@ pub(crate) struct JoinLobbyData
     pub(crate) member_type: ClickLobbyMemberType,
     /// Cached password.
     pub(crate) pwd: String,
+}
+
+impl JoinLobbyData
+{
+    pub(crate) fn clear(&mut self)
+    {
+        *self = Self::default();
+    }
 }
 
 impl Default for JoinLobbyData

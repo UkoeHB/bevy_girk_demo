@@ -13,7 +13,7 @@ pub(crate) fn build_play_section(h: &mut UiSceneHandle)
     h.update_on(
         resource_mutation::<LobbyDisplay>(),
         |id: TargetId, mut c: Commands, mut s: SceneBuilder, display: ReactRes<LobbyDisplay>| {
-            c.get_entity(*id)?.despawn_descendants();
+            c.get_entity(*id).result()?.despawn_descendants();
             match display.is_set() {
                 true => {
                     c.ui_builder(*id).spawn_scene_and_edit(

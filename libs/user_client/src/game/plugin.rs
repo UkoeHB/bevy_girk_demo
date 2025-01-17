@@ -44,7 +44,7 @@ fn end_client_instance(mut c: Commands)
 fn handle_need_token_request(
     mut c: Commands,
     mut need_token: ResMut<NeedTokenRequest>,
-    config: Option<ClientFwConfig>,
+    config: Option<Res<ClientFwConfig>>,
     starter: ReactRes<ClientStarter>,
 )
 {
@@ -85,7 +85,7 @@ pub(crate) struct ConnectTokenRequest;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct GamePlugin;
+pub(crate) struct GamePlugin;
 
 impl Plugin for GamePlugin
 {

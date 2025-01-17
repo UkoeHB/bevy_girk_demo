@@ -21,9 +21,9 @@ fn try_spawn_reconnecting_overlay(mut c: Commands, mut s: SceneBuilder, starter:
                 resource_mutation::<ClientStarter>(),
                 |id: TargetId, mut c: Commands, starter: ReactRes<ClientStarter>| {
                     if starter.has_starter() {
-                        return;
+                        return DONE;
                     }
-                    c.get_entity(*id)?.despawn_recursive();
+                    c.get_entity(*id).result()?.despawn_recursive();
                     DONE
                 },
             );

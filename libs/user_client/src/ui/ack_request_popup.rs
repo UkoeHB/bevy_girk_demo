@@ -20,14 +20,14 @@ fn build_ack_popup(h: &mut UiSceneHandle) -> WarnErr
         },
     );
     h.get("accept_button")
-        .on_pressed(|mut c: Commands, ps: PseudoStateParam| {
+        .on_pressed(move |mut c: Commands, ps: PseudoStateParam| {
             c.syscall((), send_lobby_ack);
             ps.try_disable(&mut c, accept_id);
             // Don't disable reject button because we can reject after acking if the ack request isn't completely
             // acked yet.
         });
     h.get("reject_button")
-        .on_pressed(|mut c: Commands, ps: PseudoStateParam| {
+        .on_pressed(move |mut c: Commands, ps: PseudoStateParam| {
             c.syscall((), send_lobby_nack);
             ps.try_disable(&mut c, accept_id); // Also disable accept button since nacking takes precedence.
             ps.try_disable(&mut c, reject_id);

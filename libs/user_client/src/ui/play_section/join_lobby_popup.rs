@@ -44,7 +44,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
             match event.try_read()? {
                 RequestEnded::Success => {
                     tracing::info!("JoinLobby request succeeded");
-                    c.get_entity(*id)?.despawn_recursive();
+                    c.get_entity(*id).result()?.despawn_recursive();
                 }
                 RequestEnded::Failure => {
                     tracing::warn!("JoinLobby request failed");
@@ -55,7 +55,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
         },
     );
     h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
-        c.get_entity(*id)?.despawn_recursive();
+        c.get_entity(*id).result()?.despawn_recursive();
         DONE
     });
 
@@ -64,9 +64,9 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
         resource_mutation::<JoinLobbyData>(),
         |id: TargetId, mut e: TextEditor, data: ReactRes<JoinLobbyData>| {
             let contents = data.contents.as_ref().result()?;
-            let id = contents.id % 1_000_000u64;
+            let lobby_id = contents.id % 1_000_000u64;
             let owner_id = contents.owner_id % 1_000_000u128;
-            write_text!(e, *id, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id);
+            write_text!(e, *id, "Lobby: {:0>6} -- Owner: {:0>6}", lobby_id, owner_id);
             OK
         },
     );
@@ -93,7 +93,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
                 broadcast::<RequestStarted<JoinLobby>>(),
                 broadcast::<RequestEnded<JoinLobby>>(),
             ),
-            |(status, join_lobby): &(ReactRes<ConnectionStatus>, PendingRequestParam<JoinLobby>)| {
+            |_: TargetId, status: ReactRes<ConnectionStatus>, join_lobby: PendingRequestParam<JoinLobby>| {
                 let enable = *status == ConnectionStatus::Connected;
                 let enable = enable && !join_lobby.has_request();
                 enable
@@ -102,8 +102,9 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
     });
     let id = h.id();
     h.get("cancel_button")
-        .on_pressed(|mut c: Commands, mut data: ReactResMut<JoinLobbyData>| {
-            c.get_entity(id)?.despawn_recursive();
+        .on_pressed(move |mut c: Commands, mut data: ReactResMut<JoinLobbyData>| {
+            c.get_entity(id).result()?.despawn_recursive();
+            data.get_mut(&mut c).clear();
             DONE
         });
 }

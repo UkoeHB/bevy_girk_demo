@@ -9,7 +9,7 @@ test    = false
 doctest = false
 
 [features]
-dev = ["bevy/dynamic_linking", "bevy/file_watcher"]
+dev = ["bevy/dynamic_linking", "bevy/file_watcher", "user_client/dev", "wiring_client_instance/dev"]
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }
@@ -23,10 +23,13 @@ wasm-timer         = { workspace = true }
 
 bevy_girk_backend_public    = { workspace = true }
 bevy_girk_client_instance   = { workspace = true }
+bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
-user_client    = { path = "../../libs/user_client" }
+user_client = { path = "../../libs/user_client" }
 wiring_backend = { path = "../../libs/wiring_backend" }
+wiring_client_instance = { path = "../../libs/wiring_client_instance" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 console_error_panic_hook = { version = "0.1" }

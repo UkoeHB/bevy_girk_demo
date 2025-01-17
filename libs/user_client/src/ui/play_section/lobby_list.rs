@@ -14,7 +14,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
             broadcast::<RequestStarted<LobbySearch>>(),
             broadcast::<RequestEnded<LobbySearch>>(),
         ),
-        |p: &PendingRequestParam<LobbySearch>| p.has_request(),
+        |_: TargetId, p: PendingRequestParam<LobbySearch>| p.has_request(),
     );
     // Note: this button doesn't use setup_request_tracker() because we show loading text separately.
     h.get("refresh_button").on_pressed(refresh_lobby_list);
@@ -24,7 +24,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
             resource_mutation::<LobbyPage>(),
             |id: TargetId, mut c: Commands, mut s: SceneBuilder, page: ReactRes<LobbyPage>| {
                 // Clear current entries.
-                c.get_entity(*id)?.despawn_descendants();
+                c.get_entity(*id).result()?.despawn_descendants();
 
                 // Spawn new entries
                 for (idx, lobby) in page.get().iter().enumerate() {
@@ -39,7 +39,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
                                         lobby.num(ClickLobbyMemberType::Watcher),
                                         lobby.max(ClickLobbyMemberType::Watcher),
                                     ));
-                            h.get("join_button").on_pressed(|mut c: Commands| {
+                            h.get("join_button").on_pressed(move |mut c: Commands| {
                                 c.react()
                                     .broadcast(ActivateJoinLobbyPopup { lobby_list_index: idx });
                             });
@@ -62,25 +62,31 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
         .on_pressed(request_lobby_list_now)
         .enable_if(
             resource_mutation::<LobbyPageRequest>(),
-            |last_req: &ReactRes<LobbyPageRequest>| !last_req.is_now(),
+            |_: TargetId, last_req: ReactRes<LobbyPageRequest>| !last_req.is_now(),
         );
     h.get("paginate_left_button")
         .on_pressed(request_lobby_list_next_newer)
-        .enable_if(resource_mutation::<LobbyPage>(), |page: &ReactRes<LobbyPage>| {
-            let (first, _, _) = page.stats();
-            first != 1
-        });
+        .enable_if(
+            resource_mutation::<LobbyPage>(),
+            |_: TargetId, page: ReactRes<LobbyPage>| {
+                let (first, _, _) = page.stats();
+                first != 1
+            },
+        );
     h.get("paginate_right_button")
         .on_pressed(request_lobby_list_next_older)
-        .enable_if(resource_mutation::<LobbyPage>(), |page: &ReactRes<LobbyPage>| {
-            let (_, last, total) = page.stats();
-            last != total
-        });
+        .enable_if(
+            resource_mutation::<LobbyPage>(),
+            |_: TargetId, page: ReactRes<LobbyPage>| {
+                let (_, last, total) = page.stats();
+                last != total
+            },
+        );
     h.get("paginate_oldest_button")
         .on_pressed(request_lobby_list_oldest)
         .enable_if(
             resource_mutation::<LobbyPageRequest>(),
-            |last_req: &ReactRes<LobbyPageRequest>| !last_req.is_oldest(),
+            |_: TargetId, last_req: ReactRes<LobbyPageRequest>| !last_req.is_oldest(),
         );
 
     h.get("make_lobby_button")
@@ -91,7 +97,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
         // when making a new lobby.
         .enable_if(
             resource_mutation::<LobbyDisplay>(),
-            |display: &ReactRes<LobbyDisplay>| !display.is_set(),
+            |_: TargetId, display: ReactRes<LobbyDisplay>| !display.is_set(),
         );
 }
 

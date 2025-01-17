@@ -23,7 +23,7 @@ pub(crate) struct LobbyPage
 
 impl LobbyPage
 {
-    pub(crate) fn try_set(&mut self, new_page: LobbySearchResult) -> Result<(), ()>
+    pub(crate) fn try_set(&mut self, new_page: LobbySearchResult) -> Result<(), String>
     {
         // extract lobby contents
         let mut temp = Vec::with_capacity(new_page.lobbies.len());

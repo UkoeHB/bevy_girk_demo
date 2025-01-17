@@ -74,8 +74,8 @@ pub(crate) fn start_current_lobby(
     };
 
     // check if there is an existing game
-    if config.is_some() {
-        tracing::error!("tried to start lobby {} but we are currently in game {}", lobby.lobby_id(), config.game_id());
+    if let Some(config) = config {
+        tracing::error!("tried to start lobby {:?} but we are currently in game {:?}", lobby.lobby_id(), config.game_id());
         return;
     };
 

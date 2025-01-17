@@ -14,9 +14,9 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         resource_mutation::<LobbyDisplay>(),
         |id: TargetId, mut e: TextEditor, display: ReactRes<LobbyDisplay>| {
             let lobby_contents = display.get().result()?;
-            let id = lobby_contents.id % 1_000_000u64;
+            let lobby_id = lobby_contents.id % 1_000_000u64;
             let owner_id = lobby_contents.owner_id % 1_000_000u128;
-            write_text!(e, *id, "Lobby: {:0>6} -- Owner: {:0>6}", id, owner_id);
+            write_text!(e, *id, "Lobby: {:0>6} -- Owner: {:0>6}", lobby_id, owner_id);
             OK
         },
     );
@@ -45,7 +45,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         resource_mutation::<LobbyDisplay>(),
         |id: TargetId, mut c: Commands, mut s: SceneBuilder, display: ReactRes<LobbyDisplay>| {
             // clean up previous members list
-            c.get_entity(*id)?.despawn_descendants();
+            c.get_entity(*id).result()?.despawn_descendants();
 
             let lobby_content = display.get().result()?;
             for (_, player_id) in lobby_content.players.iter() {
@@ -71,7 +71,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         setup_request_tracker::<LeaveLobby>(h);
         h.enable_if(
             resource_mutation::<LobbyDisplay>(),
-            |display: &ReactRes<LobbyDisplay>| display.is_set(),
+            |_: TargetId, display: ReactRes<LobbyDisplay>| display.is_set(),
         )
         .on_pressed(leave_current_lobby);
     });
@@ -79,7 +79,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         setup_request_tracker::<LaunchLobby>(h);
         h.enable_if(
             resource_mutation::<LobbyDisplay>(),
-            |(display, client): &(ReactRes<LobbyDisplay>, Res<HostUserClient>)| match display.get() {
+            |_: TargetId, display: ReactRes<LobbyDisplay>, client: Res<HostUserClient>| match display.get() {
                 Some(data) => {
                     let owns = data.owner_id == client.id();
                     let single_player = display.is_local();

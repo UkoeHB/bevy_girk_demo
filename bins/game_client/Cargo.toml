@@ -9,7 +9,7 @@ test    = false
 doctest = false
 
 [features]
-dev = ["bevy/dynamic_linking"]
+dev = ["bevy/dynamic_linking", "wiring_client_instance/dev"]
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }

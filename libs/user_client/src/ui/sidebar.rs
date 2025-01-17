@@ -24,17 +24,20 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
     h.get("options")
         .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
             h.get("text").update_text("Home");
-            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
-                c.get_entity(content_id)?.despawn_descendants();
+            h.on_select(
+                move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
+                    c.get_entity(content_id).result()?.despawn_descendants();
 
-                c.ui_builder(content_id).spawn_scene_and_edit(
-                    ("ui.user", "home_section"),
-                    &mut s,
-                    build_home_section,
-                );
+                    *section = MenuContentSection::Home;
+                    c.ui_builder(content_id).spawn_scene_and_edit(
+                        ("ui.user", "home_section"),
+                        &mut s,
+                        build_home_section,
+                    );
 
-                DONE
-            });
+                    DONE
+                },
+            );
 
             // Start with the home section selected.
             let id = h.id();
@@ -52,17 +55,20 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
                     }
                 },
             );
-            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
-                c.get_entity(content_id)?.despawn_descendants();
+            h.on_select(
+                move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
+                    c.get_entity(content_id).result()?.despawn_descendants();
 
-                c.ui_builder(content_id).spawn_scene_and_edit(
-                    ("ui.user", "play_section"),
-                    &mut s,
-                    build_play_section,
-                );
+                    *section = MenuContentSection::Play;
+                    c.ui_builder(content_id).spawn_scene_and_edit(
+                        ("ui.user", "play_section"),
+                        &mut s,
+                        build_play_section,
+                    );
 
-                DONE
-            });
+                    DONE
+                },
+            );
             h.update_on(
                 resource_mutation::<LobbyDisplay>(),
                 |id: TargetId, mut c: Commands, ps: PseudoStateParam, display: ReactRes<LobbyDisplay>| {
@@ -79,17 +85,20 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
         })
         .spawn_scene_and_edit(("ui.user", "menu_button"), |h| {
             h.get("text").update_text("Settings");
-            h.on_select(|mut c: Commands, mut s: SceneBuilder| {
-                c.get_entity(content_id)?.despawn_descendants();
+            h.on_select(
+                move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
+                    c.get_entity(content_id).result()?.despawn_descendants();
 
-                c.ui_builder(content_id).spawn_scene_and_edit(
-                    ("ui.user", "settings_section"),
-                    &mut s,
-                    build_settings_section,
-                );
+                    *section = MenuContentSection::Settings;
+                    c.ui_builder(content_id).spawn_scene_and_edit(
+                        ("ui.user", "settings_section"),
+                        &mut s,
+                        build_settings_section,
+                    );
 
-                DONE
-            });
+                    DONE
+                },
+            );
         });
 
     // footer
@@ -110,21 +119,21 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
                     ps: PseudoStateParam,
                     status: ReactRes<ConnectionStatus>,//
                 | {
-                    ps.try_remove(*id, &mut c, STATUS_CONNECTED_PSEUDOSTATE.clone());
-                    ps.try_remove(*id, &mut c, STATUS_CONNECTING_PSEUDOSTATE.clone());
-                    ps.try_remove(*id, &mut c, STATUS_DEAD_PSEUDOSTATE.clone());
+                    ps.try_remove(&mut c, *id,  STATUS_CONNECTED_PSEUDOSTATE.clone());
+                    ps.try_remove(&mut c, *id,  STATUS_CONNECTING_PSEUDOSTATE.clone());
+                    ps.try_remove(&mut c, *id,  STATUS_DEAD_PSEUDOSTATE.clone());
                     match *status {
                         ConnectionStatus::Connected => {
                             write_text!(e, *id, "Connected");
-                            ps.try_insert(*id, &mut c, STATUS_CONNECTED_PSEUDOSTATE.clone());
+                            ps.try_insert(&mut c, *id,  STATUS_CONNECTED_PSEUDOSTATE.clone());
                         }
                         ConnectionStatus::Connecting => {
                             write_text!(e, *id, "Connecting...");
-                            ps.try_insert(*id, &mut c, STATUS_CONNECTING_PSEUDOSTATE.clone());
+                            ps.try_insert(&mut c, *id,  STATUS_CONNECTING_PSEUDOSTATE.clone());
                         }
                         ConnectionStatus::Dead => {
                             write_text!(e, *id, "Dead");
-                            ps.try_insert(*id, &mut c, STATUS_DEAD_PSEUDOSTATE.clone());
+                            ps.try_insert(&mut c, *id,  STATUS_DEAD_PSEUDOSTATE.clone());
                         }
                     }
                 },
@@ -135,8 +144,7 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Resource that tracks which 'primary' section of the menu is visible.
-//TODO: update this when changing sections
-#[derive(Resource, Debug, Default)]
+#[derive(Resource, Debug, Default, Eq, PartialEq)]
 pub(crate) enum MenuContentSection
 {
     #[default]

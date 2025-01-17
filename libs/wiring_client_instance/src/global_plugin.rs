@@ -49,8 +49,73 @@ impl notes
 */
 
 use bevy::prelude::*;
+use bevy::window::*;
+use bevy::winit::UpdateMode;
+use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::*;
+use bevy_girk_client_fw::ClientAppState;
+use iyes_progress::prelude::*;
 
-use super::*;
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Initialize the bevy engine.
+struct BevyEnginePlugin;
+
+impl Plugin for BevyEnginePlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        // prepare bevy plugins
+        let bevy_plugins = bevy::DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "BEVY_GIRK: CLICK DEMO".into(),
+                    window_theme: Some(WindowTheme::Dark),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            })
+            .build();
+
+        // reduce input lag on native targets
+        #[cfg(not(target_family = "wasm"))]
+        let bevy_plugins = bevy_plugins.disable::<bevy::render::pipelined_rendering::PipelinedRenderingPlugin>();
+
+        // use custom logging
+        let bevy_plugins = bevy_plugins.disable::<bevy::log::LogPlugin>();
+
+        // add to app
+        app.add_plugins(bevy_plugins)
+            .insert_resource(bevy::winit::WinitSettings {
+                focused_mode: UpdateMode::reactive(std::time::Duration::from_millis(10)),
+                unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(250)),
+                ..Default::default()
+            });
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup(mut c: Commands)
+{
+    c.spawn(Camera2d);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn loadstate_progress(state: Res<State<LoadState>>, progress: Res<LoadProgress>) -> Progress
+{
+    let state = match state.get() {
+        LoadState::Loading => 0,
+        LoadState::Done => 1,
+    };
+    let (pending, total) = progress.loading_progress();
+
+    Progress {
+        done: state + total.saturating_sub(pending) as u32,
+        total: 1 + total as u32,
+    }
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -60,16 +125,21 @@ use super::*;
 /// - `ClientInstancePlugin` plugin *with* game factory for local games
 /// - [`TimerConfigs`] resource
 /// - [`HostClientConstructor`] resource
-pub struct ClickUserClientPlugin;
+pub struct ClickClientGlobalPlugin;
 
-impl Plugin for ClickUserClientPlugin
+impl Plugin for ClickClientGlobalPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugins(HostClientPlugin)
-            .add_plugins(LobbiesPlugin)
-            .add_plugins(GamePlugin)
-            .add_plugins(UiPlugin);
+        app.add_plugins(BevyEnginePlugin)
+            .add_plugins(ReactPlugin)
+            .add_systems(PreStartup, setup)
+            .add_systems(
+                Update,
+                loadstate_progress
+                    .track_progress::<ClientAppState>()
+                    .run_if(in_state(ClientAppState::Loading)),
+            );
     }
 }
 

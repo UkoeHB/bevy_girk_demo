@@ -66,7 +66,7 @@ fn send_make_lobby_request(
     mut c: Commands,
     client: Res<HostUserClient>,
     make_lobby: PendingRequestParam<MakeLobby>,
-    mut data: ReactResMut<MakeLobbyData>,
+    data: ReactRes<MakeLobbyData>,
 )
 {
     // get request entity

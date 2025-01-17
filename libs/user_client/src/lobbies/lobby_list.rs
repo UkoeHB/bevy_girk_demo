@@ -180,7 +180,7 @@ impl Plugin for LobbyListPlugin
 {
     fn build(&self, app: &mut App)
     {
-        let timer_configs = app.world.resource::<TimerConfigs>();
+        let timer_configs = app.world().resource::<TimerConfigs>();
         let refresh = Duration::from_millis(timer_configs.lobby_list_refresh_ms);
 
         app.add_systems(

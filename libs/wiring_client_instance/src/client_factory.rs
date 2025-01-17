@@ -2,7 +2,6 @@ use std::any::type_name;
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_girk_client_fw::ClientAppState;
 use bevy_girk_client_instance::*;
 use bevy_girk_wiring_client::{
     prepare_girk_client_app, setup_girk_client_game, ClientConnectPack, GirkClientConfig, GirkClientStartupConfig,
@@ -39,7 +38,8 @@ impl ClientFactoryImpl for ClickClientFactory
 
         // set up client app
         prepare_girk_client_app(app, config);
-        app.add_plugins(ClientCorePlugin)
+        app.add_plugins(ClickClientGlobalPlugin)
+            .add_plugins(ClientCorePlugin)
             .add_plugins(ClientSkinPlugin);
     }
 
@@ -68,10 +68,7 @@ impl ClientFactoryImpl for ClickClientFactory
         setup_girk_client_game(world, config);
         setup_client_game(world, start_info.data.initializer);
 
-        // Enter the game.
-        world
-            .resource_mut::<NextState<ClientAppState>>()
-            .set(ClientAppState::Game);
+        // We assume setup was triggered by a ClientInstanceCommand, which will set ClientAppState::Game.
     }
 }
 

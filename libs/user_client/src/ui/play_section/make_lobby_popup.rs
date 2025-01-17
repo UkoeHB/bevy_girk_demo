@@ -20,7 +20,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
             match event.try_read()? {
                 RequestEnded::Success => {
                     tracing::info!("MakeLobby request succeeded");
-                    c.get_entity(*id)?.despawn_recursive();
+                    c.get_entity(*id).result()?.despawn_recursive();
                 }
                 RequestEnded::Failure => {
                     tracing::warn!("MakeLobby request failed");
@@ -31,7 +31,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
         },
     );
     h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
-        c.get_entity(*id)?.despawn_recursive();
+        c.get_entity(*id).result()?.despawn_recursive();
         DONE
     });
 
@@ -52,7 +52,8 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
             });
         h.get("remove_player")
             .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
-                data.get_mut(&mut c).config.max_players.saturating_sub(1);
+                let max = data.config.max_players;
+                data.get_mut(&mut c).config.max_players = max.saturating_sub(1);
             });
     });
     h.edit("join_as", |h| {
@@ -62,9 +63,11 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     // Info text
     h.get("connection_notice::text").update_on(
         resource_mutation::<MakeLobbyData>(),
-        |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| match data.is_single_player() {
-            true => write_text!(e, *id, "Single-player lobby: does not require a server connection."),
-            false => write_text!(e, *id, "Multiplayer lobby: requires a server connection."),
+        |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| {
+            match data.is_single_player() {
+                true => write_text!(e, *id, "Single-player lobby: does not require a server connection."),
+                false => write_text!(e, *id, "Multiplayer lobby: requires a server connection."),
+            };
         },
     );
 
@@ -84,12 +87,13 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
                 broadcast::<RequestStarted<MakeLobby>>(),
                 broadcast::<RequestEnded<MakeLobby>>(),
             ),
-            |(status, data, make_lobby, lobby_display): &(
-                ReactRes<ConnectionStatus>,
-                ReactRes<MakeLobbyData>,
-                PendingRequestParam<MakeLobby>,
-                ReactResMut<LobbyDisplay>,
-            )| {
+            |//
+                _: TargetId,
+                status: ReactRes<ConnectionStatus>,
+                data: ReactRes<MakeLobbyData>,
+                make_lobby: PendingRequestParam<MakeLobby>,
+                lobby_display: ReactResMut<LobbyDisplay>,//
+            | {
                 let enable = (*status == ConnectionStatus::Connected) || data.is_single_player();
                 // if LobbyDisplay is hosted then we are in a lobby on the host server
                 let enable = enable && !make_lobby.has_request() && !lobby_display.is_hosted();
@@ -97,12 +101,12 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
             },
         );
     });
+    // Note: the cancel button doesn't clear the lobby settings in case you want to resume where you left off.
     let id = h.id();
-    h.get("cancel_button")
-        .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
-            c.get_entity(id)?.despawn_recursive();
-            DONE
-        });
+    h.get("cancel_button").on_pressed(move |mut c: Commands| {
+        c.get_entity(id).result()?.despawn_recursive();
+        DONE
+    });
 }
 
 //-------------------------------------------------------------------------------------------------------------------

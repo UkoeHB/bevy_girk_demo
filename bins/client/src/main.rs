@@ -1,13 +1,16 @@
-use std::sync::Arc;
+use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_instance::*;
+use bevy_girk_game_instance::GameFactory;
+use bevy_girk_utils::Rand64;
 use clap::Parser;
-use enfync::AdoptOrDefault;
 use user_client::*;
 use wasm_timer::{SystemTime, UNIX_EPOCH};
 use wiring_backend::*;
+use wiring_client_instance::ClickClientFactory;
+use wiring_game_instance::ClickGameFactory;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -81,7 +84,7 @@ fn main()
 
     // prep to launch client
     // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
-    let make_client = || {
+    let make_client = move || {
         host_user_client_factory().new_client(
             enfync::builtin::Handle::default(), // automatically selects native/WASM runtime
             url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(), // TODO: use CLI or auth server to get this?
