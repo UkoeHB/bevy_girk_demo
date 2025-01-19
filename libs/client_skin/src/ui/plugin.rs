@@ -12,7 +12,6 @@ impl Plugin for UiPlugin
     fn build(&self, app: &mut App)
     {
         app
-            .add_plugins(CobwebUiPlugin)
             .load("client_skin/main.cob")
             .add_plugins(LoadScreenPlugin)
             .add_plugins(GameUiPlugin)

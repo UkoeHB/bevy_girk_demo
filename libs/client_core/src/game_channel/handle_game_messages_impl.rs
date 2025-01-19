@@ -23,7 +23,7 @@ fn update_client_state(
 
     // update game state
     let new_client_state = match game_state {
-        GameState::Init => ClientState::Init,
+        GameState::Startup | GameState::Init => ClientState::Init,
         GameState::Prep => ClientState::Prep,
         GameState::Play => ClientState::Play,
         GameState::GameOver => ClientState::GameOver,

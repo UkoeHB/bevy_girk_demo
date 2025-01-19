@@ -4,6 +4,7 @@ self as ui.skin
 
 #import
 builtin.colors.tailwind as tw
+ui_common.constants as const
 
 #defs
 $COLOR_LOADSCREEN = $tw::STONE_400

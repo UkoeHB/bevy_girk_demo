@@ -144,11 +144,17 @@ impl Plugin for ScoreboardPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_systems(
-            OnEnter(ClientState::Prep),
-            refresh_scoreboard.in_set(RefreshScoreboardSet),
-        )
-        .add_systems(Update, get_score_changes.in_set(ClientLogicSet::Update));
+        app.init_react_resource::<Scoreboard>()
+            .add_systems(
+                OnEnter(ClientState::Prep),
+                refresh_scoreboard.in_set(RefreshScoreboardSet),
+            )
+            .add_systems(
+                Update,
+                get_score_changes
+                    .in_set(ClientLogicSet::Update)
+                    .run_if(not(in_state(ClientState::Init))),
+            );
     }
 }
 

@@ -11,7 +11,7 @@ fn check_client_framework_consistency(client_fw_config: &ClientFwConfig, initial
 {
     // check the client id
     if client_fw_config.client_id() != initializer.context.id() {
-        panic!("client id mismatch with client framework!");
+        tracing::error!("client id mismatch with client framework on game startup!");
     }
 }
 
@@ -22,10 +22,10 @@ fn prestartup_check(world: &World)
 {
     // check for expected resources
     if !world.contains_resource::<ClientFwConfig>() {
-        panic!("ClientFwConfig is missing on startup!");
+        tracing::error!("ClientFwConfig is missing on game startup!");
     }
     if !world.contains_resource::<ClientInitializer>() {
-        panic!("ClientInitializer is missing on startup!");
+        tracing::error!("ClientInitializer is missing on game startup!");
     }
 
     // validate consistency between client framework and core
@@ -33,15 +33,6 @@ fn prestartup_check(world: &World)
         world.resource::<ClientFwConfig>(),
         world.resource::<ClientInitializer>(),
     );
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-/// Initializes the client fw.
-pub(crate) fn setup_fw_reqs(mut commands: Commands)
-{
-    commands.insert_resource(GameMessageHandler::new(handle_game_message));
-    commands.insert_resource(ClientRequestType::new::<ClientRequest>());
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -65,9 +56,10 @@ impl Plugin for ClientSetupPlugin
     fn build(&self, app: &mut App)
     {
         app.add_sub_state::<ClientState>()
-            .add_systems(PreStartup, prestartup_check)
-            .add_systems(Startup, setup_fw_reqs)
-            .add_systems(OnEnter(ClientAppState::Game), setup_client);
+            .enable_state_scoped_entities::<ClientState>()
+            .insert_resource(GameMessageHandler::new(handle_game_message))
+            .insert_resource(ClientRequestType::new::<ClientRequest>())
+            .add_systems(OnEnter(ClientAppState::Game), (prestartup_check, setup_client).chain());
     }
 }
 

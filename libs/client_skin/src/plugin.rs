@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_cobweb::prelude::*;
 
 use super::*;
 
@@ -15,8 +14,7 @@ impl Plugin for ClientSkinPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugins(ReactPlugin)
-            .add_plugins(UiPlugin)
+        app.add_plugins(UiPlugin)
             .add_plugins(FpsTrackerPlugin)
             .add_plugins(LoadingSimPlugin)
             .add_plugins(StateChangesPlugin);

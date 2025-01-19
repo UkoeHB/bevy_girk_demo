@@ -116,12 +116,12 @@ fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_cl
                 continue;
             };
 
-            let Ok(token_ser) = serde_json::to_string(&ser_msg(&token)) else {
+            let Ok(token_ser) = serde_json::to_string(&token) else {
                 tracing::error!(game_id, "failed serializing server connect token for playtest game client");
                 continue;
             };
 
-            let Ok(start_info_ser) = serde_json::to_string(&ser_msg(&start_info)) else {
+            let Ok(start_info_ser) = serde_json::to_string(&start_info) else {
                 tracing::error!(game_id, "failed serializing game start info for playtest game client");
                 continue;
             };

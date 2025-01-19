@@ -55,6 +55,15 @@ fn set_game_end_flag(
 
 //-------------------------------------------------------------------------------------------------------------------
 
+// Must set init state separately because the first state runs before `PreStartup` so OnEnter won't have
+// access to anything added by systems.
+fn set_init_state(mut next_game_state: ResMut<NextState<GameState>>)
+{
+    next_game_state.set(GameState::Init);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Notify all clients of the current game state.
 pub(crate) fn notify_game_state_all(game_state: Res<State<GameState>>, mut sender: GameSender)
 {
@@ -88,6 +97,7 @@ pub(crate) fn notify_game_state_single(
 pub enum GameState
 {
     #[default]
+    Startup,
     Init,
     Prep,
     Play,
@@ -109,6 +119,8 @@ impl Plugin for GameStatePlugin
     fn build(&self, app: &mut App)
     {
         app.init_state::<GameState>()
+            .enable_state_scoped_entities::<GameState>()
+            .add_systems(PostStartup, set_init_state)
             .add_systems(
                 Update,
                 (

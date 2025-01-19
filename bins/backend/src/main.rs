@@ -8,6 +8,8 @@ use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
+use bevy_girk_wiring_common::GameServerSetupConfig;
+use enfync::AdoptOrDefault;
 use game_core::*;
 use wiring_backend::*;
 use wiring_game_instance::*;
@@ -90,13 +92,13 @@ fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> Clic
     let game_fw_config = GameFwConfig::new(game_ticks_per_sec, max_init_ticks, max_game_over_ticks);
 
     // game duration config
-    let game_duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
+    let duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
 
     // click game factory config
     ClickGameFactoryConfig {
         server_setup_config,
         game_fw_config,
-        game_duration_config,
+        duration_config,
         resend_time: Duration::from_millis(300),
     }
 }
@@ -158,8 +160,8 @@ fn make_test_game_hub_server(
     let host_hub_client = make_test_host_hub_client_with_id(0u128, hub_server_url);
     let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(game_factory_config));
     let game_launcher = GameInstanceLauncher::new(GameInstanceLauncherProcess::new(
-        GAME_INSTANCE_PATH,
-        enfync::builtin::TokioHandle::adopt_or_default(),
+        GAME_INSTANCE_PATH.to_string(),
+        enfync::builtin::native::TokioHandle::adopt_or_default(),
     ));
 
     // server app
@@ -207,14 +209,16 @@ fn main()
     // launch game hub server attached to host server
     let game_ticks_per_sec = 20;
     let game_num_ticks = 20 * 30;
-    let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
-        host_hub_url,
-        make_hub_server_configs(),
-        make_click_game_configs(game_ticks_per_sec, game_num_ticks),
-    );
 
     // run the servers
-    std::thread::spawn(move || hub_server.run());
+    std::thread::spawn(move || {
+        let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
+            host_hub_url,
+            make_hub_server_configs(),
+            make_click_game_configs(game_ticks_per_sec, game_num_ticks),
+        );
+        hub_server.run()
+    });
     host_server.run();
 }
 

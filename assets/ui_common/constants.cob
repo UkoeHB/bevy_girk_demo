@@ -1,3 +1,6 @@
+#manifest
+self as ui_common.constants
+
 #defs
 // GlobalZIndex
 $ZINDEX_LOADSCREEN = 10

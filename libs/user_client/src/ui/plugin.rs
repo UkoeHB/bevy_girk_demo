@@ -36,7 +36,9 @@ impl Plugin for UiPlugin
             // ui menu sections
             .add_plugins(UiHomeSectionPlugin)
             .add_plugins(UiPlaySectionPlugin)
-            .add_plugins(UiSettingsSectionPlugin);
+            .add_plugins(UiSettingsSectionPlugin)
+            // load content
+            .load("user_client/main.cob");
     }
 }
 

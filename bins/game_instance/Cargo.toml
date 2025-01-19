@@ -17,6 +17,6 @@ clap               = { workspace = true, features = [ "derive" ] }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 
-bevy_girk_game_instance = { workspace = true }
+bevy_girk_game_instance = { workspace = true, features = ["process"] }
 
 wiring_game_instance = { path = "../../libs/wiring_game_instance" }

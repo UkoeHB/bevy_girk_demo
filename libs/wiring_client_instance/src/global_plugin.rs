@@ -51,7 +51,6 @@ impl notes
 use bevy::prelude::*;
 use bevy::window::*;
 use bevy::winit::UpdateMode;
-use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
 use iyes_progress::prelude::*;
@@ -83,6 +82,18 @@ impl Plugin for BevyEnginePlugin
 
         // use custom logging
         let bevy_plugins = bevy_plugins.disable::<bevy::log::LogPlugin>();
+
+        // time plugin added separately by bevy_girk
+        let bevy_plugins = if app.is_plugin_added::<bevy::time::TimePlugin>() {
+            bevy_plugins.disable::<bevy::time::TimePlugin>()
+        } else {
+            bevy_plugins
+        };
+        let bevy_plugins = if app.is_plugin_added::<bevy::state::app::StatesPlugin>() {
+            bevy_plugins.disable::<bevy::state::app::StatesPlugin>()
+        } else {
+            bevy_plugins
+        };
 
         // add to app
         app.add_plugins(bevy_plugins)
@@ -132,7 +143,8 @@ impl Plugin for ClickClientGlobalPlugin
     fn build(&self, app: &mut App)
     {
         app.add_plugins(BevyEnginePlugin)
-            .add_plugins(ReactPlugin)
+            .add_plugins(CobwebUiPlugin)
+            .load("ui_common/constants.cob")
             .add_systems(PreStartup, setup)
             .add_systems(
                 Update,

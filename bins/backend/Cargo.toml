@@ -28,6 +28,8 @@ bevy_girk_game_hub_server = { workspace = true }
 bevy_girk_game_instance   = { workspace = true, features = ["process"] }
 bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
+bevy_girk_wiring_common   = { workspace = true }
+bevy_girk_wiring_server   = { workspace = true }
 
 game_core            = { path = "../../libs/game_core" }
 wiring_backend       = { path = "../../libs/wiring_backend" }

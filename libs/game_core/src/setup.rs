@@ -8,15 +8,6 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Initializes the game framework.
-fn setup_fw_reqs(mut commands: Commands)
-{
-    commands.insert_resource(GameMessageType::new::<GameMsg>());
-    commands.insert_resource(ClientRequestHandler::new(handle_client_request));
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 /// Sets up the game with injected initialization data.
 fn setup_game(world: &mut World)
 {
@@ -58,7 +49,9 @@ impl Plugin for GameSetupPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_systems(Startup, (setup_fw_reqs, setup_game));
+        app.insert_resource(GameMessageType::new::<GameMsg>())
+            .insert_resource(ClientRequestHandler::new(handle_client_request))
+            .add_systems(Startup, setup_game);
     }
 }
 
