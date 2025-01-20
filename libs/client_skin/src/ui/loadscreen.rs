@@ -27,19 +27,20 @@ fn add_loadscreen(mut c: Commands, mut s: SceneBuilder)
                     id: TargetId,
                     mut prev: Local<f32>,
                     mut c: Commands,
-                    progress: Query<&GameInitProgress>,//
+                    init_progress: Query<&GameInitProgress>,//
                 |
                 {
                     // Clamped to the previous value (since loading started) to avoid stutter.
-                    let progress = progress
+                    let progress = init_progress
                         .get_single()
                         .map(|p| *p)
                         .unwrap_or(GameInitProgress::default())
                         .max(*prev)
                         .min(1.0);
+                    //tracing::info!("progress({}): {progress}", init_progress.get_single().is_ok());
                     *prev = progress;
                     let mut ec = c.get_entity(*id).result()?;
-                    ec.apply(Width(Val::Px(progress)));
+                    ec.apply(Width(Val::Percent(progress * 100.0)));
                     DONE
                 },
         );

@@ -89,7 +89,7 @@ impl Plugin for GameUiPlugin
     fn build(&self, app: &mut App)
     {
         app.add_plugins(ScoreboardPlugin)
-            .add_systems(OnEnter(ClientState::Prep), build_ui.after(RefreshScoreboardSet));
+            .add_systems(OnEnter(ClientState::Play), build_ui.after(RefreshScoreboardSet));
     }
 }
 

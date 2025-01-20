@@ -19,10 +19,10 @@ struct GameClientCli
 {
     /// ServerConnectToken
     #[arg(short = 'T', value_parser = parse_json::<ServerConnectToken>)]
-    token: ServerConnectToken,
+    token: Option<ServerConnectToken>,
     /// GameStartInfo
     #[arg(short = 'S', value_parser = parse_json::<GameStartInfo>)]
-    start_info: GameStartInfo,
+    start_info: Option<GameStartInfo>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -33,8 +33,8 @@ fn start_game_system(
 ) -> impl IntoSystem<(), (), ()>
 {
     IntoSystem::into_system(move |mut c: Commands| {
-        let token = token.take().unwrap();
-        let start_info = start_info.take().unwrap();
+        let Some(token) = token.take() else { return };
+        let Some(start_info) = start_info.take() else { return };
         c.queue(ClientInstanceCommand::Start(token, start_info));
     })
 }
@@ -49,7 +49,7 @@ fn main()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::TRACE.into())
         .from_env()
         .unwrap()
-        .add_directive("bevy=info".parse().unwrap())
+        .add_directive("bevy=trace".parse().unwrap())
         .add_directive("bevy_cobweb=info".parse().unwrap())
         .add_directive("bevy_cobweb_ui=info".parse().unwrap())
         .add_directive("bevy_app=warn".parse().unwrap())
@@ -70,19 +70,20 @@ fn main()
 
     // cli
     let args = GameClientCli::parse();
-    let token: Option<ServerConnectToken> = Some(args.token);
-    let start_info: Option<GameStartInfo> = Some(args.start_info);
+    let token: Option<ServerConnectToken> = args.token;
+    let start_info: Option<GameStartInfo> = args.start_info;
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
     let factory = ClickClientFactory { protocol_id, resend_time: Duration::from_millis(100) };
 
-    App::new()
-        .add_plugins(ClientInstancePlugin::new(factory, None))
+    let mut app = App::new();
+    app.add_plugins(ClientInstancePlugin::new(factory, None))
         // Can't do this in OnEnter because it internally forces a state transition. State transitions can't be
         // executed recursively.
+        // Can't do this in Update otherwise we might skip past ClientInitState::InProgress.
         .add_systems(
-            Update,
+            PreUpdate,
             start_game_system(token, start_info).run_if(in_state(ClientAppState::Client)),
         )
         .run();

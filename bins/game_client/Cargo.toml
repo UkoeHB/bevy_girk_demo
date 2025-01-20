@@ -17,6 +17,8 @@ clap               = { workspace = true, features = [ "derive" ] }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }
 tracing            = { workspace = true }
 
+iyes_progress            = { workspace = true } #temp
+
 bevy_girk_client_fw       = { workspace = true }
 bevy_girk_client_instance = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }

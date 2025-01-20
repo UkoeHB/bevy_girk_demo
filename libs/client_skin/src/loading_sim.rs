@@ -44,7 +44,6 @@ impl Plugin for LoadingSimPlugin
                 Update,
                 initialization_timer
                     .track_progress::<ClientInitState>()
-                    .run_if(client_is_initializing)
                     .in_set(ClientFwLoadingSet),
             );
     }

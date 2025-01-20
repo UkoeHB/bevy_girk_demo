@@ -99,7 +99,7 @@ impl Plugin for BevyEnginePlugin
         app.add_plugins(bevy_plugins)
             .insert_resource(bevy::winit::WinitSettings {
                 focused_mode: UpdateMode::reactive(std::time::Duration::from_millis(10)),
-                unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(250)),
+                unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(200)),
                 ..Default::default()
             });
     }

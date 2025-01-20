@@ -19,7 +19,7 @@ impl Scoreboard
 {
     fn update(&mut self, player: Entity, new_score: PlayerScore)
     {
-        let Some(score) = self.entries.get_mut(&player) else { return };
+        let score = self.entries.entry(player).or_default();
         let prev_score = *score;
         *score = new_score;
 
@@ -29,7 +29,11 @@ impl Scoreboard
 
     fn get(&self, idx: usize) -> Result<Entity, ()>
     {
-        self.ordered.iter().nth(idx).map(|(_, e)| *e).ok_or(())
+        self.ordered
+            .iter()
+            .nth(self.ordered.len().saturating_sub(idx + 1))
+            .map(|(_, e)| *e)
+            .ok_or(())
     }
 
     fn num_players(&self) -> usize
@@ -101,10 +105,12 @@ pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
                         .update_text(format!("{}.", idx + 1));
                 });
                 builder.spawn_scene_and_edit(player_item, &mut s, |h| {
-                    player_text = h.id();
+                    player_text = h.get_entity("text")?;
+                    DONE
                 });
                 builder.spawn_scene_and_edit(score_item, &mut s, |h| {
-                    score_text = h.id();
+                    score_text = h.get_entity("text")?;
+                    DONE
                 });
 
                 // Entries are never despawned so it's ok to have the reactor on the scoreboard entity.
@@ -146,7 +152,7 @@ impl Plugin for ScoreboardPlugin
     {
         app.init_react_resource::<Scoreboard>()
             .add_systems(
-                OnEnter(ClientState::Prep),
+                OnEnter(ClientState::Play),
                 refresh_scoreboard.in_set(RefreshScoreboardSet),
             )
             .add_systems(
