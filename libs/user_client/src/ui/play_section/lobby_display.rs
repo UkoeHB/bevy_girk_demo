@@ -41,7 +41,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         },
     );
 
-    h.get("member_list").update_on(
+    h.get("content::member_list::view::shim").update_on(
         resource_mutation::<LobbyDisplay>(),
         |id: TargetId, mut c: Commands, mut s: SceneBuilder, display: ReactRes<LobbyDisplay>| {
             // clean up previous members list
@@ -49,25 +49,31 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
 
             let lobby_content = display.get().result()?;
             for (_, player_id) in lobby_content.players.iter() {
-                c.ui_builder(*id)
-                    .spawn_scene_and_edit(("ui.user", "lobby_display_member"), &mut s, |h| {
+                c.ui_builder(*id).spawn_scene_and_edit(
+                    ("ui.user.sections.play", "lobby_display_member"),
+                    &mut s,
+                    |h| {
                         h.get("text")
                             .update_text(format!("Player: {:0>6}", player_id % 1_000_000u128));
-                    });
+                    },
+                );
             }
             for (_, watcher_id) in lobby_content.watchers.iter() {
-                c.ui_builder(*id)
-                    .spawn_scene_and_edit(("ui.user", "lobby_display_member"), &mut s, |h| {
+                c.ui_builder(*id).spawn_scene_and_edit(
+                    ("ui.user.sections.play", "lobby_display_member"),
+                    &mut s,
+                    |h| {
                         h.get("text")
                             .update_text(format!("Watcher: {:0>6}", watcher_id % 1_000_000u128));
-                    });
+                    },
+                );
             }
 
             DONE
         },
     );
 
-    h.edit("leave_button", |h| {
+    h.edit("footer::leave::button", |h| {
         setup_request_tracker::<LeaveLobby>(h);
         h.enable_if(
             resource_mutation::<LobbyDisplay>(),
@@ -75,7 +81,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         )
         .on_pressed(leave_current_lobby);
     });
-    h.edit("start_button", |h| {
+    h.edit("footer::start_button", |h| {
         setup_request_tracker::<LaunchLobby>(h);
         h.enable_if(
             resource_mutation::<LobbyDisplay>(),

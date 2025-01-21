@@ -17,14 +17,17 @@ pub(crate) fn build_play_section(h: &mut UiSceneHandle)
             match display.is_set() {
                 true => {
                     c.ui_builder(*id).spawn_scene_and_edit(
-                        ("ui.user", "lobby_display"),
+                        ("ui.user.sections.play", "lobby_display"),
                         &mut s,
                         build_lobby_display,
                     );
                 }
                 false => {
-                    c.ui_builder(*id)
-                        .spawn_scene_and_edit(("ui.user", "lobby_list"), &mut s, build_lobby_list);
+                    c.ui_builder(*id).spawn_scene_and_edit(
+                        ("ui.user.sections.play", "lobby_list"),
+                        &mut s,
+                        build_lobby_list,
+                    );
                 }
             }
             DONE

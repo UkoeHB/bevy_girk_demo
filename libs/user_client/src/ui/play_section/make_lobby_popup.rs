@@ -36,32 +36,32 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     });
 
     // Form fields
-    h.edit("password", |_| {
+    h.edit("content::password", |_| {
         // does nothing yet
     });
-    h.edit("config", |h| {
-        h.get("max_players::text").update_on(
+    h.edit("content::max_players", |h| {
+        h.get("value").update_on(
             resource_mutation::<MakeLobbyData>(),
             |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| {
                 write_text!(e, *id, "{}", data.config.max_players);
             },
         );
-        h.get("add_player")
+        h.get("add_player_button")
             .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
                 data.get_mut(&mut c).config.max_players += 1;
             });
-        h.get("remove_player")
+        h.get("remove_player_button")
             .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
                 let max = data.config.max_players;
                 data.get_mut(&mut c).config.max_players = max.saturating_sub(1);
             });
     });
-    h.edit("join_as", |h| {
-        h.get("as_text").update_text("Player");
+    h.edit("content::join_as", |h| {
+        h.get("value").update_text("Player");
     });
 
     // Info text
-    h.get("connection_notice::text").update_on(
+    h.get("content::connection_notice::text").update_on(
         resource_mutation::<MakeLobbyData>(),
         |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| {
             match data.is_single_player() {
@@ -72,7 +72,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     );
 
     // Popup buttons
-    h.edit("make_button", |h| {
+    h.edit("footer::accept_button", |h| {
         setup_request_tracker::<MakeLobby>(h);
 
         // This is where the magic happens.
@@ -103,10 +103,11 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     });
     // Note: the cancel button doesn't clear the lobby settings in case you want to resume where you left off.
     let id = h.id();
-    h.get("cancel_button").on_pressed(move |mut c: Commands| {
-        c.get_entity(id).result()?.despawn_recursive();
-        DONE
-    });
+    h.get("footer::cancel_button")
+        .on_pressed(move |mut c: Commands| {
+            c.get_entity(id).result()?.despawn_recursive();
+            DONE
+        });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -125,7 +126,7 @@ impl Plugin for UiMakeLobbyPopupPlugin
     {
         app.add_reactor(
             broadcast::<ActivateMakeLobbyPopup>(),
-            setup_broadcast_popup(("ui.user", "make_lobby_popup"), build_make_lobby_popup),
+            setup_broadcast_popup(("ui.user.sections.play", "make_lobby_popup"), build_make_lobby_popup),
         );
     }
 }

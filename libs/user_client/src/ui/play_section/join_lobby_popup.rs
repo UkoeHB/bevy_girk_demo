@@ -75,12 +75,12 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
     h.edit("password", |_| {
         // does nothing yet
     });
-    h.edit("member_type", |h| {
-        h.get("type_text").update_text("Player");
+    h.edit("join_as", |h| {
+        h.get("value").update_text("Player");
     });
 
     // Popup buttons
-    h.edit("join_button", |h| {
+    h.edit("accept_button", |h| {
         setup_request_tracker::<JoinLobby>(h);
 
         // This is where the magic happens.
@@ -134,7 +134,7 @@ impl Plugin for UiJoinLobbyPopupPlugin
             .add_reactor(broadcast::<ActivateJoinLobbyPopup>(), update_join_lobby_data)
             .add_reactor(
                 broadcast::<ActivateJoinLobbyPopup>(),
-                setup_broadcast_popup(("ui.user", "join_lobby_popup"), build_join_lobby_popup),
+                setup_broadcast_popup(("ui.user.sections.play", "join_lobby_popup"), build_join_lobby_popup),
             );
     }
 }

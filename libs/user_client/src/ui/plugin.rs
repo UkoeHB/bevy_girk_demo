@@ -14,7 +14,9 @@ fn build_ui(mut c: Commands, mut s: SceneBuilder)
 
             let content_id = h.get_entity("content")?;
 
-            h.edit("sidebar", |h| build_sidebar(h, content_id));
+            h.edit("sidebar", |h| {
+                h.spawn_scene_and_edit(("ui.user.sidebar", "sidebar"), |h| build_sidebar(h, content_id));
+            });
 
             OK
         });

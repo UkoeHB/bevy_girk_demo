@@ -97,6 +97,7 @@ impl Plugin for GamePlugin
         app.add_plugins(ClientStarterPlugin)
             .add_plugins(ClientInstanceReportPlugin)
             .add_plugins(LocalGamePlugin)
+            .init_resource::<NeedTokenRequest>()
             .add_systems(PreStartup, setup_game_tag_entities)
             .add_systems(OnEnter(ClientState::GameOver), end_client_instance)
             .add_reactor(broadcast::<GameOverReport>(), log_game_over_report)
