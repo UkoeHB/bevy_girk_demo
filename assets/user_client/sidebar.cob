@@ -41,11 +41,12 @@ LoadImages[
             LoadedImageNode{image:"logo.png"}
 
         "text"
+            FlexNode{margin:{top:10px}}
             TextLine{text:"DEMO"}
             TextLineColor(#000000)
 
     ""
-        FlexNode{height:1px width:80%}
+        FlexNode{height:1px width:80% margin:{top:6.5px bottom:15px}}
         BackgroundColor(#000000)
 
     "options"
@@ -53,7 +54,7 @@ LoadImages[
         RadioGroup
 
     ""
-        FlexNode{height:1px width:80%}
+        FlexNode{height:1px width:80% margin:{bottom:7px}}
         BackgroundColor(#000000)
 
     "footer"

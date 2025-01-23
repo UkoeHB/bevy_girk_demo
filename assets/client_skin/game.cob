@@ -45,58 +45,61 @@ ui.skin as _
     "content"
         FlexNode{width:100% flex_grow:1 flex_direction:Row justify_main:FlexStart justify_cross:FlexStart}
 
-        "scoreboard"
-            // Scoreboard in upper left area of content.
-            GridNode{
-                margin:{top:10px}
-                grid_auto_rows:[Auto]
-                grid_template_columns:[(Count(3), Auto)]
-            }
-
-            ""
-                +scoreboard_header_item{
-                    "text"
-                        TextLine{text:"Rank"}
-                }
-
-            ""
-                +scoreboard_header_item{
-                    "text"
-                        TextLine{text:"Player"}
-                }
-
-            ""
-                +scoreboard_header_item{
-                    "text"
-                        TextLine{text:"Score"}
-                }
-
-
         "button_area"
             // Center the button in the remaining space.
             FlexNode{height:100% flex_grow:1 justify_main:Center justify_cross:Center}
 
             "click_button"
                 +button{
-                    Multi<Static<BackgroundColor>>[
-                        {value:$COLOR_GAME_CLICKER}
-                        {state:[Disabled] value:$COLOR_GAME_SECONDARY_BUTTONS_DISABLED}
-                    ]
+                    Responsive<BackgroundColor>{
+                        idle:$COLOR_GAME_CLICKER hover:$COLOR_GAME_CLICKER_HOVER press:$COLOR_GAME_CLICKER_PRESS
+                    }
 
                     "text"
                         TextLine{text:"CLICK ME" size:35}
-                        Multi<Static<TextLineColor>>[
-                            {value:#FFFFFF}
-                            {state:[Disabled] value:$COLOR_GAME_SECONDARY_BUTTONS_TEXT_DISABLED}
-                        ]
+                        TextLineColor(#FFFFFF)
                 }
 
+        // Overlay scoreboard above content
+        "scoreboard_shim"
+            AbsoluteNode
+
+            "scoreboard"
+                // Scoreboard in upper left area of content.
+                GridNode{
+                    margin:{top:10px}
+                    grid_auto_rows:[Auto]
+                    grid_template_columns:[(Count(3), Auto)]
+                }
+
+                ""
+                    +scoreboard_header_item{
+                        "text"
+                            TextLine{text:"Rank"}
+                    }
+
+                ""
+                    +scoreboard_header_item{
+                        "text"
+                            TextLine{text:"Player"}
+                    }
+
+                ""
+                    +scoreboard_header_item{
+                        "text"
+                            TextLine{text:"Score"}
+                    }
+
     "footer"
-        FlexNode{width:100% height:100px flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
+        FlexNode{width:100% flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
 
         "disconnect_button"
             +button{
                 SetJustifySelfCross(Center)
+                Margin{left:10px bottom:10px}
+                Responsive<BackgroundColor>{
+                    idle:#00000000 hover:#55888888 press:#77888888
+                }
 
                 "text"
                     TextLine{text:"Disconnect" size:20}

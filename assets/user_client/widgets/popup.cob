@@ -4,7 +4,7 @@
     ControlRoot
     FlexNode{justify_main:Center justify_cross:Center}
     Multi<Responsive<BackgroundColor>>[
-        {idle:#FFFFFF hover:#EEEEEE press:#DDDDDD} {state:[Disabled] idle:#AAAAAA}
+        {idle:#FFFFFF hover:#BBBBBB press:#999999} {state:[Disabled] idle:#AAAAAA}
     ]
 
     "text"
@@ -44,6 +44,7 @@
 
         "footer"
             FlexNode{width:100% flex_direction:Row justify_main:SpaceEvenly justify_cross:Center}
+            Padding{bottom:15px top:15px}
 
             "cancel_button"
                 +popup_button{}

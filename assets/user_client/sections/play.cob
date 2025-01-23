@@ -39,7 +39,10 @@ ui.user.widgets as widgets
     FlexNode{width:100% height:100% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
 
     "header"
-        FlexNode{width:100% justify_main:Center justify_cross:Center}
+        FlexNode{
+            width:100% margin:{top:10px bottom:6px}
+            flex_direction:Column justify_main:Center justify_cross:Center
+        }
 
         "title"
             TextLine{text:"Current Lobby"}
@@ -47,7 +50,7 @@ ui.user.widgets as widgets
 
         "lobby_info"
             "text"
-                TextLine
+                TextLine{size:20}
                 TextLineColor(#FFFFFF)
 
         "member_count"
@@ -55,12 +58,15 @@ ui.user.widgets as widgets
 
             "players"
                 "text"
-                    TextLine
+                    TextLine{size:20}
                     TextLineColor(#FFFFFF)
+
+            ""
+                FlexNode{width:10px}
 
             "watchers"
                 "text"
-                    TextLine
+                    TextLine{size:20}
                     TextLineColor(#FFFFFF)
 
     "content"
@@ -68,12 +74,16 @@ ui.user.widgets as widgets
 
         "member_list"
             +widgets::scroll{
-                FlexNode{min_width:70% height:80% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+                FlexNode{
+                    min_width:70% height:80%
+                    flex_direction:Row justify_main:FlexStart justify_cross:FlexStart
+                }
                 Splat<Border>(1px)
                 BorderColor(#FFFFFF)
 
                 "view"
                     "shim"
+                        Padding{top:6.5px left:10px}
             }
 
     "footer"
@@ -82,8 +92,9 @@ ui.user.widgets as widgets
         "leave"
             FlexNode{flex_direction:Column justify_main:Center justify_cross:Center}
             "info"
+                AbsoluteNode{top:-17px left:auto}
                 "text"
-                    TextLine{text:"Back to lobby list" size:10}
+                    TextLine{text:"Back to lobby list" size:12}
             "button"
                 +button{
                     +widgets::request_indicator{}
@@ -99,6 +110,7 @@ ui.user.widgets as widgets
             }
 
 "lobby_display_member"
+    Margin{bottom:7px}
     "text"
         TextLine
         TextLineColor(#FFFFFF)
@@ -112,7 +124,9 @@ ui.user.widgets as widgets
         FlexNode{width:100%}
 
         "title"
-            FlexNode{width:100% flex_direction:Row justify_main:Center justify_cross:Center}
+            FlexNode{
+                width:100% margin:{top:20px bottom:4px}
+                flex_direction:Row justify_main:Center justify_cross:Center}
 
             "text"
                 TextLine{text:"Lobby List"}
@@ -120,7 +134,7 @@ ui.user.widgets as widgets
 
     "content"
         FlexNode{
-            min_width:70% height:70%
+            min_width:70% flex_grow:1
             flex_direction:Column justify_main:FlexStart justify_cross:FlexStart justify_self_cross:Center
         }
 
@@ -144,12 +158,15 @@ ui.user.widgets as widgets
 
         "list"
             +widgets::scroll{
-                FlexNode{min_width:100% height:100% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+                FlexNode{
+                    min_width:100% flex_grow:1
+                    flex_direction:Row justify_main:FlexStart justify_cross:FlexStart}
                 Splat<Border>(1px)
                 BorderColor(#FFFFFF)
 
                 "view"
                     "shim"
+                        Padding{left:8px top:4px}
             }
 
         "controls"
@@ -159,47 +176,49 @@ ui.user.widgets as widgets
                 +button{
                     "text"
                         FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
-                        TextLine{text:"<<" size:13}
+                        TextLine{text:"<<" size:15}
                 }
             "paginate_left_button"
                 +button{
                     "text"
                         FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
-                        TextLine{text:"<" size:13}
+                        TextLine{text:"<" size:15}
                 }
             "page_stats"
                 "text"
-                    TextLine{size:13}
+                    TextLine{size:15}
                     TextLineColor(#FFFFFF)
             "paginate_right_button"
                 +button{
                     "text"
                         FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
-                        TextLine{text:">" size:13}
+                        TextLine{text:">" size:15}
                 }
             "paginate_oldest_button"
                 +button{
                     "text"
                         FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
-                        TextLine{text:">>" size:13}
+                        TextLine{text:">>" size:15}
                 }
 
         "make_lobby_button"
-            SetJustifySelfCross(Center)
             +button{
+                SetJustifySelfCross(Center)
+                Margin{top:25px}
                 +widgets::request_indicator{}
                 "text"
                     TextLine{text:"Make Lobby" size:25}
             }
 
 "lobby_list_entry"
-    FlexNode{flex_direction:Row justify_main:FlexStart justify_cross:Center}
+    FlexNode{width:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
     "text"
-        TextLine
+        TextLine{size:22}
         TextLineColor(#FFFFFF)
 
     "join_button"
         +button{
+            Margin{left:20px}
             "text"
                 TextLine{text:"Join" size:15}
         }
@@ -215,8 +234,6 @@ ui.user.widgets as widgets
             "content"
                 SetJustifyMain(SpaceEvenly)
                 SetJustifyCross(Center)
-                Splat<Border>(1px)
-                BorderColor(#FFFFFF)
 
                 "password"
                     FlexNode{flex_direction:Row}
@@ -292,8 +309,9 @@ ui.user.widgets as widgets
                     TextLine{text:"Join Lobby"}
 
             "subtitle"
+                Margin{top:10px}
                 "text"
-                    TextLine
+                    TextLine{size:22}
                     TextLineColor(#FFFFFF)
 
             "content"

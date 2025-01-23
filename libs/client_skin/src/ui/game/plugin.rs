@@ -18,8 +18,8 @@ fn edit_header(mut h: UiSceneHandle)
     h.get("name_shim::name")
         .update(|id: TargetId, mut e: TextEditor, context: Res<ClientContext>| {
             match context.client_type() {
-                ClientType::Player => write_text!(e, *id, "Player {}", context.id().get()),
-                ClientType::Watcher => write_text!(e, *id, "Watcher {}", context.id().get()),
+                ClientType::Player => write_text!(e, *id, "player{}", context.id().get()),
+                ClientType::Watcher => write_text!(e, *id, "watcher{}", context.id().get()),
             };
         });
     h.get("fps::text").update_on(
@@ -39,7 +39,7 @@ fn edit_header(mut h: UiSceneHandle)
 
 fn edit_content(mut h: UiSceneHandle)
 {
-    edit_scoreboard(h.get("scoreboard"));
+    edit_scoreboard(h.get("scoreboard_shim::scoreboard"));
 
     // Clicker. This is how you 'play' the demo.
     h.get("button_area::click_button")

@@ -6,7 +6,7 @@ builtin.colors.tailwind as tw
 +request_indicator = \
     "frame"
         ControlMember
-        AbsoluteNode{width:100% flex_direction:Row}
+        AbsoluteNode{width:100% height:0px flex_direction:Row}
         Multi<Animated<PropagateOpacity>>[
             {idle:0}
             {state:[Custom("RequestPending")] idle:1}
@@ -18,15 +18,15 @@ builtin.colors.tailwind as tw
             FlexNode{flex_grow:1}
 
         "ref_point"
-            FlexNode{width:0px height:0px flex_direction:ColumnReverse}
+            FlexNode{width:0px height:0px}
 
             "indicator"
                 ControlMember
-                AbsoluteNode{top:auto bottom:-2px left:2px right:auto}
+                AbsoluteNode{top:auto bottom:1px left:1px right:auto}
                 Multi<Static<TextLine>>[
-                    {state:[Custom("RequestPending")] value:{text:"..." size:10}}
-                    {state:[Custom("RequestSucceeded")] value:{text:"√" size:13}}
-                    {state:[Custom("RequestFailed")] value:{text:"x" size:13}}
+                    {state:[Custom("RequestPending")] value:{text:"..." size:17}}
+                    {state:[Custom("RequestSucceeded")] value:{text:"√" size:20}} //TODO: proper check mark
+                    {state:[Custom("RequestFailed")] value:{text:"x" size:20}}
                 ]
                 Multi<Static<TextLineColor>>[
                     {state:[Custom("RequestPending")] value:$tw::BLUE_500}

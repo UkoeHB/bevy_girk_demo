@@ -31,7 +31,27 @@ fn pending_request_succeeded<M: Component>(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn pending_request_failed(
+fn pending_request_succeeded_erased(
+    c: &mut Commands,
+    request_id: u64,
+    pending_requests: &Query<(Entity, &React<PendingRequest>)>,
+)
+{
+    for (entity, pending_req) in pending_requests.iter() {
+        if pending_req.id() != request_id {
+            continue;
+        }
+        let Some(mut ec) = c.get_entity(entity) else { continue };
+
+        ec.remove::<React<PendingRequest>>();
+        ec.react().entity_event(entity, RequestSucceeded);
+        break;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn pending_request_failed_erased(
     c: &mut Commands,
     request_id: u64,
     pending_requests: &Query<(Entity, &React<PendingRequest>)>,
@@ -341,7 +361,7 @@ pub(super) fn handle_request_ack(
     tracing::info!("request ack received; request={request_id}");
 
     //todo: consider allowing a custom callback for acks
-    pending_request_failed(&mut commands, request_id, &pending_requests);
+    pending_request_succeeded_erased(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -355,7 +375,7 @@ pub(super) fn handle_request_rejected(
     tracing::info!("request rejection received; request={request_id}");
 
     //todo: consider allowing a custom callback for rejections
-    pending_request_failed(&mut commands, request_id, &pending_requests);
+    pending_request_failed_erased(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -369,7 +389,7 @@ pub(super) fn handle_send_failed(
     tracing::info!("request {request_id} send failed");
 
     //todo: consider allowing a custom callback for failed sends
-    pending_request_failed(&mut commands, request_id, &pending_requests);
+    pending_request_failed_erased(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -383,7 +403,7 @@ pub(super) fn handle_response_lost(
     tracing::info!("request {request_id} response lost");
 
     //todo: consider allowing a custom callback for lost responses
-    pending_request_failed(&mut commands, request_id, &pending_requests);
+    pending_request_failed_erased(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -397,7 +417,7 @@ pub(super) fn handle_request_aborted(
     tracing::info!("request {request_id} aborted");
 
     //todo: consider allowing a custom callback for lost responses
-    pending_request_failed(&mut commands, request_id, &pending_requests);
+    pending_request_failed_erased(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

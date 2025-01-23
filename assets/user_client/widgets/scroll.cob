@@ -5,12 +5,12 @@
 
     "view"
         ScrollView
-        FlexNode{height:100% clipping:ScrollY flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+        FlexNode{height:100% flex_grow:1 clipping:ScrollY flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
 
         // TODO: remove this extra node in bevy 0.15.1
         "shim"
             ScrollShim
-            FlexNode{flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+            AbsoluteNode{flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
 
     // The vertical scrollbar is invisible if there is no scrollable content.
     // - Invisible but *not* removed from layout.
