@@ -11,7 +11,11 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn clear_pending_request<M: Component>(c: &mut Commands, request_id: u64, param: &PendingRequestParam<M>) -> bool
+fn pending_request_succeeded<M: Component>(
+    c: &mut Commands,
+    request_id: u64,
+    param: &PendingRequestParam<M>,
+) -> bool
 {
     let Some((entity, req_signal)) = param.request() else { return false };
     let Some(mut ec) = c.get_entity(entity) else { return false };
@@ -27,7 +31,7 @@ fn clear_pending_request<M: Component>(c: &mut Commands, request_id: u64, param:
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn remove_failed_pending_request(
+fn pending_request_failed(
     c: &mut Commands,
     request_id: u64,
     pending_requests: &Query<(Entity, &React<PendingRequest>)>,
@@ -262,7 +266,7 @@ pub(super) fn handle_lobby_search_result(
     tracing::info!("lobby search result received; request={request_id}");
 
     // clear pending request
-    if !clear_pending_request(&mut c, request_id, &pending_search) {
+    if !pending_request_succeeded(&mut c, request_id, &pending_search) {
         tracing::warn!("ignoring unexpected lobby search result for request {request_id}");
         return;
     }
@@ -279,23 +283,16 @@ pub(super) fn handle_lobby_join(
     In((request_id, lobby_data)): In<(u64, LobbyData)>,
     mut c: Commands,
     mut lobby_display: ReactResMut<LobbyDisplay>,
-    pending_join_lobby: PendingRequestParam<JoinLobby>,
-    pending_make_lobby: PendingRequestParam<MakeLobby>,
+    join_lobby_request: PendingRequestParam<JoinLobby>,
+    make_lobby_request: PendingRequestParam<MakeLobby>,
 )
 {
     let lobby_id = lobby_data.id;
     tracing::info!("join lobby received for lobby {lobby_id}; request={request_id}");
 
     // clear pending request
-    for maybe_pending in [pending_join_lobby.request(), pending_make_lobby.request()] {
-        let Some((entity, req_signal)) = maybe_pending else { continue };
-        if req_signal.id() != request_id {
-            continue;
-        }
-        let Some(mut ec) = c.get_entity(entity) else { continue };
-
-        ec.remove::<React<PendingRequest>>();
-        break;
+    if pending_request_succeeded(&mut c, request_id, &join_lobby_request) {
+    } else if pending_request_succeeded(&mut c, request_id, &make_lobby_request) {
     }
 
     // populate lobby display
@@ -327,7 +324,7 @@ pub(super) fn handle_connect_token(
     }
 
     // clear corresponding request
-    let _ = clear_pending_request(&mut c, request_id, &token_request);
+    let _ = pending_request_succeeded(&mut c, request_id, &token_request);
 
     // cache token so the game can be restarted as needed
     cached.set(game_id, token);
@@ -344,7 +341,7 @@ pub(super) fn handle_request_ack(
     tracing::info!("request ack received; request={request_id}");
 
     //todo: consider allowing a custom callback for acks
-    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
+    pending_request_failed(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -358,7 +355,7 @@ pub(super) fn handle_request_rejected(
     tracing::info!("request rejection received; request={request_id}");
 
     //todo: consider allowing a custom callback for rejections
-    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
+    pending_request_failed(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -372,7 +369,7 @@ pub(super) fn handle_send_failed(
     tracing::info!("request {request_id} send failed");
 
     //todo: consider allowing a custom callback for failed sends
-    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
+    pending_request_failed(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -386,7 +383,7 @@ pub(super) fn handle_response_lost(
     tracing::info!("request {request_id} response lost");
 
     //todo: consider allowing a custom callback for lost responses
-    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
+    pending_request_failed(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -400,7 +397,7 @@ pub(super) fn handle_request_aborted(
     tracing::info!("request {request_id} aborted");
 
     //todo: consider allowing a custom callback for lost responses
-    remove_failed_pending_request(&mut commands, request_id, &pending_requests);
+    pending_request_failed(&mut commands, request_id, &pending_requests);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

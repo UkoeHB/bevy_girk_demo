@@ -9,16 +9,18 @@ LoadImages[
 #defs
 +menu_button = \
     RadioButton
-    FlexNode{min_width:100%}
+    ControlRoot
+    FlexNode{width:150px}
     Interactive
     Multi<Responsive<BackgroundColor>>[
-        {idle:#000000 hover:#111111}
-        {state:[Selected] idle:#444444}
-        {state:[InLobby] idle:#003333 hover:#004444}
-        {state:[Selected InLobby] idle:#008888}
+        {idle:#000000 hover:#444444}
+        {state:[Selected] idle:#666666}
+        {state:[Custom("InLobby")] idle:#006666 hover:#007777}
+        {state:[Selected Custom("InLobby")] idle:#008888}
     ]
 
     "text"
+        ControlMember
         FlexNode{margin:{top:5px bottom:5px left:7px right:7px}}
         TextLine
         TextLineSize(25)

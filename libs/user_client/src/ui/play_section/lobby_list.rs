@@ -29,10 +29,8 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
 
                 // Spawn new entries
                 for (idx, lobby) in page.get().iter().enumerate() {
-                    c.ui_builder(*id).spawn_scene_and_edit(
-                        ("ui.user.sections.play", "lobby_list_entry"),
-                        &mut s,
-                        |h| {
+                    c.ui_builder(*id)
+                        .spawn_scene(("ui.user.sections.play", "lobby_list_entry"), &mut s, |h| {
                             h.get("text").update_text(format!(
                                         "Lobby: {:0>6}, Owner: {:0>6}, Players: {}/{}, Watchers: {}/{}",
                                         lobby.id % 1_000_000u64,
@@ -46,8 +44,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
                                 c.react()
                                     .broadcast(ActivateJoinLobbyPopup { lobby_list_index: idx });
                             });
-                        },
-                    );
+                        });
                 }
 
                 DONE

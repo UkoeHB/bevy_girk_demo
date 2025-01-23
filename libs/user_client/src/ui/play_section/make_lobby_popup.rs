@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
+use wiring_backend::MAX_LOBBY_PLAYERS;
 
 use crate::*;
 
@@ -35,6 +36,10 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
         DONE
     });
 
+    // Window
+    let popup_id = h.id();
+    let mut h = h.get("window");
+
     // Form fields
     h.edit("content::password", |_| {
         // does nothing yet
@@ -46,15 +51,25 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
                 write_text!(e, *id, "{}", data.config.max_players);
             },
         );
-        h.get("add_player_button")
+        h.get("buttons::add_player_button")
             .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
-                data.get_mut(&mut c).config.max_players += 1;
-            });
-        h.get("remove_player_button")
+                let data = data.get_mut(&mut c);
+                data.config.max_players += 1;
+                data.config.max_players = data.config.max_players.min(MAX_LOBBY_PLAYERS);
+            })
+            .enable_if(
+                resource_mutation::<MakeLobbyData>(),
+                |_: TargetId, data: ReactRes<MakeLobbyData>| data.config.max_players < MAX_LOBBY_PLAYERS,
+            );
+        h.get("buttons::remove_player_button")
             .on_pressed(|mut c: Commands, mut data: ReactResMut<MakeLobbyData>| {
                 let max = data.config.max_players;
-                data.get_mut(&mut c).config.max_players = max.saturating_sub(1);
-            });
+                data.get_mut(&mut c).config.max_players = max.saturating_sub(1).max(1);
+            })
+            .enable_if(
+                resource_mutation::<MakeLobbyData>(),
+                |_: TargetId, data: ReactRes<MakeLobbyData>| data.config.max_players > 1,
+            );
     });
     h.edit("content::join_as", |h| {
         h.get("value").update_text("Player");
@@ -102,10 +117,9 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
         );
     });
     // Note: the cancel button doesn't clear the lobby settings in case you want to resume where you left off.
-    let id = h.id();
     h.get("footer::cancel_button")
         .on_pressed(move |mut c: Commands| {
-            c.get_entity(id).result()?.despawn_recursive();
+            c.get_entity(popup_id).result()?.despawn_recursive();
             DONE
         });
 }

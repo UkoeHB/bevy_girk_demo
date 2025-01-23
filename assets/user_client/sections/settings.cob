@@ -4,5 +4,5 @@
     BackgroundColor(#000000)
 
     ""
-        TextLine{text:"..nothing to see here yet.."}
+        TextLine{text:"Nothing to see here yet..."}
         TextLineColor(#FFFFFF)

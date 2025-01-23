@@ -10,8 +10,11 @@ use crate::*;
 
 fn build_ack_popup(h: &mut UiSceneHandle) -> WarnErr
 {
-    let accept_id = h.get_entity("accept_button")?;
-    let cancel_id = h.get_entity("cancel_button")?;
+    // Window
+    let mut h = h.get("window");
+
+    let accept_id = h.get_entity("footer::accept_button")?;
+    let cancel_id = h.get_entity("footer::cancel_button")?;
     h.get("content::timer::text").update_on(
         resource_mutation::<AckRequestData>(),
         |id: TargetId, mut e: TextEditor, data: ReactRes<AckRequestData>| {
@@ -19,14 +22,14 @@ fn build_ack_popup(h: &mut UiSceneHandle) -> WarnErr
             write_text!(e, *id, "{}", secs_remaining);
         },
     );
-    h.get("accept_button")
+    h.get("footer::accept_button")
         .on_pressed(move |mut c: Commands, ps: PseudoStateParam| {
             c.syscall((), send_lobby_ack);
             ps.try_disable(&mut c, accept_id);
             // Don't disable reject button because we can reject after acking if the ack request isn't completely
             // acked yet.
         });
-    h.get("cancel_button")
+    h.get("footer::cancel_button")
         .on_pressed(move |mut c: Commands, ps: PseudoStateParam| {
             c.syscall((), send_lobby_nack);
             ps.try_disable(&mut c, accept_id); // Also disable accept button since nacking takes precedence.

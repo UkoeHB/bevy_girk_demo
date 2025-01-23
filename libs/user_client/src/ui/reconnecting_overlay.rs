@@ -14,7 +14,7 @@ fn try_spawn_reconnecting_overlay(mut c: Commands, mut s: SceneBuilder, starter:
     }
 
     c.ui_root()
-        .spawn_scene_and_edit(("ui.user", "reconnecting_overlay"), &mut s, |h| {
+        .spawn_scene(("ui.user", "reconnecting_overlay"), &mut s, |h| {
             h.insert(StateScoped(ClientAppState::Client));
 
             h.update_on(

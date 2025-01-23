@@ -16,14 +16,14 @@ pub(crate) fn build_play_section(h: &mut UiSceneHandle)
             c.get_entity(*id).result()?.despawn_descendants();
             match display.is_set() {
                 true => {
-                    c.ui_builder(*id).spawn_scene_and_edit(
+                    c.ui_builder(*id).spawn_scene(
                         ("ui.user.sections.play", "lobby_display"),
                         &mut s,
                         build_lobby_display,
                     );
                 }
                 false => {
-                    c.ui_builder(*id).spawn_scene_and_edit(
+                    c.ui_builder(*id).spawn_scene(
                         ("ui.user.sections.play", "lobby_list"),
                         &mut s,
                         build_lobby_list,

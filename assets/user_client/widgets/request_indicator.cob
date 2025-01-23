@@ -10,8 +10,8 @@ builtin.colors.tailwind as tw
         Multi<Animated<PropagateOpacity>>[
             {idle:0}
             {state:[Custom("RequestPending")] idle:1}
-            {state:[Custom("RequestSucceeded")] enter_ref:1 idle:0 enter_idle_with:{delay:0.75 duration:0.2 ease:ExpOut}}
-            {state:[Custom("RequestFailed")] enter_ref:1 idle:0 enter_idle_with:{delay:0.75 duration:0.2 ease:ExpOut}}
+            {state:[Custom("RequestSucceeded")] enter_ref_override:1 idle:0 enter_idle_with:{delay:0.75 duration:0.2 ease:OutExpo}}
+            {state:[Custom("RequestFailed")] enter_ref_override:1 idle:0 enter_idle_with:{delay:0.75 duration:0.2 ease:OutExpo}}
         ]
 
         "shim"

@@ -71,7 +71,7 @@ fn edit_footer(mut h: UiSceneHandle)
 fn build_ui(mut c: Commands, mut s: SceneBuilder)
 {
     let scene = ("ui.skin.game", "game");
-    c.ui_root().spawn_scene_and_edit(scene, &mut s, |h| {
+    c.ui_root().spawn_scene(scene, &mut s, |h| {
         h.insert(StateScoped(ClientAppState::Game));
 
         edit_header(h.get("header"));

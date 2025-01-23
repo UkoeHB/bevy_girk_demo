@@ -49,24 +49,18 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
 
             let lobby_content = display.get().result()?;
             for (_, player_id) in lobby_content.players.iter() {
-                c.ui_builder(*id).spawn_scene_and_edit(
-                    ("ui.user.sections.play", "lobby_display_member"),
-                    &mut s,
-                    |h| {
+                c.ui_builder(*id)
+                    .spawn_scene(("ui.user.sections.play", "lobby_display_member"), &mut s, |h| {
                         h.get("text")
                             .update_text(format!("Player: {:0>6}", player_id % 1_000_000u128));
-                    },
-                );
+                    });
             }
             for (_, watcher_id) in lobby_content.watchers.iter() {
-                c.ui_builder(*id).spawn_scene_and_edit(
-                    ("ui.user.sections.play", "lobby_display_member"),
-                    &mut s,
-                    |h| {
+                c.ui_builder(*id)
+                    .spawn_scene(("ui.user.sections.play", "lobby_display_member"), &mut s, |h| {
                         h.get("text")
                             .update_text(format!("Watcher: {:0>6}", watcher_id % 1_000_000u128));
-                    },
-                );
+                    });
             }
 
             DONE

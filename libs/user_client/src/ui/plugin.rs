@@ -8,18 +8,17 @@ use super::*;
 
 fn build_ui(mut c: Commands, mut s: SceneBuilder)
 {
-    c.ui_root()
-        .spawn_scene_and_edit(("ui.user", "main"), &mut s, |h| {
-            h.insert(StateScoped(ClientAppState::Client));
+    c.ui_root().spawn_scene(("ui.user", "main"), &mut s, |h| {
+        h.insert(StateScoped(ClientAppState::Client));
 
-            let content_id = h.get_entity("content")?;
+        let content_id = h.get_entity("content")?;
 
-            h.edit("sidebar", |h| {
-                h.spawn_scene_and_edit(("ui.user.sidebar", "sidebar"), |h| build_sidebar(h, content_id));
-            });
-
-            OK
+        h.edit("sidebar", |h| {
+            h.spawn_scene(("ui.user.sidebar", "sidebar"), |h| build_sidebar(h, content_id));
         });
+
+        OK
+    });
 }
 
 //-------------------------------------------------------------------------------------------------------------------

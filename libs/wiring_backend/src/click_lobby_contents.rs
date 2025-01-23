@@ -111,7 +111,7 @@ impl ClickLobbyContents
     /// This can be used to indicate to a user if a lobby is ready to launch.
     pub fn can_launch_hosted(&self) -> bool
     {
-        ClickLobbyChecker::can_launch_hosted(self.players.len(), MIN_PLAYERS_TO_LAUNCH)
+        ClickLobbyChecker::can_launch_hosted(self.players.len(), MIN_PLAYERS_TO_LAUNCH as usize)
     }
 }
 

@@ -59,6 +59,10 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
         DONE
     });
 
+    // Window
+    let popup_id = h.id();
+    let mut h = h.get("window");
+
     // Sub-title
     h.get("subtitle::text").update_on(
         resource_mutation::<JoinLobbyData>(),
@@ -72,15 +76,15 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
     );
 
     // Form fields
-    h.edit("password", |_| {
+    h.edit("content::password", |_| {
         // does nothing yet
     });
-    h.edit("join_as", |h| {
+    h.edit("content::join_as", |h| {
         h.get("value").update_text("Player");
     });
 
     // Popup buttons
-    h.edit("accept_button", |h| {
+    h.edit("footer::accept_button", |h| {
         setup_request_tracker::<JoinLobby>(h);
 
         // This is where the magic happens.
@@ -100,10 +104,9 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
             },
         );
     });
-    let id = h.id();
-    h.get("cancel_button")
+    h.get("footer::cancel_button")
         .on_pressed(move |mut c: Commands, mut data: ReactResMut<JoinLobbyData>| {
-            c.get_entity(id).result()?.despawn_recursive();
+            c.get_entity(popup_id).result()?.despawn_recursive();
             data.get_mut(&mut c).clear();
             DONE
         });

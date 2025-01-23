@@ -17,7 +17,7 @@ ui.user.widgets as widgets
     ControlRoot
     FlexNode{justify_main:Center justify_cross:Center}
     Multi<Responsive<BackgroundColor>>[
-        {idle:#FFFFFF hover:#EEEEEE press:#DDDDDD} {state:[Disabled] idle:#AAAAAA}
+        {idle:#FFFFFF hover:#AAAAAA press:#888888} {state:[Disabled] idle:#777777}
     ]
 
     "text"
@@ -67,7 +67,7 @@ ui.user.widgets as widgets
         FlexNode{width:100% flex_grow:1 flex_direction:Column justify_main:FlexStart justify_cross:Center}
 
         "member_list"
-            +scroll{
+            +widgets::scroll{
                 FlexNode{min_width:70% height:80% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
                 Splat<Border>(1px)
                 BorderColor(#FFFFFF)
@@ -106,7 +106,7 @@ ui.user.widgets as widgets
 
 
 "lobby_list"
-    FlexNode{width:100% height:100%}
+    FlexNode{width:100% height:100% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
 
     "header"
         FlexNode{width:100%}
@@ -119,28 +119,31 @@ ui.user.widgets as widgets
                 TextLineColor(#FFFFFF)
 
     "content"
-        FlexNode{min_width:70% height:90% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+        FlexNode{
+            min_width:70% height:70%
+            flex_direction:Column justify_main:FlexStart justify_cross:FlexStart justify_self_cross:Center
+        }
 
         "upper_control"
             FlexNode{width:100% flex_direction:Row justify_main:FlexEnd justify_cross:Center}
 
             "loading_text"
                 Multi<Static<Visibility>>[
-                    {value:Show}
-                    {state:[Disabled] value:Hide}
+                    {value:Inherited}
+                    {state:[Disabled] value:Hidden}
                 ]
-                TextLine{text:"Loading..."}
+                TextLine{text:"Loading..." size:10}
                 TextLineColor(#FFFFFF)
 
             "refresh_button"
                 +button{
                     "text"
                         FlexNode{margin:{top:3px bottom:3px left:5px right:5px}}
-                        TextLine{text:"Refresh" size:10}
+                        TextLine{text:"Refresh" size:13}
                 }
 
         "list"
-            +scroll{
+            +widgets::scroll{
                 FlexNode{min_width:100% height:100% flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
                 Splat<Border>(1px)
                 BorderColor(#FFFFFF)
@@ -155,30 +158,30 @@ ui.user.widgets as widgets
             "paginate_now_button"
                 +button{
                     "text"
-                        FlexNode{margin:{top:3px bottom:3px left:5px right:5px}}
-                        TextLine{text:"<<" size:10}
+                        FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
+                        TextLine{text:"<<" size:13}
                 }
             "paginate_left_button"
                 +button{
                     "text"
-                        FlexNode{margin:{top:3px bottom:3px left:5px right:5px}}
-                        TextLine{text:"<" size:10}
+                        FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
+                        TextLine{text:"<" size:13}
                 }
             "page_stats"
                 "text"
-                    TextLine{size:10}
+                    TextLine{size:13}
                     TextLineColor(#FFFFFF)
             "paginate_right_button"
                 +button{
                     "text"
-                        FlexNode{margin:{top:3px bottom:3px left:5px right:5px}}
-                        TextLine{text:">" size:10}
+                        FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
+                        TextLine{text:">" size:13}
                 }
             "paginate_oldest_button"
                 +button{
                     "text"
-                        FlexNode{margin:{top:3px bottom:3px left:5px right:5px}}
-                        TextLine{text:">>" size:10}
+                        FlexNode{margin:{top:4px bottom:4px left:15px right:15px}}
+                        TextLine{text:">>" size:13}
                 }
 
         "make_lobby_button"
@@ -204,112 +207,125 @@ ui.user.widgets as widgets
 
 "make_lobby_popup"
     +widgets::popup{
-        "title"
-            "text"
-                TextLine{text:"New Lobby"}
-
-        "content"
-            SetJustifyMain(SpaceEvenly)
-            SetJustifyCross(Center)
-
-            "password"
-                FlexNode{flex_direction:Row}
-
-                "fieldname"
-                    TextLine{text:"Password:"}
-                    TextLineColor(#FFFFFF)
-                "inputfield"
-                    TextLine{text:"..not yet supported.."}
-                    TextLineColor(#FFFFFF)
-
-            "max_players"
-                FlexNode{flex_direction:Row}
-
-                "fieldname"
-                    TextLine{text:"Max Players:"}
-                    TextLineColor(#FFFFFF)
-                "value"
-                    TextLine
-                    TextLineColor(#FFFFFF)
-                "buttons"
-                    FlexNode{flex_direction:Column}
-                    "add_player_button"
-                        +popup_button{
-                            "text"
-                                FlexNode{margin:{top:2px bottom:2px left:3px right:3px}
-                                TextLine{text:"+" size:15}
-                        }
-                    "remove_player_button"
-                        +popup_button{
-                            "text"
-                                FlexNode{margin:{top:2px bottom:2px left:3px right:3px}
-                                TextLine{text:"-" size:15}
-                        }
-            "join_as"
-                FlexNode{flex_direction:Row}
-
-                "fieldname"
-                    TextLine{text:"Join As:"}
-                    TextLineColor(#FFFFFF)
-                "value"
-                    TextLine
-                    TextLineColor(#FFFFFF)
-
-            "connection_notice"
+        "window"
+            "title"
                 "text"
-                    TextLine
-                    TextLineColor(#FFFFFF)
+                    TextLine{text:"New Lobby"}
 
-        "footer"
-            "cancel_button"
-                "text"
-                    TextLine{text:"Cancel"}
-            "accept_button"
-                +widgets::request_indicator{}
-                "text"
-                    TextLine{text:"Make"}
+            "content"
+                SetJustifyMain(SpaceEvenly)
+                SetJustifyCross(Center)
+                Splat<Border>(1px)
+                BorderColor(#FFFFFF)
+
+                "password"
+                    FlexNode{flex_direction:Row}
+
+                    "fieldname"
+                        TextLine{text:"Password:"}
+                        TextLineColor(#FFFFFF)
+                        Margin{right:5px}
+                    "inputfield"
+                        TextLine{text:"not yet supported..."}
+                        TextLineColor(#FFFFFF)
+
+                "max_players"
+                    FlexNode{flex_direction:Row}
+
+                    "fieldname"
+                        TextLine{text:"Max Players:"}
+                        TextLineColor(#FFFFFF)
+                        Margin{right:5px}
+                    "value"
+                        TextLine
+                        TextLineColor(#FFFFFF)
+                    "buttons"
+                        FlexNode{flex_direction:Row justify_self_cross:Center}
+                        Margin{left:7px}
+                        "remove_player_button"
+                            +widgets::popup_button{
+                                FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
+                                "text"
+                                    TextLine{text:"-" size:20}
+                            }
+                        ""
+                            FlexNode{width:8px}
+                        "add_player_button"
+                            +widgets::popup_button{
+                                FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
+                                "text"
+                                    TextLine{text:"+" size:20}
+                            }
+                "join_as"
+                    FlexNode{flex_direction:Row}
+
+                    "fieldname"
+                        TextLine{text:"Join As:"}
+                        TextLineColor(#FFFFFF)
+                        Margin{right:5px}
+                    "value"
+                        TextLine
+                        TextLineColor(#FFFFFF)
+
+                "connection_notice"
+                    AbsoluteNode{width:100% top:auto bottom:0% justify_main:Center justify_cross:Center}
+                    "text"
+                        TextLine{size:20}
+                        TextLineColor(#FFFFFF)
+
+            "footer"
+                "cancel_button"
+                    "text"
+                        TextLine{text:"Cancel"}
+                "accept_button"
+                    +widgets::request_indicator{}
+                    "text"
+                        TextLine{text:"Make"}
     }
 
 
 "join_lobby_popup"
     +widgets::popup{
-        "title"
-            "text"
-                TextLine{text:"Join Lobby"}
+        "window"
+            "title"
+                "text"
+                    TextLine{text:"Join Lobby"}
 
-        "subtitle"
-            "text"
-                TextLine
-                TextLineColor(#FFFFFF)
-
-        "content"
-            SetJustifyMain(SpaceEvenly)
-            SetJustifyCross(Center)
-            "password"
-                FlexNode{flex_direction:Row}
-                "fieldname"
-                    TextLine{text:"Password:"}
-                    TextLineColor(#FFFFFF)
-                "inputfield"
-                    TextLine{text:"..not yet supported.."}
-                    TextLineColor(#FFFFFF)
-            "join_as"
-                FlexNode{flex_direction:Row}
-                "fieldname"
-                    TextLine{text:"Join As:"}
-                    TextLineColor(#FFFFFF)
-                "value"
+            "subtitle"
+                "text"
                     TextLine
                     TextLineColor(#FFFFFF)
 
-        "footer"
-            "cancel_button"
-                "text"
-                    TextLine{text:"Cancel"}
-            "accept_button"
-                +widgets::request_indicator{}
-                "text"
-                    TextLine{text:"Join"}
+            "content"
+                SetJustifyMain(SpaceEvenly)
+                SetJustifyCross(Center)
+                "password"
+                    FlexNode{flex_direction:Row}
+                    "fieldname"
+                        TextLine{text:"Password:"}
+                        TextLineColor(#FFFFFF)
+                        Margin{right:5px}
+                    "inputfield"
+                        TextLine{text:"not yet supported..."}
+                        TextLineColor(#FFFFFF)
+                "join_as"
+                    FlexNode{flex_direction:Row}
+                    "fieldname"
+                        TextLine{text:"Join As:"}
+                        TextLineColor(#FFFFFF)
+                        Margin{right:5px}
+                    "value"
+                        TextLine
+                        TextLineColor(#FFFFFF)
+
+            "footer"
+                "cancel_button"
+                    "text"
+                        TextLine{text:"Cancel"}
+                "accept_button"
+                    +widgets::request_indicator{}
+                    "text"
+                        TextLine{text:"Join"}
     }
 
 

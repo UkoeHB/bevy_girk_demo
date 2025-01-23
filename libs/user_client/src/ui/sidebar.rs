@@ -22,13 +22,13 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
 {
     // menu options
     h.get("options")
-        .spawn_scene_and_edit(("ui.user.sidebar", "home_button"), |h| {
+        .spawn_scene(("ui.user.sidebar", "home_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
                     c.get_entity(content_id).result()?.despawn_descendants();
 
                     *section = MenuContentSection::Home;
-                    c.ui_builder(content_id).spawn_scene_and_edit(
+                    c.ui_builder(content_id).spawn_scene(
                         ("ui.user.sections.home", "home"),
                         &mut s,
                         build_home_section,
@@ -42,13 +42,13 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
             let id = h.id();
             h.react().entity_event(id, Select);
         })
-        .spawn_scene_and_edit(("ui.user.sidebar", "play_button"), |h| {
+        .spawn_scene(("ui.user.sidebar", "play_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
                     c.get_entity(content_id).result()?.despawn_descendants();
 
                     *section = MenuContentSection::Play;
-                    c.ui_builder(content_id).spawn_scene_and_edit(
+                    c.ui_builder(content_id).spawn_scene(
                         ("ui.user.sections.play", "play"),
                         &mut s,
                         build_play_section,
@@ -71,13 +71,13 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
                 },
             );
         })
-        .spawn_scene_and_edit(("ui.user.sidebar", "settings_button"), |h| {
+        .spawn_scene(("ui.user.sidebar", "settings_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
                     c.get_entity(content_id).result()?.despawn_descendants();
 
                     *section = MenuContentSection::Settings;
-                    c.ui_builder(content_id).spawn_scene_and_edit(
+                    c.ui_builder(content_id).spawn_scene(
                         ("ui.user.sections.settings", "settings"),
                         &mut s,
                         build_settings_section,
@@ -90,7 +90,7 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
 
     // footer
     h.get("footer")
-        .spawn_scene_and_edit(("ui.user.sidebar", "user_info"), |h| {
+        .spawn_scene(("ui.user.sidebar", "user_info"), |h| {
             h.get("id_text").update_on(
                 broadcast::<NewHostUserClient>(),
                 |id: TargetId, client: Res<HostUserClient>, mut e: TextEditor| {

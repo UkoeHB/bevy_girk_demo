@@ -26,9 +26,9 @@ fn make_host_server_configs() -> HostServerStartupPack
     let lobbies_cache_config = LobbiesCacheConfig {
         max_request_size: LOBBY_LIST_SIZE as u16,
         lobby_checker: Box::new(ClickLobbyChecker {
-            max_lobby_players: MAX_LOBBY_PLAYERS as u16,
-            max_lobby_watchers: MAX_LOBBY_WATCHERS as u16,
-            min_players_to_launch: MIN_PLAYERS_TO_LAUNCH as u16,
+            max_lobby_players: MAX_LOBBY_PLAYERS,
+            max_lobby_watchers: MAX_LOBBY_WATCHERS,
+            min_players_to_launch: MIN_PLAYERS_TO_LAUNCH,
         }),
     };
     let pending_lobbies_cache_config = PendingLobbiesConfig {

@@ -100,15 +100,15 @@ pub(super) fn edit_scoreboard(mut h: UiSceneHandle)
                 let mut player_text = Entity::PLACEHOLDER;
                 let mut score_text = Entity::PLACEHOLDER;
                 // These are separate scenes because we are using grid layout.
-                builder.spawn_scene_and_edit(rank_item, &mut s, |h| {
+                builder.spawn_scene(rank_item, &mut s, |h| {
                     h.get("text")
                         .update_text(format!("{}.", idx + 1));
                 });
-                builder.spawn_scene_and_edit(player_item, &mut s, |h| {
+                builder.spawn_scene(player_item, &mut s, |h| {
                     player_text = h.get_entity("text")?;
                     DONE
                 });
-                builder.spawn_scene_and_edit(score_item, &mut s, |h| {
+                builder.spawn_scene(score_item, &mut s, |h| {
                     score_text = h.get_entity("text")?;
                     DONE
                 });

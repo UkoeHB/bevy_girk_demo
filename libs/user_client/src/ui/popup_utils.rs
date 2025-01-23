@@ -25,7 +25,7 @@ pub(crate) fn setup_reactres_managed_popup<T: ReactResource, R: CobwebResult>(
 
         match should_open {
             true => {
-                c.ui_root().spawn_scene_and_edit(scene_ref, &mut s, |h| {
+                c.ui_root().spawn_scene(scene_ref, &mut s, |h| {
                     *popup = Some(h.id());
 
                     h.insert(StateScoped(ClientAppState::Client));
@@ -59,7 +59,7 @@ pub(crate) fn setup_broadcast_popup<T: Send + Sync + 'static, R: CobwebResult>(
     {
         let event = event.try_read()?;
 
-        c.ui_root().spawn_scene_and_edit(scene_ref, &mut s, |h| {
+        c.ui_root().spawn_scene(scene_ref, &mut s, |h| {
             h.insert(StateScoped(ClientAppState::Client));
             (build_fn)(event, h)
         });

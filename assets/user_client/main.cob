@@ -37,24 +37,25 @@ ui.user.widgets as widgets
 
 "ack_popup"
     +widgets::popup{
-        "title"
-            "text"
-                TextLine{text:"Start Game"}
+        "window"
+            "title"
+                "text"
+                    TextLine{text:"Start Game"}
 
-        "content"
-            SetJustifyMain(Center)
-            SetJustifyCross(Center)
-            // Add timer to content
-            "timer"
-                "text"
-                    TextLine
-                    TextLineColor(#FFFFFF)
+            "content"
+                SetJustifyMain(Center)
+                SetJustifyCross(Center)
+                // Add timer to content
+                "timer"
+                    "text"
+                        TextLine
+                        TextLineColor(#FFFFFF)
 
-        "footer"
-            "cancel_button"
-                "text"
-                    TextLine{text:"Reject"}
-            "accept_button"
-                "text"
-                    TextLine{text:"Accept"}
+            "footer"
+                "cancel_button"
+                    "text"
+                        TextLine{text:"Reject"}
+                "accept_button"
+                    "text"
+                        TextLine{text:"Accept"}
     }
