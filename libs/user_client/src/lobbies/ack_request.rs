@@ -28,7 +28,7 @@ fn focus_window_for_ack_request(
 )
 {
     // try to reset
-    if !ack_request.is_set() {
+    if !ack_request.is_set() || ack_request.is_acked() || ack_request.is_nacked() {
         *state = AckFocusState::None;
         return;
     }
