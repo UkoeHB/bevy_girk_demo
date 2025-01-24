@@ -10,6 +10,7 @@ Networked buttons should indicate request status.
 
 #import
 ui.user.widgets as widgets
+ui_common.constants as const
 
 #defs
 //todo: improve results when resizing window
@@ -225,6 +226,7 @@ ui.user.widgets as widgets
 
 
 "make_lobby_popup"
+    GlobalZIndex($const::ZINDEX_MAKE_LOBBY_POPUP)
     +widgets::popup{
         "window"
             "title"
@@ -302,6 +304,7 @@ ui.user.widgets as widgets
 
 
 "join_lobby_popup"
+    GlobalZIndex($const::ZINDEX_JOIN_LOBBY_POPUP)
     +widgets::popup{
         "window"
             "title"

@@ -8,10 +8,11 @@ test    = false
 doctest = false
 
 [dependencies]
-bevy                     = { workspace = true }
-bevy_replicon            = { workspace = true }
-serde                    = { workspace = true }
-tracing                  = { workspace = true }
+bevy = { workspace = true }
+bevy_replicon = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }
+wasm-timer = { workspace = true }
 
 bevy_girk_client_fw       = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }

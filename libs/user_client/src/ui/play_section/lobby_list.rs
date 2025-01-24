@@ -92,6 +92,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
 
     h.get("content::make_lobby_button")
         .on_pressed(|mut c: Commands| {
+            tracing::trace!("activating make lobby popup");
             c.react().broadcast(ActivateMakeLobbyPopup);
         })
         // Disable when lobby display is set to avoid race conditions around auto-leaving the current lobby

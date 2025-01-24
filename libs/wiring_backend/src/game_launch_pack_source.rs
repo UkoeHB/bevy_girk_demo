@@ -64,7 +64,7 @@ fn launch_pack_from_req(
 
 pub fn get_launch_pack(
     game_factory_config: ClickGameFactoryConfig,
-    mut lobby_contents: ClickLobbyContents,
+    #[allow(unused_mut)] mut lobby_contents: ClickLobbyContents,
 ) -> Result<GameLaunchPack, ()>
 {
     // extract players/watchers from lobby contents

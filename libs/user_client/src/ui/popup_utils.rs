@@ -48,14 +48,14 @@ pub(crate) fn setup_reactres_managed_popup<T: ReactResource, R: CobwebResult>(
 pub(crate) fn setup_broadcast_popup<T: Send + Sync + 'static, R: CobwebResult>(
     scene_ref: (&'static str, &'static str),
     build_fn: fn(&T, &mut UiSceneHandle) -> R,
-) -> impl IntoSystem<(), DropErr, ()> + Send + Sync + 'static
+) -> impl IntoSystem<(), WarnErr, ()> + Send + Sync + 'static
 {
     IntoSystem::into_system(
         move |//
         event: BroadcastEvent<T>,
         mut c: Commands,
         mut s: SceneBuilder//
-    | -> DropErr
+    | -> WarnErr
     {
         let event = event.try_read()?;
 
@@ -64,7 +64,7 @@ pub(crate) fn setup_broadcast_popup<T: Send + Sync + 'static, R: CobwebResult>(
             (build_fn)(event, h)
         });
 
-        DONE
+        OK
     },
     )
 }

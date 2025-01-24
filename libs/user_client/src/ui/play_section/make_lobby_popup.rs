@@ -9,6 +9,8 @@ use crate::*;
 
 pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiSceneHandle)
 {
+    tracing::trace!("building make lobby popup");
+
     // Reactors for auto-closing the popup.
     h.reactor(
         broadcast::<RequestEnded<MakeLobby>>(),

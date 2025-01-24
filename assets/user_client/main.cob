@@ -36,6 +36,7 @@ ui.user.widgets as widgets
         TextLineColor(#FFFFFF)
 
 "ack_popup"
+    GlobalZIndex($const::ZINDEX_ACK_LOBBY_POPUP)
     +widgets::popup{
         "window"
             "title"

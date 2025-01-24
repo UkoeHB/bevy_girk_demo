@@ -15,10 +15,12 @@
             {value:#000000} {state:[Disabled] value:#CC000000}
         ]
 \
+// Requires a suitable `GlobalZIndex`.
 +popup = \
     FlexNode{width:100vw height:100vh justify_main:Center justify_cross:Center}
     FocusPolicy::Block
     Picking::Block
+    GlobalZIndex(1)
     BackgroundColor(#90444444)
 
     "window"

@@ -48,21 +48,24 @@ fn main()
 
     // log to stdout
     //todo: log to file?
-    let filter = tracing_subscriber::EnvFilter::builder()
-        .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
-        .from_env()
-        .unwrap()
-        .add_directive("ezsockets=error".parse().unwrap())
-        .add_directive("bevy_girk_game_instance=trace".parse().unwrap())
-        .add_directive("user_client=trace".parse().unwrap())
-        .add_directive("user_client=trace".parse().unwrap())
-        .add_directive("bevy_girk_wiring=trace".parse().unwrap())
-        .add_directive("bevy_girk_utils=trace".parse().unwrap())
-        .add_directive("bevy_simplenet=error".parse().unwrap());
-    tracing_subscriber::FmtSubscriber::builder()
-        .with_env_filter(filter)
-        .with_writer(std::io::stdout)
-        .init();
+    #[cfg(not(target_family = "wasm"))]
+    {
+        let filter = tracing_subscriber::EnvFilter::builder()
+            .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
+            .from_env()
+            .unwrap()
+            .add_directive("ezsockets=error".parse().unwrap())
+            .add_directive("bevy_girk_game_instance=trace".parse().unwrap())
+            .add_directive("user_client=trace".parse().unwrap())
+            .add_directive("user_client=trace".parse().unwrap())
+            .add_directive("bevy_girk_wiring=trace".parse().unwrap())
+            .add_directive("bevy_girk_utils=trace".parse().unwrap())
+            .add_directive("bevy_simplenet=error".parse().unwrap());
+        tracing_subscriber::FmtSubscriber::builder()
+            .with_env_filter(filter)
+            .with_writer(std::io::stdout)
+            .init();
+    }
 
     // cli args
     let args = ClientCli::parse();

@@ -6,7 +6,6 @@ use bevy::prelude::*;
 use bevy_girk_client_fw::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
-use bevy_girk_utils::*;
 use bevy_girk_wiring_common::*;
 use bevy_girk_wiring_server::*;
 use bevy_replicon::prelude::*;
@@ -83,7 +82,20 @@ fn prepare_game_startup(
     debug_assert_eq!(client_set.len(), start_infos.len());
 
     // finalize
-    let game_context = ClickGameContext::new(gen_rand128(), duration_config);
+    let seed = {
+        // Seed is only needed on WASM when making a local-player game.
+        #[cfg(target_family = "wasm")]
+        {
+            wasm_timer::SystemTime::now()
+                .duration_since(wasm_timer::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        }
+
+        #[cfg(not(target_family = "wasm"))]
+        bevy_girk_utils::gen_rand128()
+    };
+    let game_context = ClickGameContext::new(seed, duration_config);
 
     Ok(GameStartupHelper {
         client_set: GameFwClients::new(client_set),
