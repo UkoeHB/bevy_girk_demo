@@ -13,6 +13,8 @@ ui.user.widgets as widgets
 ui_common.constants as const
 
 #defs
+$lobby_list_line_color = #77FFFFFF
+$lobby_list_text_size = 20
 //todo: improve results when resizing window
 +button = \
     ControlRoot
@@ -76,7 +78,7 @@ ui_common.constants as const
         "member_list"
             +widgets::scroll{
                 FlexNode{
-                    min_width:70% height:80%
+                    min_width:500px width:80% flex_grow:1
                     flex_direction:Row justify_main:FlexStart justify_cross:FlexStart
                 }
                 Splat<Border>(1px)
@@ -88,7 +90,10 @@ ui_common.constants as const
             }
 
     "footer"
-        FlexNode{width:100% flex_direction:Row justify_main:SpaceEvenly justify_cross:Center}
+        FlexNode{
+            width:100% margin:{top:25px}
+            flex_direction:Row justify_main:SpaceEvenly justify_cross:Center
+        }
 
         "leave"
             FlexNode{flex_direction:Column justify_main:Center justify_cross:Center}
@@ -126,7 +131,7 @@ ui_common.constants as const
 
         "title"
             FlexNode{
-                width:100% margin:{top:20px bottom:4px}
+                width:100% margin:{top:20px bottom:0px}
                 flex_direction:Row justify_main:Center justify_cross:Center}
 
             "text"
@@ -135,12 +140,15 @@ ui_common.constants as const
 
     "content"
         FlexNode{
-            min_width:70% flex_grow:1
+            width:500px flex_grow:1
             flex_direction:Column justify_main:FlexStart justify_cross:FlexStart justify_self_cross:Center
         }
 
         "upper_control"
-            FlexNode{width:100% flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+            FlexNode{
+                width:100% margin:{bottom:4px}
+                flex_direction:Row justify_main:FlexEnd justify_cross:Center
+            }
 
             "loading_text"
                 Multi<Static<Visibility>>[
@@ -160,14 +168,60 @@ ui_common.constants as const
         "list"
             +widgets::scroll{
                 FlexNode{
-                    min_width:100% flex_grow:1
-                    flex_direction:Row justify_main:FlexStart justify_cross:FlexStart}
+                    width:100% flex_grow:1
+                    flex_direction:Row justify_main:FlexStart justify_cross:FlexStart
+                }
                 Splat<Border>(1px)
                 BorderColor(#FFFFFF)
 
                 "view"
                     "shim"
-                        Padding{left:8px top:4px}
+                        AbsoluteNode{width:100% flex_direction:Column}
+                        "header"
+                            GridNode{
+                                width:100%
+                                grid_template_columns:[1.1fr 1.1fr 1fr 1fr 0.5fr]
+                                grid_template_rows:[auto]
+                            }
+
+                            "lobby"
+                                FlexNode{height:100% justify_main:Center justify_cross:Center}
+                                Border{right:1px bottom:1px}
+                                BorderColor($lobby_list_line_color)
+                                ""
+                                    Margin{top:5px bottom:5px}
+                                    TextLine{text:"Lobby" size:$lobby_list_text_size}
+                            "owner"
+                                FlexNode{height:100% justify_main:Center justify_cross:Center}
+                                Border{right:1px bottom:1px}
+                                BorderColor($lobby_list_line_color)
+                                ""
+                                    Margin{top:5px bottom:5px}
+                                    TextLine{text:"Owner" size:$lobby_list_text_size}
+                            "players"
+                                FlexNode{height:100% justify_main:Center justify_cross:Center}
+                                Border{right:1px bottom:1px}
+                                BorderColor($lobby_list_line_color)
+                                ""
+                                    Margin{top:5px bottom:5px}
+                                    TextLine{text:"Players" size:$lobby_list_text_size}
+                            "watchers"
+                                FlexNode{height:100% justify_main:Center justify_cross:Center}
+                                Border{right:1px bottom:1px}
+                                BorderColor($lobby_list_line_color)
+                                ""
+                                    Margin{top:5px bottom:5px}
+                                    TextLine{text:"Watchers" size:$lobby_list_text_size}
+                            "join_shim"
+                                FlexNode{height:100%}
+                                Border{bottom:1px}
+                                BorderColor($lobby_list_line_color)
+                        "entries"
+                            GridNode{
+                                width:100%
+                                grid_template_columns:[1.1fr 1.1fr 1fr 1fr 0.5fr]
+                                grid_auto_rows:[30px]
+                            }
             }
 
         "controls"
@@ -211,80 +265,113 @@ ui_common.constants as const
                     TextLine{text:"Make Lobby" size:25}
             }
 
-"lobby_list_entry"
-    FlexNode{width:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+"lobby_list_entry_lobby"
+    FlexNode{height:100% justify_main:Center justify_cross:Center}
+    Border{right:1px bottom:1px}
+    BorderColor($lobby_list_line_color)
     "text"
-        TextLine{size:22}
+        TextLine{size:$lobby_list_text_size}
         TextLineColor(#FFFFFF)
-
-    "join_button"
-        +button{
-            Margin{left:20px}
-            "text"
-                TextLine{text:"Join" size:15}
-        }
+"lobby_list_entry_owner"
+    FlexNode{height:100% justify_main:Center justify_cross:Center}
+    Border{right:1px bottom:1px}
+    BorderColor($lobby_list_line_color)
+    "text"
+        TextLine{size:$lobby_list_text_size}
+        TextLineColor(#FFFFFF)
+"lobby_list_entry_players"
+    FlexNode{height:100% justify_main:Center justify_cross:Center}
+    Border{right:1px bottom:1px}
+    BorderColor($lobby_list_line_color)
+    "text"
+        TextLine{size:$lobby_list_text_size}
+        TextLineColor(#FFFFFF)
+"lobby_list_entry_watchers"
+    FlexNode{height:100% justify_main:Center justify_cross:Center}
+    Border{right:1px bottom:1px}
+    BorderColor($lobby_list_line_color)
+    "text"
+        TextLine{size:$lobby_list_text_size}
+        TextLineColor(#FFFFFF)
+"lobby_list_entry_join_button"
+    +button{
+        -FlexNode
+        FlexNode{height:100% justify_main:Center justify_cross:Center}
+        "text"
+            TextLine{text:"Join" size:15}
+    }
 
 
 "make_lobby_popup"
-    GlobalZIndex($const::ZINDEX_MAKE_LOBBY_POPUP)
     +widgets::popup{
+        GlobalZIndex($const::ZINDEX_MAKE_LOBBY_POPUP)
         "window"
             "title"
                 "text"
                     TextLine{text:"New Lobby"}
 
             "content"
-                SetJustifyMain(SpaceEvenly)
+                SetJustifyMain(Center)
                 SetJustifyCross(Center)
 
-                "password"
-                    FlexNode{flex_direction:Row}
+                "grid"
+                    GridNode{
+                        grid_template_columns:[auto auto]
+                        grid_auto_rows:[70px]
+                    }
 
-                    "fieldname"
-                        TextLine{text:"Password:"}
-                        TextLineColor(#FFFFFF)
-                        Margin{right:5px}
-                    "inputfield"
-                        TextLine{text:"not yet supported..."}
-                        TextLineColor(#FFFFFF)
+                    "password_name"
+                        FlexNode{height:100% margin:{right:10px} flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+                        "text"
+                            TextLine{text:"Password:"}
+                            TextLineColor(#FFFFFF)
+                            Margin{right:5px}
+                    "password_field"
+                        FlexNode{height:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+                        "text"
+                            TextLine{text:"unsupported"}
+                            TextLineColor(#FFFFFF)
 
-                "max_players"
-                    FlexNode{flex_direction:Row}
-
-                    "fieldname"
-                        TextLine{text:"Max Players:"}
-                        TextLineColor(#FFFFFF)
-                        Margin{right:5px}
-                    "value"
-                        TextLine
-                        TextLineColor(#FFFFFF)
-                    "buttons"
-                        FlexNode{flex_direction:Row justify_self_cross:Center}
-                        Margin{left:7px}
-                        "remove_player_button"
-                            +widgets::popup_button{
-                                FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
-                                "text"
-                                    TextLine{text:"-" size:20}
-                            }
-                        ""
-                            FlexNode{width:8px}
-                        "add_player_button"
-                            +widgets::popup_button{
-                                FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
-                                "text"
-                                    TextLine{text:"+" size:20}
-                            }
-                "join_as"
-                    FlexNode{flex_direction:Row}
-
-                    "fieldname"
-                        TextLine{text:"Join As:"}
-                        TextLineColor(#FFFFFF)
-                        Margin{right:5px}
-                    "value"
-                        TextLine
-                        TextLineColor(#FFFFFF)
+                    "max_players_name"
+                        FlexNode{height:100% margin:{right:10px} flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+                        "text"
+                            TextLine{text:"Max Players:"}
+                            TextLineColor(#FFFFFF)
+                            Margin{right:5px}
+                    "max_players_field"
+                        FlexNode{height:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+                        "text"
+                            FlexNode{width:25px}
+                            TextLine
+                            TextLineColor(#FFFFFF)
+                        "buttons"
+                            FlexNode{flex_direction:Row justify_self_cross:Center}
+                            Margin{left:2px}
+                            "remove_player_button"
+                                +widgets::popup_button{
+                                    FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
+                                    "text"
+                                        TextLine{text:"-" size:20}
+                                }
+                            ""
+                                FlexNode{width:8px}
+                            "add_player_button"
+                                +widgets::popup_button{
+                                    FlexNode{width:25px height:25px justify_main:Center justify_cross:Center}
+                                    "text"
+                                        TextLine{text:"+" size:20}
+                                }
+                    "join_as_name"
+                        FlexNode{height:100% margin:{right:10px} flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+                        "text"
+                            TextLine{text:"Join As:"}
+                            TextLineColor(#FFFFFF)
+                            Margin{right:5px}
+                    "join_as_field"
+                        FlexNode{height:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+                        "text"
+                            TextLine
+                            TextLineColor(#FFFFFF)
 
                 "connection_notice"
                     AbsoluteNode{width:100% top:auto bottom:0% justify_main:Center justify_cross:Center}
@@ -304,8 +391,8 @@ ui_common.constants as const
 
 
 "join_lobby_popup"
-    GlobalZIndex($const::ZINDEX_JOIN_LOBBY_POPUP)
     +widgets::popup{
+        GlobalZIndex($const::ZINDEX_JOIN_LOBBY_POPUP)
         "window"
             "title"
                 "text"
@@ -318,26 +405,37 @@ ui_common.constants as const
                     TextLineColor(#FFFFFF)
 
             "content"
-                SetJustifyMain(SpaceEvenly)
+                SetJustifyMain(Center)
                 SetJustifyCross(Center)
-                "password"
-                    FlexNode{flex_direction:Row}
-                    "fieldname"
-                        TextLine{text:"Password:"}
-                        TextLineColor(#FFFFFF)
-                        Margin{right:5px}
-                    "inputfield"
-                        TextLine{text:"not yet supported..."}
-                        TextLineColor(#FFFFFF)
-                "join_as"
-                    FlexNode{flex_direction:Row}
-                    "fieldname"
-                        TextLine{text:"Join As:"}
-                        TextLineColor(#FFFFFF)
-                        Margin{right:5px}
-                    "value"
-                        TextLine
-                        TextLineColor(#FFFFFF)
+                "grid"
+                    GridNode{
+                        grid_template_columns:[auto auto]
+                        grid_auto_rows:[70px]
+                    }
+
+                    "password_name"
+                        FlexNode{height:100% margin:{right:10px} flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+                        "text"
+                            TextLine{text:"Password:"}
+                            TextLineColor(#FFFFFF)
+                            Margin{right:5px}
+                    "password_field"
+                        FlexNode{height:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+                        "text"
+                            TextLine{text:"unsupported"}
+                            TextLineColor(#FFFFFF)
+
+                    "join_as_name"
+                        FlexNode{height:100% margin:{right:10px} flex_direction:Row justify_main:FlexEnd justify_cross:Center}
+                        "text"
+                            TextLine{text:"Join As:"}
+                            TextLineColor(#FFFFFF)
+                            Margin{right:5px}
+                    "join_as_field"
+                        FlexNode{height:100% flex_direction:Row justify_main:FlexStart justify_cross:Center}
+                        "text"
+                            TextLine
+                            TextLineColor(#FFFFFF)
 
             "footer"
                 "cancel_button"

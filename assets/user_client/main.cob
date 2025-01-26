@@ -36,8 +36,8 @@ ui.user.widgets as widgets
         TextLineColor(#FFFFFF)
 
 "ack_popup"
-    GlobalZIndex($const::ZINDEX_ACK_LOBBY_POPUP)
     +widgets::popup{
+        GlobalZIndex($const::ZINDEX_ACK_LOBBY_POPUP)
         "window"
             "title"
                 "text"
@@ -49,7 +49,7 @@ ui.user.widgets as widgets
                 // Add timer to content
                 "timer"
                     "text"
-                        TextLine
+                        TextLine{size:80}
                         TextLineColor(#FFFFFF)
 
             "footer"

@@ -76,11 +76,11 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
     );
 
     // Form fields
-    h.edit("content::password", |_| {
+    h.edit("content::grid::password_field", |_| {
         // does nothing yet
     });
-    h.edit("content::join_as", |h| {
-        h.get("value").update_text("Player");
+    h.edit("content::grid::join_as_field", |h| {
+        h.get("text").update_text("Player");
     });
 
     // Popup buttons

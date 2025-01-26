@@ -46,11 +46,14 @@ LoadImages[
             TextLineColor(#000000)
 
     ""
-        FlexNode{height:1px width:80% margin:{top:6.5px bottom:15px}}
+        FlexNode{height:1px width:80% margin:{top:6.5px}}
         BackgroundColor(#000000)
 
     "options"
-        FlexNode{flex_grow:1 flex_direction:Column justify_main:FlexStart justify_cross:Center}
+        FlexNode{
+            flex_grow:1 margin:{top:15px bottom:15px}
+            flex_direction:Column justify_main:FlexStart justify_cross:Center
+        }
         RadioGroup
 
     ""
@@ -85,9 +88,11 @@ LoadImages[
     FlexNode{flex_direction:Column justify_main:FlexStart justify_cross:Center}
 
     "id_text"
+        Margin{left:4px right:4px}
         TextLine
         TextLineColor(#000000)
 
     "status_text"
+        Margin{left:4px right:4px}
         TextLine
         TextLineColor(#000000)

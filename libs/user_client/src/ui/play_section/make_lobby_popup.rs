@@ -43,11 +43,11 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     let mut h = h.get("window");
 
     // Form fields
-    h.edit("content::password", |_| {
+    h.edit("content::grid::password_field", |_| {
         // does nothing yet
     });
-    h.edit("content::max_players", |h| {
-        h.get("value").update_on(
+    h.edit("content::grid::max_players_field", |h| {
+        h.get("text").update_on(
             resource_mutation::<MakeLobbyData>(),
             |id: TargetId, mut e: TextEditor, data: ReactRes<MakeLobbyData>| {
                 write_text!(e, *id, "{}", data.config.max_players);
@@ -73,8 +73,8 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
                 |_: TargetId, data: ReactRes<MakeLobbyData>| data.config.max_players > 1,
             );
     });
-    h.edit("content::join_as", |h| {
-        h.get("value").update_text("Player");
+    h.edit("content::grid::join_as_field", |h| {
+        h.get("text").update_text("Player");
     });
 
     // Info text

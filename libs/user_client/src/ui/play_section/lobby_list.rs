@@ -20,7 +20,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
     h.get("content::upper_control::refresh_button")
         .on_pressed(refresh_lobby_list);
 
-    h.edit("content::list::view::shim", |h| {
+    h.edit("content::list::view::shim::entries", |h| {
         h.update_on(
             resource_mutation::<LobbyPage>(),
             |id: TargetId, mut c: Commands, mut s: SceneBuilder, page: ReactRes<LobbyPage>| {
@@ -29,22 +29,54 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
 
                 // Spawn new entries
                 for (idx, lobby) in page.get().iter().enumerate() {
-                    c.ui_builder(*id)
-                        .spawn_scene(("ui.user.sections.play", "lobby_list_entry"), &mut s, |h| {
+                    c.ui_builder(*id).spawn_scene(
+                        ("ui.user.sections.play", "lobby_list_entry_lobby"),
+                        &mut s,
+                        |h| {
+                            h.get("text")
+                                .update_text(format!("{:0>6}", lobby.id % 1_000_000u64));
+                        },
+                    );
+                    c.ui_builder(*id).spawn_scene(
+                        ("ui.user.sections.play", "lobby_list_entry_owner"),
+                        &mut s,
+                        |h| {
+                            h.get("text")
+                                .update_text(format!("{:0>6}", lobby.owner_id % 1_000_000u128));
+                        },
+                    );
+                    c.ui_builder(*id).spawn_scene(
+                        ("ui.user.sections.play", "lobby_list_entry_players"),
+                        &mut s,
+                        |h| {
                             h.get("text").update_text(format!(
-                                        "Lobby: {:0>6}, Owner: {:0>6}, Players: {}/{}, Watchers: {}/{}",
-                                        lobby.id % 1_000_000u64,
-                                        lobby.owner_id % 1_000_000u128,
-                                        lobby.num(ClickLobbyMemberType::Player),
-                                        lobby.max(ClickLobbyMemberType::Player),
-                                        lobby.num(ClickLobbyMemberType::Watcher),
-                                        lobby.max(ClickLobbyMemberType::Watcher),
-                                    ));
-                            h.get("join_button").on_pressed(move |mut c: Commands| {
+                                "{}/{}",
+                                lobby.num(ClickLobbyMemberType::Player),
+                                lobby.max(ClickLobbyMemberType::Player)
+                            ));
+                        },
+                    );
+                    c.ui_builder(*id).spawn_scene(
+                        ("ui.user.sections.play", "lobby_list_entry_watchers"),
+                        &mut s,
+                        |h| {
+                            h.get("text").update_text(format!(
+                                "{}/{}",
+                                lobby.num(ClickLobbyMemberType::Watcher),
+                                lobby.max(ClickLobbyMemberType::Watcher)
+                            ));
+                        },
+                    );
+                    c.ui_builder(*id).spawn_scene(
+                        ("ui.user.sections.play", "lobby_list_entry_join_button"),
+                        &mut s,
+                        |h| {
+                            h.on_pressed(move |mut c: Commands| {
                                 c.react()
                                     .broadcast(ActivateJoinLobbyPopup { lobby_list_index: idx });
                             });
-                        });
+                        },
+                    );
                 }
 
                 DONE

@@ -24,11 +24,13 @@ fn edit_header(mut h: UiSceneHandle)
         });
     h.get("fps::text").update_on(
         resource_mutation::<FpsTracker>(),
-        |id: TargetId, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
+        |id: TargetId, mut next_time: Local<u64>, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
             // only refresh once per second
-            if fps.current_time().as_secs() <= fps.previous_time().as_secs() {
+            let current_time = fps.current_time().as_secs();
+            if current_time < *next_time {
                 return;
             }
+            *next_time = current_time + 1;
 
             write_text!(e, *id, "FPS: {}", fps.fps());
         },

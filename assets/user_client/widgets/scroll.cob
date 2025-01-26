@@ -1,29 +1,33 @@
 #defs
+// Should use flex_direction:Row
 +scroll = \
     ScrollBase
     ControlRoot
 
     "view"
         ScrollView
-        FlexNode{height:100% flex_grow:1 clipping:ScrollY flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
+        FlexNode{
+            height:100% flex_grow:1
+            clipping:ScrollY flex_direction:Column justify_main:FlexStart justify_cross:FlexStart
+        }
 
         // TODO: remove this extra node in bevy 0.15.1
         "shim"
             ScrollShim
+            // This doesn't let you clamp width to content.
             AbsoluteNode{flex_direction:Column justify_main:FlexStart justify_cross:FlexStart}
 
-    // The vertical scrollbar is invisible if there is no scrollable content.
-    // - Invisible but *not* removed from layout.
+    // The vertical scrollbar is removed from layout if there is no scrollable content.
     "vertical"
         ControlMember // Control group with scroll base
         FlexNode{height:100% width:18px}
-        Multi<Static<Visibility>>[
-            {value:Hidden}
-            {state:[Custom("VerticalScroll")] value:Inherited}
+        Multi<Static<DisplayControl>>[
+            {value:Hide}
+            {state:[Custom("VerticalScroll")] value:Show}
         ]
 
         "gutter"
-            FlexNode{height:100% width:100% flex_direction:Column justify_cross:Center padding:{top:6px bottom:6px}}
+            FlexNode{height:100% width:100% flex_direction:Column justify_cross:Center padding:{top:4px bottom:4px}}
             BackgroundColor(#000000)
 
             "bar"

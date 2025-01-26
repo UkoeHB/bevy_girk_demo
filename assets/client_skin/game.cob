@@ -37,7 +37,7 @@ ui.skin as _
             FlexNode{flex_grow:1}
 
         "fps"
-            FlexNode{width:50px justify_self_cross:FlexEnd}
+            FlexNode{width:65px justify_self_cross:FlexEnd}
 
             "text"
                 TextLine{size:15}
