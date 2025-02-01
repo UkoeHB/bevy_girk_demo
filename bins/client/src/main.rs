@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use std::time::Duration;
 
 use bevy::prelude::*;
@@ -23,6 +24,12 @@ struct ClientCli
     /// Specify the client id (will be random if unspecified).
     #[arg(long = "id")]
     client_id: Option<u128>,
+    /// Alt: GIRK_HOST_ADDR env variable
+    #[arg(long = "addr")]
+    server_addr: Option<String>,
+    /// Alt: GIRK_HOST_IS_WSS env variable
+    #[arg(long)]
+    host_is_wss: Option<bool>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -51,16 +58,19 @@ fn main()
     #[cfg(not(target_family = "wasm"))]
     {
         let filter = tracing_subscriber::EnvFilter::builder()
-            .with_default_directive(tracing_subscriber::filter::LevelFilter::WARN.into())
+            .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
             .from_env()
             .unwrap()
             .add_directive("ezsockets=error".parse().unwrap())
             .add_directive("bevy_girk_game_instance=trace".parse().unwrap())
-            .add_directive("user_client=trace".parse().unwrap())
+            .add_directive("client_core=trace".parse().unwrap())
             .add_directive("user_client=trace".parse().unwrap())
             .add_directive("bevy_girk_wiring=trace".parse().unwrap())
             .add_directive("bevy_girk_utils=trace".parse().unwrap())
-            .add_directive("bevy_simplenet=error".parse().unwrap());
+            .add_directive("bevy_simplenet=error".parse().unwrap())
+            .add_directive("renet2=info".parse().unwrap())
+            .add_directive("renet2_netcode=info".parse().unwrap())
+            .add_directive("renetcode2=info".parse().unwrap());
         tracing_subscriber::FmtSubscriber::builder()
             .with_env_filter(filter)
             .with_writer(std::io::stdout)
@@ -73,6 +83,14 @@ fn main()
 
     // unwrap args
     let client_id = args.client_id.unwrap_or_else(get_systime_millis);
+    let server_addr = args
+        .server_addr
+        .or_else(|| std::option_env!("GIRK_HOST_ADDR").map(|s| s.into()))
+        .unwrap_or_else(|| "127.0.0.1:48888".into());
+    let host_is_wss = args
+        .host_is_wss
+        .or_else(|| std::option_env!("GIRK_HOST_IS_WSS").map(|s| bool::from_str(s).unwrap_or_default()))
+        .unwrap_or_default();
 
     // set asset directory location
     #[cfg(not(target_family = "wasm"))]
@@ -85,17 +103,22 @@ fn main()
     //TODO: use hasher directly?
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
+    // make URL
+    let host = if host_is_wss { "wss" } else { "ws" };
+    let url = format!("{host}://{}/ws", server_addr.as_str());
+    tracing::info!("connecting to host server: {}", url.as_str());
+
     // prep to launch client
     // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
     let make_client = move || {
         host_user_client_factory().new_client(
             enfync::builtin::Handle::default(), // automatically selects native/WASM runtime
-            url::Url::parse("ws://127.0.0.1:48888/ws").unwrap(), // TODO: use CLI or auth server to get this?
-            bevy_simplenet::AuthRequest::None { client_id }, // TODO: use auth tokens and an auth server
+            // TODO: use auth server to get this?
+            url::Url::parse(url.as_str()).unwrap(),
+            // TODO: use auth tokens and an auth server
+            bevy_simplenet::AuthRequest::None { client_id },
             bevy_simplenet::ClientConfig::default(),
             // auto-detects connection type for games (udp/webtransport/websockets)
-            // TODO: need a workaround for firefox v133-135(?) which has broken webtransport (currently will
-            // reconnect cycle infinitely)
             HostUserConnectMsg::new(),
         )
     };

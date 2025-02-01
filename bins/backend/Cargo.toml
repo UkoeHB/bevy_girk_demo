@@ -12,12 +12,15 @@ doctest = false
 dev = ["bevy/dynamic_linking"]
 
 [dependencies]
+axum-server        = { workspace = true, features = ["tls-rustls"] }
 bevy               = { workspace = true }
 bevy_cobweb        = { workspace = true }
-bevy_simplenet     = { workspace = true }
+bevy_simplenet     = { workspace = true, features = ["tls-rustls"] }
+clap               = { workspace = true, features = [ "derive" ] }
 enfync             = { workspace = true }
 renet2             = { workspace = true }
 renetcode2         = { workspace = true }
+rustls             = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 url                = { workspace = true }

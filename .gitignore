@@ -1,4 +1,11 @@
 target
-Cargo.lock
+wasm/*/girk_client*
+wasm/*/assets*
+wasm/*/.DS_Store
+xbuilds/*
+*.zip
+.direnv
+.envrc
 .vscode
 .notes
+screenshot*

@@ -1,4 +1,6 @@
-use std::net::Ipv6Addr;
+use std::net::{IpAddr, Ipv4Addr};
+use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Duration;
 
 use bevy::prelude::*;
@@ -9,6 +11,7 @@ use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
 use bevy_girk_wiring_common::GameServerSetupConfig;
+use clap::Parser;
 use enfync::AdoptOrDefault;
 use game_core::*;
 use wiring_backend::*;
@@ -69,7 +72,12 @@ fn make_hub_server_configs() -> GameHubServerStartupPack
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> ClickGameFactoryConfig
+fn make_click_game_configs(
+    proxy_ip: Option<IpAddr>,
+    game_ticks_per_sec: u32,
+    game_num_ticks: u32,
+    wss_certs: Option<(Vec<PathBuf>, PathBuf)>,
+) -> ClickGameFactoryConfig
 {
     // versioning
     //todo: use hasher directly?
@@ -85,7 +93,9 @@ fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> Clic
         protocol_id,
         expire_secs: 10u64,
         timeout_secs: 5i32,
-        server_ip: Ipv6Addr::LOCALHOST,
+        server_ip: Ipv4Addr::UNSPECIFIED.into(),
+        proxy_ip,
+        wss_certs,
     };
 
     // game framework config
@@ -105,7 +115,11 @@ fn make_click_game_configs(game_ticks_per_sec: u32, game_num_ticks: u32) -> Clic
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_test_host_server(configs: HostServerStartupPack) -> (App, url::Url, url::Url)
+fn make_test_host_server(
+    host_addr: String,
+    rustls_config: Option<Arc<rustls::ServerConfig>>,
+    configs: HostServerStartupPack,
+) -> (App, url::Url, url::Url)
 {
     // host-hub server
     let host_hub_server = host_hub_server_factory().new_server(
@@ -118,10 +132,16 @@ fn make_test_host_server(configs: HostServerStartupPack) -> (App, url::Url, url:
     let host_hub_url = host_hub_server.url();
 
     // host-user server
+    let acceptor = match rustls_config {
+        Some(rustls_config) => bevy_simplenet::AcceptorConfig::Rustls(
+            axum_server::tls_rustls::RustlsConfig::from_config(rustls_config),
+        ),
+        None => bevy_simplenet::AcceptorConfig::Default,
+    };
     let host_user_server = host_user_server_factory().new_server(
         enfync::builtin::native::TokioHandle::adopt_or_default(),
-        "127.0.0.1:48888",
-        bevy_simplenet::AcceptorConfig::Default,
+        host_addr,
+        acceptor,
         bevy_simplenet::Authenticator::None,
         bevy_simplenet::ServerConfig::default(),
     );
@@ -150,6 +170,7 @@ fn make_test_host_hub_client_with_id(client_id: u128, hub_server_url: url::Url) 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_test_game_hub_server(
+    game_instance_path: String,
     hub_server_url: url::Url,
     startup_pack: GameHubServerStartupPack,
     game_factory_config: ClickGameFactoryConfig,
@@ -160,7 +181,7 @@ fn make_test_game_hub_server(
     let host_hub_client = make_test_host_hub_client_with_id(0u128, hub_server_url);
     let game_launch_pack_source = GameLaunchPackSource::new(ClickGameLaunchPackSource::new(game_factory_config));
     let game_launcher = GameInstanceLauncher::new(GameInstanceLauncherProcess::new(
-        GAME_INSTANCE_PATH.to_string(),
+        game_instance_path,
         enfync::builtin::native::TokioHandle::adopt_or_default(),
     ));
 
@@ -178,7 +199,27 @@ fn make_test_game_hub_server(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: also make it available via CLI
+//todo: include log level
+#[derive(Parser, Debug)]
+struct BackendCli
+{
+    /// Specify the location of the game instance binary (will use the debug build directory by default).
+    /// Requires '--game-instance'.
+    #[arg(long)]
+    game_instance: Option<String>,
+    #[arg(long)]
+    host_addr: Option<String>,
+    #[arg(long)]
+    proxy_ip: Option<IpAddr>,
+    /// File locations of tls certificates for websockets. See GameServerSetupConfig.
+    ///
+    /// The last entry should point to the privkey.
+    #[arg(long)]
+    wss_certs: Option<Vec<String>>,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -191,8 +232,9 @@ fn main()
         .from_env()
         .unwrap()
         .add_directive("bevy_simplenet=trace".parse().unwrap())
-        .add_directive("renet=debug".parse().unwrap())
-        .add_directive("renetcode=debug".parse().unwrap())
+        .add_directive("renet2=info".parse().unwrap())
+        .add_directive("renet2_netcode=info".parse().unwrap())
+        .add_directive("renetcode2=info".parse().unwrap())
         .add_directive("bevy_girk_host_server=trace".parse().unwrap())
         .add_directive("bevy_girk_game_hub_server=trace".parse().unwrap())
         .add_directive("bevy_girk_wiring=trace".parse().unwrap())
@@ -203,8 +245,34 @@ fn main()
         .with_writer(std::io::stderr)
         .init();
 
+    tracing::info!("launching backend: {:?}", std::env::args_os());
+
+    // env
+    let args = BackendCli::parse();
+    tracing::info!(?args);
+
+    // unwrap args
+    let game_instance_path = args
+        .game_instance
+        .unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
+    let host_addr = args.host_addr.unwrap_or_else(|| "127.0.0.1:48888".into());
+
+    let wss_certs = args.wss_certs.and_then(|mut certs| {
+        if certs.len() < 2 {
+            tracing::error!("failed parsing websocket certs paths, {} path(s) were found but at least 2 paths \
+                are required", certs.len());
+            return None;
+        }
+        let mut paths: Vec<PathBuf> = certs.drain(..).map(|c| PathBuf::from(c)).collect();
+        let privkey = paths.pop().unwrap();
+        Some((paths, privkey))
+    });
+    let maybe_rustls = GameServerSetupConfig::get_rustls_server_config(&wss_certs);
+
     // launch host server
-    let (mut host_server, host_hub_url, _host_user_url) = make_test_host_server(make_host_server_configs());
+    let (mut host_server, host_hub_url, host_user_url) =
+        make_test_host_server(host_addr, maybe_rustls, make_host_server_configs());
+    tracing::info!("host-user server running at {}", host_user_url.as_str());
 
     // launch game hub server attached to host server
     let game_ticks_per_sec = 20;
@@ -213,9 +281,10 @@ fn main()
     // run the servers
     std::thread::spawn(move || {
         let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
+            game_instance_path,
             host_hub_url,
             make_hub_server_configs(),
-            make_click_game_configs(game_ticks_per_sec, game_num_ticks),
+            make_click_game_configs(args.proxy_ip, game_ticks_per_sec, game_num_ticks, wss_certs.clone()),
         );
         hub_server.run()
     });

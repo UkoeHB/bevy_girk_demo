@@ -49,11 +49,38 @@ impl notes
 */
 
 use bevy::prelude::*;
+use bevy::render::render_resource::{CachedPipelineState, PipelineCache};
+use bevy::render::{MainWorld, RenderApp};
 use bevy::window::*;
 use bevy::winit::UpdateMode;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
 use iyes_progress::prelude::*;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// A `Resource` in the main world that stores the number of pipelines that are ready and total number of
+/// pipelines.
+#[derive(Resource, Default, Debug)]
+struct PipelinesReady(usize, usize);
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn update_pipelines_ready(mut main_world: ResMut<MainWorld>, cache: Res<PipelineCache>)
+{
+    let Some(mut pipelines_ready) = main_world.get_resource_mut::<PipelinesReady>() else { return };
+    let num_pipelines = cache
+        .pipelines()
+        .filter(|pipeline| !matches!(pipeline.state, CachedPipelineState::Err(_)))
+        .count();
+    let count = cache
+        .pipelines()
+        .filter(|pipeline| matches!(pipeline.state, CachedPipelineState::Ok(_)))
+        .count();
+
+    pipelines_ready.0 = count;
+    pipelines_ready.1 = num_pipelines;
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -65,16 +92,21 @@ impl Plugin for BevyEnginePlugin
     fn build(&self, app: &mut App)
     {
         // prepare bevy plugins
-        let bevy_plugins = bevy::DefaultPlugins
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "BEVY_GIRK: CLICK DEMO".into(),
-                    window_theme: Some(WindowTheme::Dark),
-                    ..Default::default()
-                }),
+        #[allow(unused_mut)]
+        let mut default_plugins = bevy::DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "BEVY_GIRK: CLICK DEMO".into(),
+                window_theme: Some(WindowTheme::Dark),
                 ..Default::default()
-            })
-            .build();
+            }),
+            ..Default::default()
+        });
+        #[cfg(target_family = "wasm")]
+        {
+            default_plugins =
+                default_plugins.set(AssetPlugin { meta_check: bevy::asset::AssetMetaCheck::Never, ..default() });
+        }
+        let bevy_plugins = default_plugins.build();
 
         // reduce input lag on native targets
         #[cfg(not(target_family = "wasm"))]
@@ -107,13 +139,6 @@ impl Plugin for BevyEnginePlugin
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup(mut c: Commands)
-{
-    c.spawn(Camera2d);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 fn loadstate_progress(state: Res<State<LoadState>>, progress: Res<LoadProgress>) -> Progress
 {
     let state = match state.get() {
@@ -130,6 +155,20 @@ fn loadstate_progress(state: Res<State<LoadState>>, progress: Res<LoadProgress>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
+fn pipeline_progress(pipelines: Res<PipelinesReady>) -> Progress
+{
+    Progress { done: pipelines.0 as u32, total: pipelines.1 as u32 }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn setup(mut c: Commands)
+{
+    c.spawn(Camera2d);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Plugin for setting up a click demo user client.
 ///
 /// Prerequisites:
@@ -142,16 +181,21 @@ impl Plugin for ClickClientGlobalPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugins(BevyEnginePlugin)
+        app.init_resource::<PipelinesReady>()
+            .add_plugins(BevyEnginePlugin)
             .add_plugins(CobwebUiPlugin)
             .load("ui_common/constants.cob")
             .add_systems(PreStartup, setup)
             .add_systems(
                 Update,
-                loadstate_progress
-                    .track_progress::<ClientAppState>()
+                (
+                    loadstate_progress.track_progress::<ClientAppState>(),
+                    pipeline_progress.track_progress::<ClientAppState>(),
+                )
                     .run_if(in_state(ClientAppState::Loading)),
             );
+        app.sub_app_mut(RenderApp)
+            .add_systems(ExtractSchedule, update_pipelines_ready);
     }
 }
 

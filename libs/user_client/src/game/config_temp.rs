@@ -31,7 +31,9 @@ pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
         protocol_id,
         expire_secs: 10u64,
         timeout_secs: 5i32,
-        server_ip: Ipv6Addr::LOCALHOST,
+        server_ip: Ipv6Addr::LOCALHOST.into(),
+        proxy_ip: None,
+        wss_certs: None,
     };
 
     // game framework config

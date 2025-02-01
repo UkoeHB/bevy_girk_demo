@@ -60,13 +60,15 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
     // server setup config
     let server_setup_config = GameServerSetupConfig {
         protocol_id,
-        // dev causes long startup times
+        // dev may cause long startup times
         #[cfg(feature = "dev")]
         expire_secs: 20u64,
         #[cfg(not(feature = "dev"))]
         expire_secs: 10u64,
         timeout_secs: 5i32,
-        server_ip: Ipv6Addr::LOCALHOST,
+        server_ip: Ipv6Addr::LOCALHOST.into(),
+        proxy_ip: None,
+        wss_certs: None,
     };
 
     // game framework config
