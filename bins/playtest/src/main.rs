@@ -68,6 +68,7 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
         timeout_secs: 5i32,
         server_ip: Ipv6Addr::LOCALHOST.into(),
         proxy_ip: None,
+        ws_domain: None,
         wss_certs: None,
     };
 

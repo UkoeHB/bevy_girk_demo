@@ -76,7 +76,8 @@ fn make_click_game_configs(
     proxy_ip: Option<IpAddr>,
     game_ticks_per_sec: u32,
     game_num_ticks: u32,
-    wss_certs: Option<(Vec<PathBuf>, PathBuf)>,
+    ws_domain: Option<String>,
+    wss_certs: Option<(PathBuf, PathBuf)>,
 ) -> ClickGameFactoryConfig
 {
     // versioning
@@ -95,6 +96,7 @@ fn make_click_game_configs(
         timeout_secs: 5i32,
         server_ip: Ipv4Addr::UNSPECIFIED.into(),
         proxy_ip,
+        ws_domain,
         wss_certs,
     };
 
@@ -121,17 +123,8 @@ fn make_test_host_server(
     configs: HostServerStartupPack,
 ) -> (App, url::Url, url::Url)
 {
-    // host-hub server
-    let host_hub_server = host_hub_server_factory().new_server(
-        enfync::builtin::native::TokioHandle::adopt_or_default(),
-        "127.0.0.1:0",
-        bevy_simplenet::AcceptorConfig::Default,
-        bevy_simplenet::Authenticator::None,
-        bevy_simplenet::ServerConfig::default(),
-    );
-    let host_hub_url = host_hub_server.url();
-
     // host-user server
+    // - Make this first so host-hub server's wildcard port doesn't steal the server's pre-specified port.
     let acceptor = match rustls_config {
         Some(rustls_config) => bevy_simplenet::AcceptorConfig::Rustls(
             axum_server::tls_rustls::RustlsConfig::from_config(rustls_config),
@@ -146,6 +139,16 @@ fn make_test_host_server(
         bevy_simplenet::ServerConfig::default(),
     );
     let host_user_url = host_user_server.url();
+
+    // host-hub server
+    let host_hub_server = host_hub_server_factory().new_server(
+        enfync::builtin::native::TokioHandle::adopt_or_default(),
+        "127.0.0.1:0",
+        bevy_simplenet::AcceptorConfig::Default,
+        bevy_simplenet::Authenticator::None,
+        bevy_simplenet::ServerConfig::default(),
+    );
+    let host_hub_url = host_hub_server.url();
 
     (
         make_host_server(configs, host_hub_server, host_user_server),
@@ -211,11 +214,16 @@ struct BackendCli
     host_addr: Option<String>,
     #[arg(long)]
     proxy_ip: Option<IpAddr>,
+    #[arg(long)]
+    ws_domain: Option<String>,
     /// File locations of tls certificates for websockets. See GameServerSetupConfig.
     ///
-    /// The last entry should point to the privkey.
+    /// Cert chain for websocket certs, should be `PEM` encoded.
     #[arg(long)]
-    wss_certs: Option<Vec<String>>,
+    wss_certs: Option<String>,
+    /// Privkey for websocket certs, should be `PEM` encoded.
+    #[arg(long)]
+    wss_certs_privkey: Option<String>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -257,16 +265,18 @@ fn main()
         .unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
     let host_addr = args.host_addr.unwrap_or_else(|| "127.0.0.1:48888".into());
 
-    let wss_certs = args.wss_certs.and_then(|mut certs| {
-        if certs.len() < 2 {
-            tracing::error!("failed parsing websocket certs paths, {} path(s) were found but at least 2 paths \
-                are required", certs.len());
-            return None;
+    let wss_certs = match (args.wss_certs, args.wss_certs_privkey) {
+        (Some(certs), Some(privkey)) => Some((PathBuf::from(certs), PathBuf::from(privkey))),
+        (None, None) => None,
+        (Some(_), None) => {
+            tracing::error!("wss_certs arg found but wss_certs_privkey is missing");
+            None
         }
-        let mut paths: Vec<PathBuf> = certs.drain(..).map(|c| PathBuf::from(c)).collect();
-        let privkey = paths.pop().unwrap();
-        Some((paths, privkey))
-    });
+        (None, Some(_)) => {
+            tracing::error!("wss_certs_privkey arg found but wss_certs is missing");
+            None
+        }
+    };
     let maybe_rustls = GameServerSetupConfig::get_rustls_server_config(&wss_certs);
 
     // launch host server
@@ -284,7 +294,13 @@ fn main()
             game_instance_path,
             host_hub_url,
             make_hub_server_configs(),
-            make_click_game_configs(args.proxy_ip, game_ticks_per_sec, game_num_ticks, wss_certs.clone()),
+            make_click_game_configs(
+                args.proxy_ip,
+                game_ticks_per_sec,
+                game_num_ticks,
+                args.ws_domain.clone(),
+                wss_certs.clone(),
+            ),
         );
         hub_server.run()
     });

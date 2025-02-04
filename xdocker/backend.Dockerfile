@@ -39,10 +39,15 @@ ENV BEVY_ASSET_ROOT=usr/assets
 
 # host-user server
 # TODO: inject the proxy ip from host
+# NOTE: must bind-mount the certs from the host to usr/certs
+# example: docker run --rm --network host --mount type=bind,readonly,src=/etc/letsencrypt/,dst=/etc/letsencrypt
+# snowyroadstudios/girk_backend
 CMD [\
     "backend",\
     "--game-instance", "usr/bin/game_instance",\
-    "--host-addr", "0.0.0.0:48888", \
+    "--host-addr", "0.0.0.0:48888",\
     "--proxy-ip", "159.89.48.217",\
-    "--wss-certs", "",\
+    "--ws-domain", "girk-demo-backend.online",\
+    "--wss-certs", "etc/letsencrypt/live/girk-demo-backend.online/fullchain.pem",\
+    "--wss-certs-privkey", "etc/letsencrypt/live/girk-demo-backend.online/privkey.pem"\
 ]
