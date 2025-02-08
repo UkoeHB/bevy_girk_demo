@@ -46,6 +46,7 @@ CMD [\
     "backend",\
     "--game-instance", "usr/bin/game_instance",\
     "--host-addr", "0.0.0.0:48888",\
+    "--local-ip", "0.0.0.0",\
     "--proxy-ip", "159.89.48.217",\
     "--ws-domain", "girk-demo-backend.online",\
     "--wss-certs", "etc/letsencrypt/live/girk-demo-backend.online/fullchain.pem",\

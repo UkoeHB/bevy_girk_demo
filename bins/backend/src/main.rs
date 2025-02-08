@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::{IpAddr, Ipv6Addr};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -73,6 +73,7 @@ fn make_hub_server_configs() -> GameHubServerStartupPack
 //-------------------------------------------------------------------------------------------------------------------
 
 fn make_click_game_configs(
+    local_ip: Option<IpAddr>,
     proxy_ip: Option<IpAddr>,
     game_ticks_per_sec: u32,
     game_num_ticks: u32,
@@ -94,7 +95,7 @@ fn make_click_game_configs(
         protocol_id,
         expire_secs: 10u64,
         timeout_secs: 5i32,
-        server_ip: Ipv4Addr::UNSPECIFIED.into(),
+        server_ip: local_ip.unwrap_or(Ipv6Addr::LOCALHOST.into()),
         native_port: 0,
         wasm_wt_port: 0,
         wasm_ws_port: 0,
@@ -213,10 +214,16 @@ struct BackendCli
     /// Requires '--game-instance'.
     #[arg(long)]
     game_instance: Option<String>,
+    /// Address of user-host server.
     #[arg(long)]
     host_addr: Option<String>,
+    /// Local IP for game servers.
+    #[arg(long)]
+    local_ip: Option<IpAddr>,
+    /// Proxy IP for game servers.
     #[arg(long)]
     proxy_ip: Option<IpAddr>,
+    /// Domain name for websocket game servers.
     #[arg(long)]
     ws_domain: Option<String>,
     /// File locations of tls certificates for websockets. See GameServerSetupConfig.
@@ -302,6 +309,7 @@ fn main()
             host_hub_url,
             make_hub_server_configs(),
             make_click_game_configs(
+                args.local_ip,
                 args.proxy_ip,
                 game_ticks_per_sec,
                 game_num_ticks,
