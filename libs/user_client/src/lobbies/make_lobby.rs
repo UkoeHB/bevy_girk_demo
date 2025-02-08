@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::{HostUserClient, UserToHostRequest};
 use bevy_girk_utils::ser_msg;
-use bevy_girk_wiring_common::ConnectionType;
+use renet2_setup::ConnectionType;
 use wiring_backend::{ClickLobbyConfig, ClickLobbyContents, ClickLobbyMemberType};
 
 use crate::*;

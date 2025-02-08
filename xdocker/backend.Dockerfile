@@ -38,8 +38,8 @@ RUN mkdir usr/assets
 ENV BEVY_ASSET_ROOT=usr/assets
 
 # host-user server
-# TODO: inject the proxy ip from host
-# NOTE: must bind-mount the certs from the host to usr/certs
+# TODO: inject the proxy ip and domain name from host
+# NOTE: must bind-mount the certs from the host to the same directory in the container
 # example: docker run --rm --network host --mount type=bind,readonly,src=/etc/letsencrypt/,dst=/etc/letsencrypt
 # snowyroadstudios/girk_backend
 CMD [\

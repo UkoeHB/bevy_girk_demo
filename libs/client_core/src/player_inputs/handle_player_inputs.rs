@@ -9,9 +9,9 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn send_client_request(In(msg): In<ClientRequest>, mut sender: ClientSender)
+fn send_client_request(In(request): In<ClientRequest>, mut sender: ClientSender)
 {
-    sender.request(msg);
+    sender.send(request);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ fn process_player_inputs(
 
     while let Some(input) = player_inputs.try_recv() {
         if world.resource::<ClientContext>().client_type() != ClientType::Player {
-            tracing::warn!(?input, "ignoring input sent by a non-player client");
+            tracing::warn!("ignoring input sent by a non-player client: {input:?}");
             continue;
         }
 
@@ -45,7 +45,7 @@ fn handle_input(world: &mut World, input: PlayerInput, state: ClientState)
     match state {
         ClientState::Play => world.syscall(ClientRequest::PlayerInput(input), send_client_request),
         _ => {
-            tracing::warn!(?input, "ignoring invalid input sent during {state:?}");
+            tracing::warn!("ignoring invalid input sent during {state:?}: {input:?}");
         }
     }
 }

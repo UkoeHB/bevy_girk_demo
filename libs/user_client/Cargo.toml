@@ -18,6 +18,7 @@ bevy_framepace  = { workspace = true }
 bevy_simplenet  = { workspace = true, features = ["client", "bevy"] }
 enfync          = { workspace = true }
 iyes_progress   = { workspace = true }
+renet2_setup    = { workspace = true, features = ["netcode"] }
 serde           = { workspace = true }
 smol_str        = { workspace = true }
 tracing         = { workspace = true }
@@ -28,7 +29,6 @@ bevy_girk_client_fw         = { workspace = true }
 bevy_girk_game_fw           = { workspace = true }
 bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
-bevy_girk_wiring_common     = { workspace = true }
 
 client_core = { path = "../client_core" }
 game_core = { path = "../game_core" }

@@ -4,8 +4,8 @@ use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::{ClientAppState, ClientFwConfig};
 use bevy_girk_client_instance::ClientInstanceCommand;
 use bevy_girk_game_instance::GameStartInfo;
-use bevy_girk_wiring_common::ServerConnectToken;
 use client_core::ClientState;
+use renet2_setup::ServerConnectToken;
 
 //-------------------------------------------------------------------------------------------------------------------
 

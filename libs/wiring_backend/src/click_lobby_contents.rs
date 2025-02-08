@@ -1,6 +1,6 @@
 use bevy_girk_backend_public::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_common::ConnectionType;
+use renet2_setup::ConnectionType;
 use serde::{Deserialize, Serialize};
 
 use crate::*;

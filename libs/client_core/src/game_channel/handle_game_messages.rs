@@ -7,9 +7,9 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn handle_request_rejected(reason: RejectionReason, request: ClientRequest)
+fn handle_request_rejected(request: ClientRequest, reason: RejectionReason)
 {
-    tracing::warn!(?reason, ?request, "game request rejected");
+    tracing::warn!("game request {request:?} rejected: {reason:?}");
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ pub(crate) fn handle_game_message(world: &mut World, _tick: Tick, message: GameM
     let _state = **world.resource::<State<ClientState>>();
 
     match message {
-        GameMsg::RequestRejected { reason, request } => handle_request_rejected(reason, request),
+        GameMsg::RequestRejected { reason, request } => handle_request_rejected(request, reason),
         GameMsg::CurrentGameState(game_state) => world.syscall(game_state, handle_game_state),
     }
 }

@@ -4,11 +4,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_girk_client_instance::*;
 use bevy_girk_wiring_client::{
-    prepare_girk_client_app, setup_girk_client_game, ClientConnectPack, GirkClientConfig, GirkClientStartupConfig,
+    prepare_girk_client_app, setup_girk_client_game, GirkClientConfig, GirkClientStartupConfig,
 };
-use bevy_girk_wiring_common::*;
 use client_core::ClientCorePlugin;
 use client_skin::ClientSkinPlugin;
+use renet2_setup::{ClientConnectPack, ServerConnectToken};
 use wiring_game_instance::*;
 
 use crate::*;

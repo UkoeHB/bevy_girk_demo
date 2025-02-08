@@ -20,6 +20,7 @@ clap               = { workspace = true, features = [ "derive" ] }
 enfync             = { workspace = true }
 renet2             = { workspace = true }
 renetcode2         = { workspace = true }
+renet2_setup       = { workspace = true, features = ["netcode", "ws_server_transport", "ws-rustls"] }
 rustls             = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
@@ -31,7 +32,6 @@ bevy_girk_game_hub_server = { workspace = true }
 bevy_girk_game_instance   = { workspace = true, features = ["process"] }
 bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
-bevy_girk_wiring_common   = { workspace = true }
 bevy_girk_wiring_server   = { workspace = true }
 
 game_core            = { path = "../../libs/game_core" }

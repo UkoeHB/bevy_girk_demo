@@ -5,7 +5,7 @@ use bevy_girk_client_fw::ClientFwConfig;
 use bevy_girk_client_instance::ClientInstanceCommand;
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
-use bevy_girk_wiring_common::ServerConnectToken;
+use renet2_setup::ServerConnectToken;
 
 use crate::*;
 

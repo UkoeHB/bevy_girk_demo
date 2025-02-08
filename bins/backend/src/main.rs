@@ -10,10 +10,10 @@ use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_common::GameServerSetupConfig;
 use clap::Parser;
 use enfync::AdoptOrDefault;
 use game_core::*;
+use renet2_setup::GameServerSetupConfig;
 use wiring_backend::*;
 use wiring_game_instance::*;
 
@@ -95,6 +95,9 @@ fn make_click_game_configs(
         expire_secs: 10u64,
         timeout_secs: 5i32,
         server_ip: Ipv4Addr::UNSPECIFIED.into(),
+        native_port: 0,
+        wasm_wt_port: 0,
+        wasm_ws_port: 0,
         proxy_ip,
         ws_domain,
         wss_certs,
@@ -277,7 +280,11 @@ fn main()
             None
         }
     };
-    let maybe_rustls = GameServerSetupConfig::get_rustls_server_config(&wss_certs);
+    let maybe_rustls = if let Some((certs, privkey)) = &wss_certs {
+        GameServerSetupConfig::get_rustls_server_config(certs, privkey).ok()
+    } else {
+        None
+    };
 
     // launch host server
     let (mut host_server, host_hub_url, host_user_url) =

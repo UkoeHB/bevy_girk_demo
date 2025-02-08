@@ -15,6 +15,7 @@ bevy = { workspace = true, default_features = true }
 bevy_cobweb = { workspace = true }
 bevy_cobweb_ui = { workspace = true }
 iyes_progress = { workspace = true }
+renet2_setup = { workspace = true, features = ["netcode", "memory_transport"] }
 tracing = { workspace = true }
 
 bevy_girk_client_instance = { workspace = true }
@@ -22,7 +23,6 @@ bevy_girk_client_fw       = { workspace = true }
 bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
-bevy_girk_wiring_common   = { workspace = true, features = ["memory_transport"] }
 bevy_girk_wiring_client   = { workspace = true, features = ["memory_transport"] }
 
 client_core          = { path = "../client_core" }

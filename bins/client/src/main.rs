@@ -24,10 +24,10 @@ struct ClientCli
     /// Specify the client id (will be random if unspecified).
     #[arg(long = "id")]
     client_id: Option<u128>,
-    /// Alt: GIRK_HOST_ADDR env variable
+    /// Alt: GIRK_HOST_ADDR env variable (required for WASM clients)
     #[arg(long = "addr")]
     server_addr: Option<String>,
-    /// Alt: GIRK_HOST_IS_WSS env variable
+    /// Alt: GIRK_HOST_IS_WSS env variable (required for WASM clients)
     #[arg(long)]
     host_is_wss: Option<bool>,
 }
@@ -92,11 +92,16 @@ fn main()
         .or_else(|| std::option_env!("GIRK_HOST_IS_WSS").map(|s| bool::from_str(s).unwrap_or_default()))
         .unwrap_or_default();
 
-    // set asset directory location
     #[cfg(not(target_family = "wasm"))]
     {
+        // set asset directory location
         if let Err(err) = bevy_girk_utils::try_set_bevy_asset_root(2) {
             panic!("Could not set bevy asset root: {}", err.to_string());
+        }
+
+        // setup crypto for bevy_simplenet websocket connection
+        if host_is_wss && rustls::crypto::CryptoProvider::get_default().is_none() {
+            let _ = rustls::crypto::ring::default_provider().install_default();
         }
     }
 

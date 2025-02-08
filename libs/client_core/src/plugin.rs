@@ -18,7 +18,7 @@ use crate::*;
 /// Request the current game mode.
 fn request_game_state(mut sender: ClientSender)
 {
-    sender.request(ClientRequest::GetGameState);
+    sender.send(ClientRequest::GetGameState);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

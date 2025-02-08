@@ -4,10 +4,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_common::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
 use game_core::*;
+use renet2_setup::{ConnectionType, GameServerSetupConfig};
 use wiring_backend::*;
 use wiring_game_instance::*;
 
@@ -67,6 +67,9 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
         expire_secs: 10u64,
         timeout_secs: 5i32,
         server_ip: Ipv6Addr::LOCALHOST.into(),
+        native_port: 0,
+        wasm_wt_port: 0,
+        wasm_ws_port: 0,
         proxy_ip: None,
         ws_domain: None,
         wss_certs: None,
@@ -118,9 +121,12 @@ fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_cl
         // launch game clients
         let mut client_processes = Vec::default();
         for start_info in report.start_infos {
-            let Some(token) = meta.new_connect_token(get_systime(), start_info.client_id) else {
-                tracing::error!("failed producing connect token for playtest");
-                continue;
+            let token = match meta.new_connect_token(get_systime(), start_info.client_id) {
+                Ok(token) => token,
+                Err(err) => {
+                    tracing::error!("failed producing connect token for playtest: {err:?}");
+                    continue;
+                }
             };
 
             let Ok(token_ser) = serde_json::to_string(&token) else {

@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_common::GameServerSetupConfig;
 use game_core::*;
+use renet2_setup::GameServerSetupConfig;
 use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -32,6 +32,9 @@ pub(crate) fn make_click_game_configs() -> ClickGameFactoryConfig
         expire_secs: 10u64,
         timeout_secs: 5i32,
         server_ip: Ipv6Addr::LOCALHOST.into(),
+        native_port: 0,
+        wasm_wt_port: 0,
+        wasm_ws_port: 0,
         proxy_ip: None,
         ws_domain: None,
         wss_certs: None,

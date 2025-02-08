@@ -8,8 +8,8 @@ use bevy_girk_client_fw::ClientAppState;
 use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::GameStartInfo;
 use bevy_girk_utils::*;
-use bevy_girk_wiring_common::ServerConnectToken;
 use clap::Parser;
+use renet2_setup::ServerConnectToken;
 use wiring_client_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------

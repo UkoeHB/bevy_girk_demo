@@ -2,12 +2,12 @@ use std::collections::VecDeque;
 
 use bevy_girk_backend_public::*;
 use bevy_girk_game_instance::*;
-use bevy_girk_wiring_common::ConnectionType;
 use bevy_replicon::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use rand::seq::SliceRandom;
 #[cfg(not(target_family = "wasm"))]
 use rand::thread_rng;
+use renet2_setup::ConnectionType;
 use wiring_game_instance::*;
 
 use crate::*;
