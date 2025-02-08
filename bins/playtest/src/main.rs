@@ -96,16 +96,16 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
 
 fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_client_path: String)
 {
-    // launch in task
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
-    let spawner_clone = spawner.clone();
-    let task = spawner.spawn(async move {
-        // launch game
-        tracing::trace!("launching game instance for playtest");
-        let (game_report_sender, mut game_report_receiver) = new_io_channel::<GameInstanceReport>();
-        let game_launcher = GameInstanceLauncherProcess::new(game_instance_path, spawner_clone.clone());
-        let mut game_instance = game_launcher.launch(launch_pack, game_report_sender);
 
+    // launch game
+    tracing::trace!("launching game instance for playtest");
+    let (game_report_sender, mut game_report_receiver) = new_io_channel::<GameInstanceReport>();
+    let game_launcher = GameInstanceLauncherProcess::new(game_instance_path, spawner.clone());
+    let mut game_instance = game_launcher.launch(launch_pack, game_report_sender);
+
+    // launch in task
+    let task = spawner.spawn(async move {
         // wait for game start report
         let Some(GameInstanceReport::GameStart(game_id, report)) = game_report_receiver.recv().await else {
             tracing::error!("failed getting game start report for playtest");
