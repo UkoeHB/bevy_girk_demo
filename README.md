@@ -34,8 +34,6 @@ cargo run -p playtest -- --clients 2
 
 ### Major TODOs
 
-- Figure out why Safari WASM builds are broken.
 - Figure out config story. Right now configs are scattered in various rust files. Config assets? Ergonomic config access and customization?
-- Figure out deployment and document it.
 - Add mobile support.
     - Requires tying UI layout to device type (mobile landscape/portrait and native).
