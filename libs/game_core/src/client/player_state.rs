@@ -3,6 +3,8 @@ use bevy_replicon::prelude::*;
 use bevy_replicon_attributes::*;
 use serde::{Deserialize, Serialize};
 
+use crate::ClientId;
+
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Player id component (wraps the player's client id).
@@ -65,7 +67,7 @@ impl Default for PlayerState
     fn default() -> Self
     {
         Self {
-            id: PlayerId { id: ClientId::new(1) },
+            id: PlayerId { id: 1 },
             name: Default::default(),
             score: Default::default(),
             replicate: Default::default(),

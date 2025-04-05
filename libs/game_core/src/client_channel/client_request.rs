@@ -1,5 +1,5 @@
 use bevy_girk_utils::*;
-use bevy_replicon::prelude::ChannelKind;
+use bevy_replicon::prelude::Channel;
 use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -12,9 +12,9 @@ pub enum PlayerInput
     ClickButton,
 }
 
-impl IntoChannelKind for PlayerInput
+impl IntoChannel for PlayerInput
 {
-    fn into_event_type(&self) -> ChannelKind
+    fn into_event_type(&self) -> Channel
     {
         match &self {
             Self::ClickButton => SendUnordered.into(),
@@ -34,9 +34,9 @@ pub enum ClientRequest
     PlayerInput(PlayerInput),
 }
 
-impl IntoChannelKind for ClientRequest
+impl IntoChannel for ClientRequest
 {
-    fn into_event_type(&self) -> ChannelKind
+    fn into_event_type(&self) -> Channel
     {
         match &self {
             Self::GetGameState => SendOrdered.into(),

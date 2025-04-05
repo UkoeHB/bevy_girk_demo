@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
 
@@ -25,7 +24,7 @@ pub(crate) fn notify_request_rejected(
     mut sender: GameSender,
 )
 {
-    sender.send_to_client(GameMsg::RequestRejected { reason, request }, client_id.get());
+    sender.send_to_client(GameMsg::RequestRejected { reason, request }, client_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

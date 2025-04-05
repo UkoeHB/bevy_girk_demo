@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
 

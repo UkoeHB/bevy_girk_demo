@@ -17,3 +17,5 @@ pub use sets::*;
 pub(crate) use setup::*;
 pub use states::*;
 pub use ticks::*;
+
+pub use renet2::ClientId;

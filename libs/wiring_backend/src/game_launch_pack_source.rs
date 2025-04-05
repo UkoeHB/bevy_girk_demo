@@ -2,11 +2,11 @@ use std::collections::VecDeque;
 
 use bevy_girk_backend_public::*;
 use bevy_girk_game_instance::*;
-use bevy_replicon::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use rand::seq::SliceRandom;
 #[cfg(not(target_family = "wasm"))]
 use rand::thread_rng;
+use renet2::ClientId;
 use renet2_setup::ConnectionType;
 use wiring_game_instance::*;
 
@@ -30,7 +30,7 @@ fn get_protocol_id() -> u64
 
 fn make_player_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
 {
-    let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id.get()) };
+    let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id) };
 
     ClientGameInit { connection, user_id, client_id, client_type }
 }
@@ -91,12 +91,12 @@ pub fn get_launch_pack(
     let mut client_init_data = Vec::with_capacity(num_players + num_watchers);
 
     for (idx, (connection, player_user_id)) in lobby_contents.players.iter().enumerate() {
-        let client_id = ClientId::new(idx as u64);
+        let client_id = idx as u64;
         client_init_data.push(make_player_init_data(*connection, *player_user_id, client_id));
     }
 
     for (idx, (connection, watcher_user_id)) in lobby_contents.watchers.iter().enumerate() {
-        let client_id = ClientId::new((idx + num_players) as u64);
+        let client_id = (idx + num_players) as u64;
         client_init_data.push(make_watcher_init_data(*connection, *watcher_user_id, client_id));
     }
 

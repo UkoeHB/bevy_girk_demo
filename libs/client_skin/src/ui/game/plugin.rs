@@ -18,8 +18,8 @@ fn edit_header(mut h: UiSceneHandle)
     h.get("name_shim::name")
         .update(|id: TargetId, mut e: TextEditor, context: Res<ClientContext>| {
             match context.client_type() {
-                ClientType::Player => write_text!(e, *id, "player{}", context.id().get()),
-                ClientType::Watcher => write_text!(e, *id, "watcher{}", context.id().get()),
+                ClientType::Player => write_text!(e, *id, "player{}", context.id()),
+                ClientType::Watcher => write_text!(e, *id, "watcher{}", context.id()),
             };
         });
     h.get("fps::text").update_on(

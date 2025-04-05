@@ -1,5 +1,5 @@
 use bevy_girk_utils::*;
-use bevy_replicon::prelude::ChannelKind;
+use bevy_replicon::prelude::Channel;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -29,9 +29,9 @@ pub enum GameMsg
     CurrentGameState(GameState),
 }
 
-impl IntoChannelKind for GameMsg
+impl IntoChannel for GameMsg
 {
-    fn into_event_type(&self) -> ChannelKind
+    fn into_event_type(&self) -> Channel
     {
         match &self {
             Self::RequestRejected { .. } => SendUnordered.into(),

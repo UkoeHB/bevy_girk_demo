@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::apply_state_transitions;
-use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -87,7 +86,7 @@ pub(crate) fn notify_game_state_single(
     mut sender: GameSender,
 )
 {
-    sender.send_to_client(GameMsg::CurrentGameState(**game_state), client_id.get());
+    sender.send_to_client(GameMsg::CurrentGameState(**game_state), client_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

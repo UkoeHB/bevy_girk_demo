@@ -11,6 +11,7 @@ doctest = false
 bevy           = { workspace = true }
 bevy_replicon  = { workspace = true }
 bevy_simplenet = { workspace = true }
+renet2         = { workspace = true }
 renet2_setup   = { workspace = true, features = ["netcode"] }
 serde          = { workspace = true }
 tracing        = { workspace = true }

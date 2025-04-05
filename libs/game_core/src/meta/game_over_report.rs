@@ -1,5 +1,4 @@
 use bevy_girk_game_fw::*;
-use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::*;

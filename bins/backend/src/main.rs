@@ -102,6 +102,10 @@ fn make_click_game_configs(
         proxy_ip,
         ws_domain,
         wss_certs,
+        native_port_proxy: 0,
+        wasm_ws_port_proxy: 0,
+        wasm_wt_port_proxy: 0,
+        has_wss_proxy: false,
     };
 
     // game framework config

@@ -73,6 +73,10 @@ fn make_click_game_configs() -> ClickGameFactoryConfig
         proxy_ip: None,
         ws_domain: None,
         wss_certs: None,
+        native_port_proxy: 0,
+        wasm_ws_port_proxy: 0,
+        wasm_wt_port_proxy: 0,
+        has_wss_proxy: false,
     };
 
     // game framework config
