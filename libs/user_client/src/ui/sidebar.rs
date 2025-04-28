@@ -25,7 +25,7 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
         .spawn_scene(("ui.user.sidebar", "home_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
-                    c.get_entity(content_id).result()?.despawn_descendants();
+                    c.get_entity(content_id)?.despawn_related::<Children>();
 
                     *section = MenuContentSection::Home;
                     c.ui_builder(content_id).spawn_scene(
@@ -45,7 +45,7 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
         .spawn_scene(("ui.user.sidebar", "play_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
-                    c.get_entity(content_id).result()?.despawn_descendants();
+                    c.get_entity(content_id)?.despawn_related::<Children>();
 
                     *section = MenuContentSection::Play;
                     c.ui_builder(content_id).spawn_scene(
@@ -74,7 +74,7 @@ pub(super) fn build_sidebar(h: &mut UiSceneHandle, content_id: Entity)
         .spawn_scene(("ui.user.sidebar", "settings_button"), |h| {
             h.on_select(
                 move |mut c: Commands, mut s: SceneBuilder, mut section: ResMut<MenuContentSection>| {
-                    c.get_entity(content_id).result()?.despawn_descendants();
+                    c.get_entity(content_id)?.despawn_related::<Children>();
 
                     *section = MenuContentSection::Settings;
                     c.ui_builder(content_id).spawn_scene(

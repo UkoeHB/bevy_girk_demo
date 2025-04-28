@@ -23,7 +23,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
             match event.try_read()? {
                 RequestEnded::Success => {
                     tracing::info!("MakeLobby request succeeded");
-                    c.get_entity(*id).result()?.despawn_recursive();
+                    c.get_entity(*id)?.despawn();
                 }
                 RequestEnded::Failure => {
                     tracing::warn!("MakeLobby request failed");
@@ -34,7 +34,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
         },
     );
     h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
-        c.get_entity(*id).result()?.despawn_recursive();
+        c.get_entity(*id)?.despawn();
         DONE
     });
 
@@ -121,7 +121,7 @@ pub(super) fn build_make_lobby_popup(_: &ActivateMakeLobbyPopup, h: &mut UiScene
     // Note: the cancel button doesn't clear the lobby settings in case you want to resume where you left off.
     h.get("footer::cancel_button")
         .on_pressed(move |mut c: Commands| {
-            c.get_entity(popup_id).result()?.despawn_recursive();
+            c.get_entity(popup_id)?.despawn();
             DONE
         });
 }

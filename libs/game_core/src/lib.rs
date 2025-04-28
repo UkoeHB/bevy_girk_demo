@@ -13,9 +13,8 @@ pub use client_channel::*;
 pub use game_rand::*;
 pub use meta::*;
 pub use plugin::*;
+pub use renet2::ClientId;
 pub use sets::*;
 pub(crate) use setup::*;
 pub use states::*;
 pub use ticks::*;
-
-pub use renet2::ClientId;

@@ -25,7 +25,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
             resource_mutation::<LobbyPage>(),
             |id: TargetId, mut c: Commands, mut s: SceneBuilder, page: ReactRes<LobbyPage>| {
                 // Clear current entries.
-                c.get_entity(*id).result()?.despawn_descendants();
+                c.get_entity(*id)?.despawn_related::<Children>();
 
                 // Spawn new entries
                 for (idx, lobby) in page.get().iter().enumerate() {

@@ -23,7 +23,7 @@ fn try_spawn_reconnecting_overlay(mut c: Commands, mut s: SceneBuilder, starter:
                     if starter.has_starter() {
                         return DONE;
                     }
-                    c.get_entity(*id).result()?.despawn_recursive();
+                    c.get_entity(*id)?.despawn();
                     DONE
                 },
             );

@@ -18,7 +18,7 @@ fn pending_request_succeeded<M: Component>(
 ) -> bool
 {
     let Some((entity, req_signal)) = param.request() else { return false };
-    let Some(mut ec) = c.get_entity(entity) else { return false };
+    let Ok(mut ec) = c.get_entity(entity) else { return false };
     if req_signal.id() != request_id {
         return false;
     }
@@ -41,7 +41,7 @@ fn pending_request_succeeded_erased(
         if pending_req.id() != request_id {
             continue;
         }
-        let Some(mut ec) = c.get_entity(entity) else { continue };
+        let Ok(mut ec) = c.get_entity(entity) else { continue };
 
         ec.remove::<React<PendingRequest>>();
         ec.react().entity_event(entity, RequestSucceeded);
@@ -61,7 +61,7 @@ fn pending_request_failed_erased(
         if pending_req.id() != request_id {
             continue;
         }
-        let Some(mut ec) = c.get_entity(entity) else { continue };
+        let Ok(mut ec) = c.get_entity(entity) else { continue };
 
         ec.remove::<React<PendingRequest>>();
         ec.react().entity_event(entity, RequestFailed);

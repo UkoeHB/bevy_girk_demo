@@ -57,7 +57,7 @@ fn focus_window_for_ack_request(
         }
     }
 
-    window.single_mut().focused = true;
+    window.single_mut().unwrap().focused = true;
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -34,7 +34,7 @@ pub(crate) fn setup_reactres_managed_popup<T: ReactResource, R: CobwebResult>(
             }
             false => {
                 let entity = popup.take().result()?;
-                c.get_entity(entity).result()?.despawn_recursive();
+                c.get_entity(entity)?.despawn();
             }
         }
 

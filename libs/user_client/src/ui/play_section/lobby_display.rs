@@ -45,7 +45,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
         resource_mutation::<LobbyDisplay>(),
         |id: TargetId, mut c: Commands, mut s: SceneBuilder, display: ReactRes<LobbyDisplay>| {
             // clean up previous members list
-            c.get_entity(*id).result()?.despawn_descendants();
+            c.get_entity(*id)?.despawn_related::<Children>();
 
             let lobby_content = display.get().result()?;
             for (_, player_id) in lobby_content.players.iter() {

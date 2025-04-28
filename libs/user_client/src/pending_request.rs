@@ -87,7 +87,7 @@ impl<'w, 's, T: Component> PendingRequestParam<'w, 's, T>
 {
     pub(crate) fn entity(&self) -> Result<Entity, String>
     {
-        let Ok((entity, _)) = self.q.get_single() else {
+        let Ok((entity, _)) = self.q.single() else {
             return Err(
                 format!("failed getting entity id for PendingRequest type {}; expected 1 entity, \
                 found {} entities", type_name::<T>(), self.q.iter().count()),
@@ -98,13 +98,13 @@ impl<'w, 's, T: Component> PendingRequestParam<'w, 's, T>
 
     pub(crate) fn has_request(&self) -> bool
     {
-        let Ok((_, maybe_req)) = self.q.get_single() else { return false };
+        let Ok((_, maybe_req)) = self.q.single() else { return false };
         maybe_req.is_some()
     }
 
     pub(crate) fn request(&self) -> Option<(Entity, RequestSignal)>
     {
-        let (entity, maybe_req) = self.q.get_single().ok()?;
+        let (entity, maybe_req) = self.q.single().ok()?;
         let req = maybe_req?;
         Some((entity, (***req).clone()))
     }

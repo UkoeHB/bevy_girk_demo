@@ -44,7 +44,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
             match event.try_read()? {
                 RequestEnded::Success => {
                     tracing::info!("JoinLobby request succeeded");
-                    c.get_entity(*id).result()?.despawn_recursive();
+                    c.get_entity(*id)?.despawn();
                 }
                 RequestEnded::Failure => {
                     tracing::warn!("JoinLobby request failed");
@@ -55,7 +55,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
         },
     );
     h.reactor(broadcast::<MadeLocalLobby>(), |id: TargetId, mut c: Commands| {
-        c.get_entity(*id).result()?.despawn_recursive();
+        c.get_entity(*id)?.despawn();
         DONE
     });
 
@@ -106,7 +106,7 @@ pub(super) fn build_join_lobby_popup(_: &ActivateJoinLobbyPopup, h: &mut UiScene
     });
     h.get("footer::cancel_button")
         .on_pressed(move |mut c: Commands, mut data: ReactResMut<JoinLobbyData>| {
-            c.get_entity(popup_id).result()?.despawn_recursive();
+            c.get_entity(popup_id)?.despawn();
             data.get_mut(&mut c).clear();
             DONE
         });
